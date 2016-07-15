@@ -80,21 +80,6 @@ type torznabAttrView struct {
 	Value   string   `xml:"value,attr"`
 }
 
-// <rss version="1.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:torznab="http://torznab.com/schemas/2015/feed">
-//   <channel>
-//     <atom:link href="http://atalanta.bysh.me:40281/" rel="self" type="application/rss+xml" />
-//     <title>BIT-HDTV</title>
-//     <description>Home of high definition invites</description>
-//     <link>https://www.bit-hdtv.com/</link>
-//     <lanuage>en-us</lanuage>
-//     <category>search</category>
-//     <image>
-//       <url>http://atalanta.bysh.me:40281/logos/bithdtv.png</url>
-//       <title>BIT-HDTV</title>
-//       <link>https://www.bit-hdtv.com/</link>
-//       <description>BIT-HDTV</description>
-//     </image>
-
 type ResultFeed struct {
 	Title       string
 	Description string
