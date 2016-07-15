@@ -1,0 +1,18 @@
+version: "2"
+
+services:
+  couchpotato:
+    image: linuxserver/couchpotato
+    environment:
+      - PUID=0
+      - PGID=0
+    ports:
+      - 5050:5050
+
+  sonarr:
+    image: sdesbure/arch-jackett
+    environment:
+      - PUID=0
+      - PGID=0
+    ports:
+      - 8989:8989
