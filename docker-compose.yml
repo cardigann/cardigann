@@ -10,7 +10,7 @@ services:
       - 5050:5050
 
   sonarr:
-    image: sdesbure/arch-jackett
+    image: linuxserver/sonarr
     environment:
       - PUID=0
       - PGID=0

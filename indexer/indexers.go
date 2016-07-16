@@ -7,26 +7,25 @@ import (
 	"github.com/vaughan0/go-ini"
 )
 
-var config Config
+var (
+	Registered = make(ConstructorMap)
+)
 
 type Config interface {
 	Get(section string, key string) (string, bool)
 }
 
-var TorznabIndexers = map[string]func(c Config) (torznab.Indexer, error){}
+type Constructor func(c Config) (torznab.Indexer, error)
+type ConstructorMap map[string]Constructor
 
-// Indexer creates a new indexer with configuration
-func Get(key string) (torznab.Indexer, error) {
-	if config == nil {
-		var err error
-		config, err = ini.LoadFile("config.ini")
-
-		if err != nil {
-			return nil, err
-		}
+// New creates a new torznab indexer with config loaded from config.ini
+func (c ConstructorMap) New(key string) (torznab.Indexer, error) {
+	config, err := ini.LoadFile("config.ini")
+	if err != nil {
+		return nil, err
 	}
 
-	indexerFunc, ok := TorznabIndexers[key]
+	indexerFunc, ok := c[key]
 	if !ok {
 		return nil, fmt.Errorf("Indexer %s doesn't exist", key)
 	}

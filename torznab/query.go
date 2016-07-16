@@ -2,6 +2,7 @@ package torznab
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,12 +10,24 @@ import (
 
 type Query map[string]interface{}
 
+func (q Query) Keywords() string {
+	k, ok := q["q"]
+	if ok {
+		return k.(string)
+	} else {
+		return ""
+	}
+}
+
 func ParseQuery(r *http.Request) (Query, error) {
-	query := make(Query)
+	query := Query{}
 
 	for k, vals := range r.URL.Query() {
 		switch k {
-		case "q", "ep", "season", "apikey":
+		case "t":
+			continue
+
+		case "q", "ep", "season", "apikey", "offset", "limit":
 			query[k] = vals[0]
 
 		case "cat":
@@ -23,6 +36,9 @@ func ParseQuery(r *http.Request) (Query, error) {
 				return Query{}, fmt.Errorf("Unable to parse cats %q", vals[0])
 			}
 			query["cat"] = catInts
+
+		default:
+			log.Printf("Unknown torznab request key %q", k)
 		}
 	}
 

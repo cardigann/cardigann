@@ -28,7 +28,7 @@ func (c Capabilities) HasSearchMode(t string) bool {
 func (c Capabilities) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	var cx struct {
 		XMLName struct{}      `xml:"caps"`
-		Modes   []interface{} `xml:"caps>searching"`
+		Modes   []interface{} `xml:"searching"`
 	}
 
 	for _, mode := range c.SearchModes {

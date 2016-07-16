@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const rfc2822 = "Mon Jan 02 2006 15:04:05 -0700"
+const rfc822 = "Mon, 02 Jan 2006 15:04:05 -0700"
 
 type ResultItem struct {
 	Title       string
@@ -46,7 +46,6 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		Comments    string      `xml:"comments,omitempty"`
 		Link        string      `xml:"link,omitempty"`
 		Category    string      `xml:"category,omitempty"`
-		Size        uint64      `xml:"size,omitempty"`
 		PublishDate string      `xml:"pubDate,omitempty"`
 		Enclosure   interface{} `xml:"enclosure,omitempty"`
 
@@ -59,14 +58,14 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		Comments:    ri.Comments,
 		Link:        ri.Link,
 		Category:    strconv.Itoa(ri.Category),
-		Size:        ri.Size,
-		PublishDate: ri.PublishDate.Format(rfc2822),
+		PublishDate: ri.PublishDate.Format(rfc822),
 		Enclosure:   enclosure,
 		Attrs: []torznabAttrView{
 			{Name: "seeders", Value: strconv.Itoa(ri.Seeders)},
 			{Name: "peers", Value: strconv.Itoa(ri.Peers)},
 			{Name: "minimumratio", Value: fmt.Sprintf("%.f", ri.MinimumRatio)},
 			{Name: "minimumseedtime", Value: fmt.Sprintf("%.f", ri.MinimumSeedTime.Seconds())},
+			{Name: "size", Value: fmt.Sprintf("%d", ri.Size)},
 		},
 	}
 

@@ -72,7 +72,7 @@ func (i *torznabIndexer) login() error {
 	return nil
 }
 
-func (i *torznabIndexer) Search(query torznab.Query) ([]torznab.ResultItem, error) {
+func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error) {
 	if err := i.login(); err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (i *torznabIndexer) Search(query torznab.Query) ([]torznab.ResultItem, erro
 	}
 
 	err := i.browser.OpenForm(baseURL+"torrents.php", url.Values{
-		"search": []string{query["q"].(string)},
+		"search": []string{query.Keywords()},
 		"cat:":   []string{localCat},
 	})
 	if err != nil {
@@ -177,22 +177,28 @@ func (i *torznabIndexer) Search(query torznab.Query) ([]torznab.ResultItem, erro
 		})
 	})
 
-	return items, nil
+	return &torznab.ResultFeed{
+		Title:       "BIT-HDTV",
+		Description: "Home of High Definition TV",
+		Link:        "https://www.bit-hdtv.com/",
+		Language:    "en-us",
+		Items:       items,
+	}, nil
 }
 
 func (i *torznabIndexer) Capabilities() torznab.Capabilities {
 	return torznab.Capabilities{
 		SearchModes: []torznab.SearchMode{
 			{"search", true, []string{"q"}},
-			{"tv-search", true, []string{"q", "season", "ep"}},
+			{"tvsearch", true, []string{"q", "season", "ep"}},
 		},
 	}
 }
 
 func init() {
-	indexer.TorznabIndexers[Key] = func(c indexer.Config) (torznab.Indexer, error) {
+	indexer.Registered[Key] = indexer.Constructor(func(c indexer.Config) (torznab.Indexer, error) {
 		bow := surf.NewBrowser()
 		bow.SetUserAgent(agent.Chrome())
 		return &torznabIndexer{config: c, browser: bow}, nil
-	}
+	})
 }
