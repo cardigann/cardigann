@@ -3,11 +3,13 @@ package torznab
 import (
 	"encoding/xml"
 	"net/http"
+	"sort"
 	"strings"
 )
 
 type Capabilities struct {
 	SearchModes []SearchMode
+	Categories  CategoryMapping
 }
 
 type SearchMode struct {
@@ -16,19 +18,15 @@ type SearchMode struct {
 	SupportedParams []string
 }
 
-func (c Capabilities) HasSearchMode(t string) bool {
-	for _, m := range c.SearchModes {
-		if m.Key == t {
-			return true
-		}
-	}
-	return false
-}
-
 func (c Capabilities) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	var cx struct {
-		XMLName struct{}      `xml:"caps"`
-		Modes   []interface{} `xml:"searching"`
+		XMLName   struct{} `xml:"caps"`
+		Searching struct {
+			Values []interface{}
+		} `xml:"searching"`
+		Categories struct {
+			Values []interface{}
+		} `xml:"categories"`
 	}
 
 	for _, mode := range c.SearchModes {
@@ -36,7 +34,7 @@ func (c Capabilities) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		if mode.Available {
 			available = "yes"
 		}
-		cx.Modes = append(cx.Modes, struct {
+		cx.Searching.Values = append(cx.Searching.Values, struct {
 			XMLName         xml.Name
 			Available       string `xml:"available,attr"`
 			SupportedParams string `xml:"supportedParams,attr"`
@@ -44,6 +42,20 @@ func (c Capabilities) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 			xml.Name{"", mode.Key},
 			available,
 			strings.Join(mode.SupportedParams, ","),
+		})
+	}
+
+	cats := c.Categories.Categories()
+	sort.Sort(cats)
+
+	for _, cat := range cats {
+		cx.Categories.Values = append(cx.Categories.Values, struct {
+			XMLName struct{} `xml:"category"`
+			ID      int      `xml:"id,attr"`
+			Name    string   `xml:"name,attr"`
+		}{
+			ID:   cat.ID,
+			Name: cat.Name,
 		})
 	}
 

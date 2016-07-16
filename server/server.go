@@ -67,13 +67,12 @@ func (h *handler) TorznabHandler(w http.ResponseWriter, r *http.Request, ps http
 }
 
 func (h *handler) Search(r *http.Request, indexer torznab.Indexer) (*torznab.ResultFeed, error) {
-	query, err := torznab.ParseQuery(r)
+	query, err := torznab.ParseQuery(r.URL.Query())
 	if err != nil {
 		return nil, err
 	}
 
 	log.Printf("Query: %#v", query)
-
 	feed, err := indexer.(torznab.Indexer).Search(query)
 	if err != nil {
 		return nil, err

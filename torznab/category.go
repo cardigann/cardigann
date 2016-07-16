@@ -1,39 +1,112 @@
 package torznab
 
 type Category struct {
-	ID          int
-	Name        string
-	Description string
+	ID   int
+	Name string
 }
 
-// Categories are the predefined categories from the nZEDb spec
-// See https://github.com/nZEDb/nZEDb/blob/0.x/docs/newznab_api_specification.txt#L608
-var (
-	Categories = struct {
-		TV,
-		TV_WebDL,
-		TV_Foreign,
-		TV_StandardDef,
-		TV_HighDef,
-		TV_Other,
-		TV_Sport,
-		TV_Anime,
-		TV_Documentary Category
-	}{
-		Category{5000, "TV", "All of TV"},
-		Category{5010, "TV/WEB-DL", "WEB-DL TV"},
-		Category{5020, "TV/FOREIGN", "FOREIGN TV"},
-		Category{5030, "TV/SD", "SD TV"},
-		Category{5040, "TV/HD", "HD TV"},
-		Category{5999, "TV/OTHER", "Other TV Content"},
-		Category{5060, "TV/Sport", "Sports"},
-		Category{5070, "TV/Anime", "Anime"},
-		Category{5080, "TV/Documentary", "Documentaries"},
-	}
+const (
+	CustomCategoryOffset = 100000
 )
 
-func CategoryById(id int) (Category, bool) {
-	return Category{}, false
-}
+// Categories from the Newznab spec
+// https://github.com/nZEDb/nZEDb/blob/0.x/docs/newznab_api_specification.txt#L627
+var (
+	CategoryOther              = Category{0, "Other"}
+	CategoryOther_Misc         = Category{10, "Other/Misc"}
+	CategoryOther_Hashed       = Category{20, "Other/Hashed"}
+	CategoryConsole            = Category{1000, "Console"}
+	CategoryConsole_NDS        = Category{1010, "Console/NDS"}
+	CategoryConsole_PSP        = Category{1020, "Console/PSP"}
+	CategoryConsole_Wii        = Category{1030, "Console/Wii"}
+	CategoryConsole_XBOX       = Category{1040, "Console/Xbox"}
+	CategoryConsole_XBOX360    = Category{1050, "Console/Xbox 360"}
+	CategoryConsole_WiiwareVC  = Category{1060, "Console/Wiiware/V"}
+	CategoryConsole_XBOX360DLC = Category{1070, "Console/XBOX 360 "}
+	CategoryConsole_PS3        = Category{1080, "Console/PS3"}
+	CategoryConsole_Other      = Category{1999, "Console/Other"}
+	CategoryConsole_3DS        = Category{1110, "Console/3DS"}
+	CategoryConsole_PSVita     = Category{1120, "Console/PS Vita"}
+	CategoryConsole_WiiU       = Category{1130, "Console/WiiU"}
+	CategoryConsole_XBOXOne    = Category{1140, "Console/Xbox One"}
+	CategoryConsole_PS4        = Category{1180, "Console/PS4"}
+	CategoryMovies             = Category{2000, "Movies"}
+	CategoryMovies_Foreign     = Category{2010, "Movies/Foreign"}
+	CategoryMovies_Other       = Category{2020, "Movies/Other"}
+	CategoryMovies_SD          = Category{2030, "Movies/SD"}
+	CategoryMovies_HD          = Category{2040, "Movies/HD"}
+	CategoryMovies_3D          = Category{2050, "Movies/3D"}
+	CategoryMovies_BluRay      = Category{2060, "Movies/BluRay"}
+	CategoryMovies_DVD         = Category{2070, "Movies/DVD"}
+	CategoryMovies_WEBDL       = Category{2080, "Movies/WEBDL"}
+	CategoryAudio              = Category{3000, "Audio"}
+	CategoryAudio_MP3          = Category{3010, "Audio/MP3"}
+	CategoryAudio_Video        = Category{3020, "Audio/Video"}
+	CategoryAudio_Audiobook    = Category{3030, "Audio/Audiobook"}
+	CategoryAudio_Lossless     = Category{3040, "Audio/Lossless"}
+	CategoryAudio_Other        = Category{3999, "Audio/Other"}
+	CategoryAudio_Foreign      = Category{3060, "Audio/Foreign"}
+	CategoryPC                 = Category{4000, "PC"}
+	CategoryPC_0day            = Category{4010, "PC/0day"}
+	CategoryPC_ISO             = Category{4020, "PC/ISO"}
+	CategoryPC_Mac             = Category{4030, "PC/Mac"}
+	CategoryPC_PhoneOther      = Category{4040, "PC/Phone-Other"}
+	CategoryPC_Games           = Category{4050, "PC/Games"}
+	CategoryPC_PhoneIOS        = Category{4060, "PC/Phone-IOS"}
+	CategoryPC_PhoneAndroid    = Category{4070, "PC/Phone-Android"}
+	CategoryTV                 = Category{5000, "TV"}
+	CategoryTV_WEBDL           = Category{5010, "TV/WEB-DL"}
+	CategoryTV_FOREIGN         = Category{5020, "TV/FOREIGN"}
+	CategoryTV_SD              = Category{5030, "TV/SD"}
+	CategoryTV_HD              = Category{5040, "TV/HD"}
+	CategoryTV_OTHER           = Category{5999, "TV/OTHER"}
+	CategoryTV_Sport           = Category{5060, "TV/Sport"}
+	CategoryTV_Anime           = Category{5070, "TV/Anime"}
+	CategoryTV_Documentary     = Category{5080, "TV/Documentary"}
+	CategoryXXX                = Category{6000, "XXX"}
+	CategoryXXX_DVD            = Category{6010, "XXX/DVD"}
+	CategoryXXX_WMV            = Category{6020, "XXX/WMV"}
+	CategoryXXX_XviD           = Category{6030, "XXX/XviD"}
+	CategoryXXX_x264           = Category{6040, "XXX/x264"}
+	CategoryXXX_Other          = Category{6999, "XXX/Other"}
+	CategoryXXX_Imageset       = Category{6060, "XXX/Imageset"}
+	CategoryXXX_Packs          = Category{6070, "XXX/Packs"}
+	CategoryBooks              = Category{7000, "Books"}
+	CategoryBooks_Magazines    = Category{7010, "Books/Magazines"}
+	CategoryBooks_Ebook        = Category{7020, "Books/Ebook"}
+	CategoryBooks_Comics       = Category{7030, "Books/Comics"}
+	CategoryBooks_Technical    = Category{7040, "Books/Technical"}
+	CategoryBooks_Foreign      = Category{7060, "Books/Foreign"}
+	CategoryBooks_Unknown      = Category{7999, "Books/Unknown"}
+)
 
 type CategoryMapping map[int]Category
+
+func (mapping CategoryMapping) Categories() Categories {
+	cats := Categories{}
+	added := map[int]bool{}
+
+	for _, c := range mapping {
+		if _, exists := added[c.ID]; exists {
+			continue
+		}
+		cats = append(cats, c)
+		added[c.ID] = true
+	}
+
+	return cats
+}
+
+type Categories []Category
+
+func (slice Categories) Len() int {
+	return len(slice)
+}
+
+func (slice Categories) Less(i, j int) bool {
+	return slice[i].ID < slice[j].ID
+}
+
+func (slice Categories) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}

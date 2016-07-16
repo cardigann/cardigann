@@ -24,16 +24,30 @@ const (
 )
 
 var categoryMap = torznab.CategoryMapping{
-	1:  torznab.Categories.TV_Anime,
-	4:  torznab.Categories.TV_Documentary,
-	5:  torznab.Categories.TV_Sport,
-	10: torznab.Categories.TV,
-	12: torznab.Categories.TV, // season packs
+	1:  torznab.CategoryTV_Anime,
+	2:  torznab.CategoryMovies_BluRay,
+	4:  torznab.CategoryTV_Documentary,
+	5:  torznab.CategoryTV_Sport,
+	6:  torznab.CategoryAudio,
+	7:  torznab.CategoryMovies,
+	8:  torznab.CategoryAudio_Video,
+	10: torznab.CategoryTV,
+	12: torznab.CategoryTV, // season packs
 }
 
 type torznabIndexer struct {
 	config  indexer.Config
 	browser browser.Browsable
+}
+
+func (i *torznabIndexer) Capabilities() torznab.Capabilities {
+	return torznab.Capabilities{
+		Categories: categoryMap,
+		SearchModes: []torznab.SearchMode{
+			{"search", true, []string{"q"}},
+			{"tv-search", true, []string{"q", "season", "ep"}},
+		},
+	}
 }
 
 func (i *torznabIndexer) login() error {
@@ -77,20 +91,21 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 		return nil, err
 	}
 
-	localCat, hasLocalCat := query["cat"].(string)
-	if !hasLocalCat {
-		localCat = "0"
-	}
+	catFilter, hasCatFilter := query["cat"].(string)
+
+	keywords := query.Keywords()
+	log.Printf("Searching for %q", keywords)
 
 	err := i.browser.OpenForm(baseURL+"torrents.php", url.Values{
-		"search": []string{query.Keywords()},
-		"cat:":   []string{localCat},
+		"search": []string{keywords},
+		"cat:":   []string{"0"},
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	items := []torznab.ResultItem{}
+	timer := time.Now()
 
 	i.browser.Find("table[width='750'] > tbody tr").Has("td.detail").Each(func(idx int, s *goquery.Selection) {
 		link := s.Find("td").Eq(2).Find("a").First()
@@ -148,6 +163,11 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 			return
 		}
 
+		// Search doesn't support multiple cats, so this filters
+		if hasCatFilter && strconv.Itoa(mappedCat.ID) != catFilter {
+			return
+		}
+
 		bytes, err := humanize.ParseBytes(s.Find("td").Eq(6).Text())
 		if err != nil {
 			log.Println("Failed to parse file size", err)
@@ -177,6 +197,8 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 		})
 	})
 
+	log.Printf("Found %d results in %s", len(items), time.Now().Sub(timer))
+
 	return &torznab.ResultFeed{
 		Title:       "BIT-HDTV",
 		Description: "Home of High Definition TV",
@@ -184,15 +206,6 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 		Language:    "en-us",
 		Items:       items,
 	}, nil
-}
-
-func (i *torznabIndexer) Capabilities() torznab.Capabilities {
-	return torznab.Capabilities{
-		SearchModes: []torznab.SearchMode{
-			{"search", true, []string{"q"}},
-			{"tvsearch", true, []string{"q", "season", "ep"}},
-		},
-	}
 }
 
 func init() {
