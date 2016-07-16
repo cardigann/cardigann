@@ -14,7 +14,7 @@ Cardigann is implemented in golang, which means it's simply a single binary to e
 Cardigann provides a cli tool for debugging and development:
 
 ```bash
-cardigann query bithdtv t=tv-search "q=mr robot"
+cardigann query bithdtv t=tv-search "q=mr robot" ep=1 season=2
 ```
 
 Or you can run the proxy server:

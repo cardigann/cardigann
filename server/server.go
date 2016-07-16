@@ -91,8 +91,7 @@ func ListenAndServe(listenAddr string, cm indexer.ConstructorMap, p Params) erro
 
 	router := httprouter.New()
 	router.GET("/", h.Index)
-	router.GET("/api/:sitekey/torznab", h.TorznabHandler)
-	router.GET("/api/:sitekey/torznab/api", h.TorznabHandler)
+	router.GET("/torznab/:sitekey/api", h.TorznabHandler)
 
 	log.Printf("Listening on %s", listenAddr)
 	return http.ListenAndServe(listenAddr, router)

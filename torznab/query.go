@@ -43,7 +43,7 @@ func ParseQuery(v url.Values) (Query, error) {
 		case "t":
 			continue
 
-		case "q", "ep", "season", "apikey", "offset", "limit":
+		case "q", "ep", "season", "apikey", "offset", "limit", "extended":
 			query[k] = vals[0]
 
 		case "cat":
