@@ -1,7 +1,10 @@
 package bithdtv
 
 import (
+	"bytes"
 	"errors"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"strconv"
@@ -208,10 +211,33 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 	}, nil
 }
 
+func (i *torznabIndexer) Download(u *url.URL) (io.ReadCloser, error) {
+	if err := i.login(); err != nil {
+		return nil, err
+	}
+
+	u.Host = "www.bit-hdtv.com"
+	u.Scheme = "https"
+
+	if err := i.browser.Open(u.String()); err != nil {
+		return nil, err
+	}
+
+	b := &bytes.Buffer{}
+
+	if _, err := i.browser.Download(b); err != nil {
+		return nil, err
+	}
+
+	return ioutil.NopCloser(bytes.NewReader(b.Bytes())), nil
+}
+
 func init() {
 	indexer.Registered[Key] = indexer.Constructor(func(c indexer.Config) (torznab.Indexer, error) {
 		bow := surf.NewBrowser()
 		bow.SetUserAgent(agent.Chrome())
+		bow.SetAttribute(browser.SendReferer, false)
+		bow.SetAttribute(browser.MetaRefreshHandling, false)
 		return &torznabIndexer{config: c, browser: bow}, nil
 	})
 }

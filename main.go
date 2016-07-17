@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -28,7 +29,40 @@ var (
 
 	server     = app.Command("server", "Run the proxy server")
 	serverAddr = server.Flag("addr", "The host and port to bind to").Default(":3000").String()
+
+	download     = app.Command("download", "Download a torrent from the tracker")
+	downloadKey  = download.Arg("key", "The indexer key").Required().String()
+	downloadURL  = download.Arg("url", "The URL to download").URL()
+	downloadFile = download.Arg("file", "The file to download to").String()
 )
+
+func downloadCommand() {
+	indexer, err := indexer.Registered.New(*downloadKey)
+	if err != nil {
+		kingpin.Fatalf(err.Error())
+	}
+
+	log.Printf("Downloading %s", *downloadURL)
+
+	rc, err := indexer.(torznab.Indexer).Download(*downloadURL)
+	if err != nil {
+		kingpin.Fatalf("Downloading failed: %s", err.Error())
+	}
+
+	defer rc.Close()
+
+	f, err := os.Create(*downloadFile)
+	if err != nil {
+		kingpin.Fatalf("Creating file failed: %s", err.Error())
+	}
+
+	n, err := io.Copy(f, rc)
+	if err != nil {
+		kingpin.Fatalf("Creating file failed: %s", err.Error())
+	}
+
+	log.Printf("Downloaded %d bytes", n)
+}
 
 func queryCommand() {
 	indexer, err := indexer.Registered.New(*queryKey)
@@ -74,5 +108,7 @@ func main() {
 		queryCommand()
 	case server.FullCommand():
 		serverCommand()
+	case download.FullCommand():
+		downloadCommand()
 	}
 }

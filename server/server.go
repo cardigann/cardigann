@@ -1,10 +1,13 @@
 package server
 
 import (
+	"encoding/base64"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/torznab"
@@ -19,18 +22,35 @@ type handler struct {
 	Params   Params
 }
 
-func (h *handler) BaseURL(r *http.Request) string {
+func (h *handler) BaseURL(r *http.Request) (*url.URL, error) {
 	if h.Params.BaseURL != "" {
-		return h.Params.BaseURL
+		return url.Parse(h.Params.BaseURL)
 	}
 	proto := "http"
 	if r.TLS != nil {
 		proto = "https"
 	}
-	return fmt.Sprintf("%s://%s%s", proto, r.Host, r.URL.Path)
+	return url.Parse(fmt.Sprintf("%s://%s", proto, r.Host))
 }
 
-func (h *handler) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h *handler) DownloadURL(r *http.Request, item torznab.ResultItem, siteKey string) (string, error) {
+	ul, err := url.Parse(item.Link)
+	if err != nil {
+		return "", err
+	}
+
+	u, err := h.BaseURL(r)
+	if err != nil {
+		return "", err
+	}
+
+	slug := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s?%s", ul.Path, ul.RawQuery)))
+	u.Path = fmt.Sprintf("/dl/%s/%s/%s.torrent", siteKey, slug, item.Title)
+
+	return u.String(), nil
+}
+
+func (h *handler) IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprint(w, "Interactive UI not implemented yet\n")
 }
 
@@ -47,8 +67,8 @@ func (h *handler) TorznabHandler(w http.ResponseWriter, r *http.Request, ps http
 	case "caps":
 		indexer.Capabilities().ServeHTTP(w, r)
 
-	case "search", "tvsearch":
-		feed, err := h.Search(r, indexer)
+	case "search", "tvsearch", "tv-search":
+		feed, err := h.Search(r, indexer, ps.ByName("sitekey"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
@@ -66,7 +86,38 @@ func (h *handler) TorznabHandler(w http.ResponseWriter, r *http.Request, ps http
 	}
 }
 
-func (h *handler) Search(r *http.Request, indexer torznab.Indexer) (*torznab.ResultFeed, error) {
+func (h *handler) DownloadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	indexer, err := indexer.Registered.New(ps.ByName("sitekey"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	log.Printf("GET %s", r.URL.String())
+
+	slug, err := base64.StdEncoding.DecodeString(ps.ByName("filekey"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	u, err := url.Parse(string(slug))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rc, err := indexer.Download(u)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	defer rc.Close()
+	io.Copy(w, rc)
+}
+
+func (h *handler) Search(r *http.Request, indexer torznab.Indexer, siteKey string) (*torznab.ResultFeed, error) {
 	query, err := torznab.ParseQuery(r.URL.Query())
 	if err != nil {
 		return nil, err
@@ -78,7 +129,15 @@ func (h *handler) Search(r *http.Request, indexer torznab.Indexer) (*torznab.Res
 		return nil, err
 	}
 
-	// feed.Self = h.BaseURL(r)
+	// rewrite links to use the server
+	for idx, item := range feed.Items {
+		dl, err := h.DownloadURL(r, item, siteKey)
+		if err != nil {
+			return nil, err
+		}
+		feed.Items[idx].Link = dl
+	}
+
 	return feed, err
 }
 
@@ -90,8 +149,9 @@ func ListenAndServe(listenAddr string, cm indexer.ConstructorMap, p Params) erro
 	h := handler{Indexers: cm, Params: p}
 
 	router := httprouter.New()
-	router.GET("/", h.Index)
+	router.GET("/", h.IndexHandler)
 	router.GET("/torznab/:sitekey/api", h.TorznabHandler)
+	router.GET("/dl/:sitekey/:filekey/:filename", h.DownloadHandler)
 
 	log.Printf("Listening on %s", listenAddr)
 	return http.ListenAndServe(listenAddr, router)

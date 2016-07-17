@@ -8,8 +8,11 @@ import (
 	"strings"
 )
 
+// Query represents a torznab query
 type Query map[string]interface{}
 
+// Episode returns either the season + episode in the format S00E00 or just the season as S00 if
+// no episode has been specified.
 func (query Query) Episode() (s string) {
 	if season, ok := query["season"].(string); ok {
 		s += fmt.Sprintf("S%s", padLeft(season, "0", 2))
@@ -20,7 +23,7 @@ func (query Query) Episode() (s string) {
 	return s
 }
 
-// Returns a combination of the q, ep and season parameters formatted for text search
+// Keywords returns a combination of the q, ep and season parameters formatted for text search
 func (query Query) Keywords() string {
 	keywords := []string{}
 
@@ -35,6 +38,7 @@ func (query Query) Keywords() string {
 	return strings.Join(keywords, " ")
 }
 
+// ParseQuery takes the query string parameters for a torznab query and parses them
 func ParseQuery(v url.Values) (Query, error) {
 	query := Query{}
 
