@@ -80,9 +80,12 @@ func (i *torznabIndexer) login() error {
 		return err
 	}
 
-	// TODO: capture the following error message
+	log.Println(i.browser.Body())
+
 	if strings.Contains(i.browser.Body(), "Login failed!") {
-		return errors.New("Login failed, incorrect username or password")
+		msg := i.browser.Find("table.detail .text")
+		msg.Find("style, b").Remove()
+		return errors.New(strings.TrimSpace(msg.Text()))
 	}
 
 	log.Printf("Successfully logged in")
