@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -28,7 +29,8 @@ var (
 	queryArgs   = query.Arg("args", "Arguments to use to query").Strings()
 
 	server     = app.Command("server", "Run the proxy server")
-	serverAddr = server.Flag("addr", "The host and port to bind to").Default(":3000").String()
+	serverAddr = server.Flag("addr", "The host and port to bind to").Default(":5060").String()
+	serverDev  = server.Flag("dev", "Whether to proxy to a local react dev server").Bool()
 
 	download     = app.Command("download", "Download a torrent from the tracker")
 	downloadKey  = download.Arg("key", "The indexer key").Required().String()
@@ -42,9 +44,7 @@ func downloadCommand() {
 		kingpin.Fatalf(err.Error())
 	}
 
-	log.Printf("Downloading %s", *downloadURL)
-
-	rc, err := indexer.(torznab.Indexer).Download(*downloadURL)
+	rc, _, err := indexer.Download((*downloadURL).String())
 	if err != nil {
 		kingpin.Fatalf("Downloading failed: %s", err.Error())
 	}
@@ -99,7 +99,11 @@ func queryCommand() {
 }
 
 func serverCommand() {
-	log.Fatal(cserver.ListenAndServe(*serverAddr, indexer.Registered, cserver.Params{}))
+	log.Printf("Starting server on %s", *serverAddr)
+	log.Fatal(http.ListenAndServe(*serverAddr, cserver.NewHandler(indexer.Registered, cserver.Params{
+		DevMode:   *serverDev,
+		SharedKey: []byte{194, 164, 235, 6, 138, 248, 171, 239, 24, 216, 11, 22, 137, 199, 215, 133},
+	})))
 }
 
 func main() {

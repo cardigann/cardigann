@@ -10,6 +10,7 @@ import (
 const rfc822 = "Mon, 02 Jan 2006 15:04:05 -0700"
 
 type ResultItem struct {
+	Site        string
 	Title       string
 	Description string
 	GUID        string

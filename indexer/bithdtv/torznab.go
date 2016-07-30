@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -188,6 +189,7 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 		}
 
 		items = append(items, torznab.ResultItem{
+			Site:            Key,
 			Title:           title,
 			Description:     title,
 			Comments:        detailsHref,
@@ -214,25 +216,30 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 	}, nil
 }
 
-func (i *torznabIndexer) Download(u *url.URL) (io.ReadCloser, error) {
+func (i *torznabIndexer) Download(urlStr string) (io.ReadCloser, http.Header, error) {
 	if err := i.login(); err != nil {
-		return nil, err
+		return nil, http.Header{}, err
+	}
+
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, http.Header{}, err
 	}
 
 	u.Host = "www.bit-hdtv.com"
 	u.Scheme = "https"
 
 	if err := i.browser.Open(u.String()); err != nil {
-		return nil, err
+		return nil, http.Header{}, err
 	}
 
 	b := &bytes.Buffer{}
 
 	if _, err := i.browser.Download(b); err != nil {
-		return nil, err
+		return nil, http.Header{}, err
 	}
 
-	return ioutil.NopCloser(bytes.NewReader(b.Bytes())), nil
+	return ioutil.NopCloser(bytes.NewReader(b.Bytes())), i.browser.ResponseHeaders(), nil
 }
 
 func init() {

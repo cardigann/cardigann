@@ -1,0 +1,12 @@
+package: github.com/cardigann/cardigann
+import:
+- package: github.com/PuerkitoBio/goquery
+- package: github.com/dustin/go-humanize
+- package: github.com/dvsekhvalnov/jose2go
+- package: github.com/gorilla/mux
+- package: github.com/headzoo/surf
+  subpackages:
+  - agent
+  - browser
+- package: github.com/vaughan0/go-ini
+- package: gopkg.in/alecthomas/kingpin.v2

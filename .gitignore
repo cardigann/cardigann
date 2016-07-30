@@ -1,1 +1,3 @@
 config.ini
+web/build
+web/node_modules

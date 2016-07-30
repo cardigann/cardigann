@@ -2,11 +2,11 @@ package torznab
 
 import (
 	"io"
-	"net/url"
+	"net/http"
 )
 
 type Indexer interface {
 	Search(query Query) (*ResultFeed, error)
-	Download(u *url.URL) (io.ReadCloser, error)
+	Download(urlStr string) (io.ReadCloser, http.Header, error)
 	Capabilities() Capabilities
 }
