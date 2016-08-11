@@ -1,7 +1,7 @@
 Cardigann
 =========
 
-**Note that this is still in active development, very little is working**
+**Note that this is still in active development**
 
 Provides [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) interfaces for [private torrent trackers.](http://lifehacker.com/5897095/whats-a-private-bittorrent-tracker-and-why-should-i-use-one).
 
