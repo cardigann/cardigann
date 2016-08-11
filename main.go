@@ -31,6 +31,7 @@ var (
 	server     = app.Command("server", "Run the proxy server")
 	serverAddr = server.Flag("addr", "The host and port to bind to").Default(":5060").String()
 	serverDev  = server.Flag("dev", "Whether to proxy to a local react dev server").Bool()
+	serverPass = server.Flag("passphrase", "Require a passphrase to view web interface").Short('p').String()
 
 	download     = app.Command("download", "Download a torrent from the tracker")
 	downloadKey  = download.Arg("key", "The indexer key").Required().String()
@@ -39,7 +40,12 @@ var (
 )
 
 func downloadCommand() {
-	indexer, err := indexer.Registered.New(*downloadKey)
+	conf, err := indexer.NewConfig()
+	if err != nil {
+		kingpin.Fatalf(err.Error())
+	}
+
+	indexer, err := indexer.Registered.New(*downloadKey, conf)
 	if err != nil {
 		kingpin.Fatalf(err.Error())
 	}
@@ -65,7 +71,12 @@ func downloadCommand() {
 }
 
 func queryCommand() {
-	indexer, err := indexer.Registered.New(*queryKey)
+	conf, err := indexer.NewConfig()
+	if err != nil {
+		kingpin.Fatalf(err.Error())
+	}
+
+	indexer, err := indexer.Registered.New(*queryKey, conf)
 	if err != nil {
 		kingpin.Fatalf(err.Error())
 	}
@@ -76,7 +87,7 @@ func queryCommand() {
 		query[tokens[0]] = tokens[1]
 	}
 
-	feed, err := indexer.(torznab.Indexer).Search(query)
+	feed, err := indexer.Search(query)
 	if err != nil {
 		kingpin.Fatalf("Searching failed: %s", err.Error())
 	}
@@ -99,10 +110,16 @@ func queryCommand() {
 }
 
 func serverCommand() {
+	conf, err := indexer.NewConfig()
+	if err != nil {
+		kingpin.Fatalf(err.Error())
+	}
+
 	log.Printf("Starting server on %s", *serverAddr)
 	log.Fatal(http.ListenAndServe(*serverAddr, cserver.NewHandler(indexer.Registered, cserver.Params{
-		DevMode:   *serverDev,
-		SharedKey: []byte{194, 164, 235, 6, 138, 248, 171, 239, 24, 216, 11, 22, 137, 199, 215, 133},
+		DevMode:    *serverDev,
+		Passphrase: *serverPass,
+		Config:     conf,
 	})))
 }
 

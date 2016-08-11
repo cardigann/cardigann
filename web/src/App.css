@@ -1,3 +1,29 @@
 .App {
-	max-width: 1200px;
+  max-width: 1200px;
+  position: relative;
+}
+
+.App__apiKey {
+  position: absolute;
+  vertical-align: middle;
+  top: 4em;
+  right: 1em;
+}
+
+.App__apiKey > code {
+  font-size: 110%;
+  margin: 2px 5px;
+}
+
+.App__apiKey > .btn {
+  margin-top: -0.25em;
+}
+
+.App__apiKey > .copied {
+  padding: 0 5px;
+  color: red;
+}
+
+.App .page-header {
+    margin-bottom: 0px;
 }

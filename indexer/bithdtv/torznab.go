@@ -44,6 +44,16 @@ type torznabIndexer struct {
 	browser browser.Browsable
 }
 
+func (i *torznabIndexer) Info() torznab.Info {
+	return torznab.Info{
+		ID:          "bithdtv",
+		Title:       "BIT-HDTV",
+		Description: "Home of High Definition TV",
+		Link:        "https://www.bit-hdtv.com/",
+		Language:    "en-us",
+	}
+}
+
 func (i *torznabIndexer) Capabilities() torznab.Capabilities {
 	return torznab.Capabilities{
 		Categories: categoryMap,
@@ -52,6 +62,17 @@ func (i *torznabIndexer) Capabilities() torznab.Capabilities {
 			{"tv-search", true, []string{"q", "season", "ep"}},
 		},
 	}
+}
+
+func (i *torznabIndexer) Test() error {
+	results, err := i.Search(torznab.Query{})
+	if err != nil {
+		return err
+	}
+	if len(results) == 0 {
+		return torznab.ErrNoSuchItem
+	}
+	return nil
 }
 
 func (i *torznabIndexer) login() error {
@@ -65,14 +86,14 @@ func (i *torznabIndexer) login() error {
 		return err
 	}
 
-	username, ok := i.config.Get(Key, "username")
-	if !ok {
-		return errors.New("No username in config for " + Key)
+	username, _, err := i.config.Get(Key, "username")
+	if err != nil {
+		return errors.New("Error fetching username: " + err.Error())
 	}
 
-	password, ok := i.config.Get(Key, "password")
-	if !ok {
-		return errors.New("No password in config for " + Key)
+	password, _, err := i.config.Get(Key, "password")
+	if err != nil {
+		return errors.New("Error fetching password: " + err.Error())
 	}
 
 	fm.Input("username", username)
@@ -81,7 +102,7 @@ func (i *torznabIndexer) login() error {
 		return err
 	}
 
-	log.Println(i.browser.Body())
+	// log.Println(i.browser.Body())
 
 	if strings.Contains(i.browser.Body(), "Login failed!") {
 		msg := i.browser.Find("table.detail .text")
@@ -93,7 +114,7 @@ func (i *torznabIndexer) login() error {
 	return nil
 }
 
-func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error) {
+func (i *torznabIndexer) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	if err := i.login(); err != nil {
 		return nil, err
 	}
@@ -101,7 +122,7 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 	catFilter, hasCatFilter := query["cat"].(string)
 
 	keywords := query.Keywords()
-	log.Printf("Searching for %q", keywords)
+	log.Printf("Searching BIT-HDTV for %q", keywords)
 
 	err := i.browser.OpenForm(baseURL+"torrents.php", url.Values{
 		"search": []string{keywords},
@@ -188,6 +209,8 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 			return
 		}
 
+		log.Printf("Found result %s", title)
+
 		items = append(items, torznab.ResultItem{
 			Site:            Key,
 			Title:           title,
@@ -207,13 +230,7 @@ func (i *torznabIndexer) Search(query torznab.Query) (*torznab.ResultFeed, error
 
 	log.Printf("Found %d results in %s", len(items), time.Now().Sub(timer))
 
-	return &torznab.ResultFeed{
-		Title:       "BIT-HDTV",
-		Description: "Home of High Definition TV",
-		Link:        "https://www.bit-hdtv.com/",
-		Language:    "en-us",
-		Items:       items,
-	}, nil
+	return items, nil
 }
 
 func (i *torznabIndexer) Download(urlStr string) (io.ReadCloser, http.Header, error) {

@@ -1,23 +1,35 @@
 import React, { Component } from 'react';
-import { Table, ButtonToolbar, Button, FormControl } from 'react-bootstrap';
-import ConfigModal from './ConfigModal';
+import { Table, ButtonToolbar, Button } from 'react-bootstrap';
 
-class EditButton extends Component {
+class StatefulButton extends Component {
+  static defaultProps = {
+    bsStyle: "primary",
+    bsSize: "xsmall",
+    activeLabel: "Saving...",
+    onClick: (e) => {},
+    disabled: false,
+    active: false,
+  }
   state = {
-    isSaving: false,
+    active: this.props.active,
+  }
+  componentWillReceiveProps(newProps) {
+    this.setState({
+      active: typeof(newProps.active) !== undefined ? newProps.active : this.state.active,
+    });
   }
   handleClick = (e) => {
+    this.setState({active: true});
     this.props.onClick(e);
   }
   render() {
-    let isSaving = this.state.isSaving;
     return (
       <Button
-        bsStyle="primary"
-        bsSize="xsmall"
-        disabled={isSaving}
-        onClick={!isSaving ? this.handleClick : null}>
-        {isSaving ? 'Saving...' : 'Edit'}
+        bsStyle={this.props.bsStyle}
+        bsSize={this.props.bsSize}
+        disabled={this.props.disabled || this.state.active}
+        onClick={!this.state.active ? this.handleClick : null}>
+        {this.state.active ? this.props.activeLabel : this.props.children}
       </Button>
     );
   }
@@ -26,17 +38,42 @@ class EditButton extends Component {
 class FeedLink extends Component {
   render() {
     return (
-      <FormControl type="text" value={this.props.feedHref} className="input-sm" readOnly />
+      <span className="FeedLink">{this.props.feedHref}</span>
     );
   }
 }
 
 class IndexerListRow extends Component {
+  static defaultProps = {
+    editing: false,
+    testing: false,
+  }
+  static propTypes = {
+   indexer: React.PropTypes.object.isRequired,
+  }
   state = {
-    showEditModal: false,
+    config: {},
+    status: "OK",
+    editing: this.props.editing,
+    testing: this.props.testing,
   }
   handleEditClick = () => {
-    this.setState({showEditModal: true});
+    this.setState({editing: true});
+    this.props.onEdit(this.props.indexer, (config) => {
+      this.setState({editing: false});
+    });
+  }
+  handleTestClick = () => {
+    this.setState({
+      status: "Testing",
+      testing: true,
+    });
+    this.props.onTest(this.props.indexer, (ok) => {
+      this.setState({
+        status: ok ? "OK" : "Failed",
+        testing: false,
+      });
+    })
   }
   render() {
     return (
@@ -47,20 +84,23 @@ class IndexerListRow extends Component {
             feedHref={this.props.indexer.feeds.torznab}
             label="torznab" />
         </td>
-        <td className="col-md-2">Working</td>
+        <td className="col-md-2">{this.state.status}</td>
         <td className="col-md-2">
           <ButtonToolbar>
-            <EditButton
-              onClick={this.handleEditClick} />
-            <ConfigModal
-              show={this.state.showEditModal}
-              indexer={this.props.indexer}
-              onSave={this.props.onSaveIndexer} />
-            <Button
-              bsSize="xsmall">Test</Button>
-            <Button
+            <StatefulButton
+              onClick={this.handleEditClick}
+              active={this.state.editing}
+              activeLabel="Editing..."
+              disabled={this.state.testing}>Edit</StatefulButton>
+            <StatefulButton
+              onClick={this.handleTestClick}
+              active={this.state.testing}
+              activeLabel="Testing..."
+              disabled={this.state.editing}>Test</StatefulButton>
+            <StatefulButton
               bsSize="xsmall"
-              bsStyle="danger">Delete</Button>
+              bsStyle="danger"
+              disabled={this.state.testing || this.state.editing}>Disable</StatefulButton>
           </ButtonToolbar>
         </td>
       </tr>
@@ -70,16 +110,20 @@ class IndexerListRow extends Component {
 
 class IndexerList extends Component {
   render() {
-    let onSaveIndexer = this.props.onSaveIndexer;
-    let indexerNodes = this.props.indexers.map(function(indexer) {
+    let indexerNodes = this.props.indexers.map((indexer) => {
       return (
         <IndexerListRow
           indexer={indexer}
           key={indexer.id}
-          onSaveIndexer={onSaveIndexer}
+          onSave={this.props.onSave}
+          onEdit={this.props.onEdit}
+          onTest={this.props.onTest}
         />
       );
     });
+
+    console.log(indexerNodes);
+
     return (
       <div>
         <Table striped bordered condensed hover>

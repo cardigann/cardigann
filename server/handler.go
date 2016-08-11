@@ -2,10 +2,12 @@
 package server
 
 import (
+	"crypto/sha1"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -33,9 +35,11 @@ var (
 )
 
 type Params struct {
-	BaseURL   string
-	DevMode   bool
-	SharedKey []byte
+	BaseURL    string
+	DevMode    bool
+	APIKey     []byte
+	Passphrase string
+	Config     indexer.Config
 }
 
 type handler struct {
@@ -66,17 +70,25 @@ func NewHandler(cm indexer.ConstructorMap, p Params) http.Handler {
 
 		log.Printf("Proxying static requests to %s", localReactServer)
 		h.FileHandler = httputil.NewSingleHostReverseProxy(u)
+
+		k, _ := h.sharedKey()
+		log.Printf("API Key is %x", k)
 	}
 
 	router := mux.NewRouter()
 
 	// torznab routes
+	router.HandleFunc("/torznab/{indexer}", h.torznabHandler).Methods("GET")
 	router.HandleFunc("/torznab/{indexer}/api", h.torznabHandler).Methods("GET")
 	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("GET")
 
 	// xhr routes for the webapp
-	xhr := xhrHandler{}
+	router.HandleFunc("/xhr/indexers/{indexer}/test", h.postIndexerTestHandler).Methods("POST")
+	router.HandleFunc("/xhr/indexers/{indexer}/config", h.getIndexersConfigHandler).Methods("GET")
+	router.HandleFunc("/xhr/indexers/{indexer}/config", h.patchIndexersConfigHandler).Methods("PATCH")
 	router.HandleFunc("/xhr/indexers", h.getIndexersHandler).Methods("GET")
+	router.HandleFunc("/xhr/indexers", h.patchIndexersHandler).Methods("PATCH")
+	router.HandleFunc("/xhr/auth", h.postAuthHandler).Methods("POST")
 
 	h.Handler = router
 	return h
@@ -93,12 +105,49 @@ func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("%s://%s%s", proto, r.Host, path))
 }
 
+func (h *handler) sharedKey() ([]byte, error) {
+	var b []byte
+
+	switch {
+	case h.Params.APIKey != nil:
+		b = h.Params.APIKey
+	case h.Params.Passphrase != "":
+		hash := sha1.Sum([]byte(h.Params.Passphrase))
+		b = hash[0:16]
+	default:
+		b = make([]byte, 16)
+		for i := range b {
+			b[i] = byte(rand.Intn(256))
+		}
+	}
+	return b, nil
+}
+
+func (h *handler) checkAPIKey(s string) bool {
+	k, err := h.sharedKey()
+	if err != nil {
+		return false
+	}
+	return s == fmt.Sprintf("%x", k)
+}
+
+func (h *handler) checkRequestAuthorized(r *http.Request) bool {
+	if auth := r.Header.Get("Authorization"); auth != "" {
+		log.Printf("Checking Authorization header")
+		return h.checkAPIKey(strings.TrimPrefix(auth, "apitoken "))
+	} else if apiKey := r.URL.Query().Get("apikey"); apiKey != "" {
+		log.Printf("Checking apikey query string parameter")
+		return h.checkAPIKey(apiKey)
+	}
+	return false
+}
+
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s", r.Method, r.URL.Path)
+	log.Printf("%s %s", r.Method, r.URL.RequestURI())
 
 	for _, prefix := range apiRoutePrefixes {
 		if strings.HasPrefix(r.URL.Path, prefix) {
-			h.APIHandler.ServeHTTP(w, r)
+			h.Handler.ServeHTTP(w, r)
 			return
 		}
 	}
@@ -110,12 +159,24 @@ func (h *handler) torznabHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	indexerID := params["indexer"]
 
-	indexer, err := indexer.Registered.New(indexerID)
+	apiKey := r.URL.Query().Get("apikey")
+	if !h.checkAPIKey(apiKey) {
+		torznab.Error(w, "Invalid apikey parameter", torznab.ErrInsufficientPrivs)
+		return
+	}
+
+	indexer, err := indexer.Registered.New(indexerID, h.Params.Config)
 	if err != nil {
-		log.Fatal(err)
+		torznab.Error(w, err.Error(), torznab.ErrIncorrectParameter)
+		return
 	}
 
 	t := r.URL.Query().Get("t")
+
+	if t == "" {
+		http.Redirect(w, r, r.URL.Path+"?t=caps", http.StatusTemporaryRedirect)
+		return
+	}
 
 	switch t {
 	case "caps":
@@ -124,19 +185,19 @@ func (h *handler) torznabHandler(w http.ResponseWriter, r *http.Request) {
 	case "search", "tvsearch", "tv-search":
 		feed, err := h.search(r, indexer, indexerID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadGateway)
+			torznab.Error(w, err.Error(), torznab.ErrUnknownError)
 			return
 		}
 		x, err := xml.MarshalIndent(feed, "", "  ")
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			torznab.Error(w, err.Error(), torznab.ErrUnknownError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/xml")
+		w.Header().Set("Content-Type", "application/rss+xml")
 		w.Write(x)
 
 	default:
-		http.Error(w, fmt.Sprintf("Type %q not implemented", t), http.StatusNotFound)
+		torznab.Error(w, "Unknown type parameter", torznab.ErrIncorrectParameter)
 	}
 }
 
@@ -145,13 +206,19 @@ func (h *handler) downloadHandler(w http.ResponseWriter, r *http.Request) {
 	token := params["token"]
 	filename := params["filename"]
 
-	t, err := decodeToken(token, h.Params.SharedKey)
+	k, err := h.sharedKey()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	t, err := decodeToken(token, k)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
 
-	indexer, err := indexer.Registered.New(t.Site)
+	indexer, err := indexer.Registered.New(t.Site, h.Params.Config)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
@@ -184,7 +251,17 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 	}
 
 	log.Printf("Query: %#v", query)
-	feed, err := indexer.Search(query)
+	items, err := indexer.Search(query)
+	if err != nil {
+		return nil, err
+	}
+
+	feed := &torznab.ResultFeed{
+		Info:  indexer.Info(),
+		Items: items,
+	}
+
+	k, err := h.sharedKey()
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +272,8 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 			Site: item.Site,
 			Link: item.Link,
 		}
-		te, err := t.Encode(h.Params.SharedKey)
+
+		te, err := t.Encode(k)
 		if err != nil {
 			return nil, err
 		}

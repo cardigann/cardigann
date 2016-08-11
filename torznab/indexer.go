@@ -5,8 +5,19 @@ import (
 	"net/http"
 )
 
+type Info struct {
+	ID          string
+	Title       string
+	Description string
+	Link        string
+	Language    string
+	Category    string
+}
+
 type Indexer interface {
-	Search(query Query) (*ResultFeed, error)
+	Info() Info
+	Test() error
+	Search(query Query) ([]ResultItem, error)
 	Download(urlStr string) (io.ReadCloser, http.Header, error)
 	Capabilities() Capabilities
 }

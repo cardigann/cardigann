@@ -8,8 +8,10 @@
   "dependencies": {
     "react": "^15.2.1",
     "react-bootstrap": "^0.30.0",
+    "react-copy-to-clipboard": "^4.2.2",
     "react-dom": "^15.2.1",
-    "react-select": "^1.0.0-beta14"
+    "react-select": "^1.0.0-beta14",
+    "react-zeroclipboard": "^1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

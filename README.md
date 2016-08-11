@@ -23,18 +23,11 @@ Or you can run the proxy server:
 cardigann server
 ```
 
-Once the server is running, visit http://localhost:3000 and configure via the web interface.
-
-## TODO
-
- * [ ] HTTP API for Torznab
- * [ ] Web UI (Basic ReactJS UI)
- * [ ] Proxying downloads and rewriting feed links
- * [ ] DRY up indexers, is surf + goquery the best way to do this?
+Once the server is running, visit http://localhost:5060 and configure via the web interface.
 
 ## Planned Trackers
 
- * [ ] BIT-HDTV
+ * [*] BIT-HDTV
  * [ ] IPTorrents
  * [ ] TV Torrents
  * [ ] Demonoid

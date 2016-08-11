@@ -81,12 +81,8 @@ type torznabAttrView struct {
 }
 
 type ResultFeed struct {
-	Title       string
-	Description string
-	Link        string
-	Language    string
-	Category    string
-	Items       []ResultItem
+	Info  Info
+	Items []ResultItem
 }
 
 func (rf ResultFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
@@ -99,11 +95,11 @@ func (rf ResultFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		Category    string   `xml:"category,omitempty"`
 		Items       []ResultItem
 	}{
-		Title:       rf.Title,
-		Description: rf.Description,
-		Link:        rf.Link,
-		Language:    rf.Language,
-		Category:    rf.Category,
+		Title:       rf.Info.Title,
+		Description: rf.Info.Description,
+		Link:        rf.Info.Link,
+		Language:    rf.Info.Language,
+		Category:    rf.Info.Category,
 		Items:       rf.Items,
 	}
 

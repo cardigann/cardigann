@@ -14,7 +14,7 @@ class AddIndexer extends Component {
   }
   static propTypes = {
     indexers: React.PropTypes.array,
-    onIndexerAdd: React.PropTypes.func,
+    onAdd: React.PropTypes.func,
   }
   state = {
     selected: false,
@@ -30,7 +30,7 @@ class AddIndexer extends Component {
     if (this.state.selected === false) {
       return;
     }
-    this.props.onIndexerAdd(this.state.selected, {});
+    this.props.onAdd(this.state.selected, {});
     this.setState({selected: false});
   }
   handleSelectChange = (opt) => {
