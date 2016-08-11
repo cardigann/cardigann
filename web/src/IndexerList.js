@@ -122,8 +122,6 @@ class IndexerList extends Component {
       );
     });
 
-    console.log(indexerNodes);
-
     return (
       <div>
         <Table striped bordered condensed hover>

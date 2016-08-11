@@ -85,7 +85,9 @@ class App extends Component {
   }
   handleAuthenticate = (apiKey) => {
     localStorage.setItem("apiKey", apiKey);
-    this.setState({apiKey: apiKey});
+    this.setState({apiKey: apiKey}, () => {
+      this.loadIndexers();
+    });
   }
   loadIndexerConfig = (indexer, dataFunc) => {
     fetch("/xhr/indexers/"+indexer.id+"/config", {
@@ -99,6 +101,10 @@ class App extends Component {
     .then(dataFunc)
   }
   loadIndexers = () => {
+    if (!this.state.apiKey) {
+      console.error("No api key is set");
+      return;
+    }
     fetch("/xhr/indexers", {
         headers: {
           'Accept': 'application/json',
@@ -128,7 +134,9 @@ class App extends Component {
     });
   }
   componentWillMount() {
-    this.loadIndexers();
+    if (this.state.apiKey) {
+      this.loadIndexers();
+    }
   }
   render() {
     let isEnabled = this.isEnabled;

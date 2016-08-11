@@ -17,7 +17,7 @@ class Login extends Component {
   }
   handleSubmit = (e) => {
     e.preventDefault();
-    this.postAuth(this.state.passphrase);
+    this.authenticate(this.state.passphrase);
   }
   handleAuthError = (err) => {
     this.setState({
@@ -25,7 +25,7 @@ class Login extends Component {
       validationState: "error",
     });
   }
-  postAuth = (passphrase) => {
+  authenticate = (passphrase) => {
     let handleAuth = (data) => this.props.onAuthenticate(data.token);
     let handleAuthError = (data) => this.handleAuthError(data.error);
 

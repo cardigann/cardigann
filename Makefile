@@ -19,3 +19,7 @@ install:
 clean:
 	-rm cardigann
 	-rm -rf web/build server/static.go
+
+run-dev:
+	cd web/; npm start &
+	rerun $(PREFIX) server --dev --passphrase "llamasrock"

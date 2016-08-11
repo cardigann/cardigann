@@ -2,12 +2,10 @@
 package server
 
 import (
-	"crypto/sha1"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -103,43 +101,6 @@ func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
 		proto = "https"
 	}
 	return url.Parse(fmt.Sprintf("%s://%s%s", proto, r.Host, path))
-}
-
-func (h *handler) sharedKey() ([]byte, error) {
-	var b []byte
-
-	switch {
-	case h.Params.APIKey != nil:
-		b = h.Params.APIKey
-	case h.Params.Passphrase != "":
-		hash := sha1.Sum([]byte(h.Params.Passphrase))
-		b = hash[0:16]
-	default:
-		b = make([]byte, 16)
-		for i := range b {
-			b[i] = byte(rand.Intn(256))
-		}
-	}
-	return b, nil
-}
-
-func (h *handler) checkAPIKey(s string) bool {
-	k, err := h.sharedKey()
-	if err != nil {
-		return false
-	}
-	return s == fmt.Sprintf("%x", k)
-}
-
-func (h *handler) checkRequestAuthorized(r *http.Request) bool {
-	if auth := r.Header.Get("Authorization"); auth != "" {
-		log.Printf("Checking Authorization header")
-		return h.checkAPIKey(strings.TrimPrefix(auth, "apitoken "))
-	} else if apiKey := r.URL.Query().Get("apikey"); apiKey != "" {
-		log.Printf("Checking apikey query string parameter")
-		return h.checkAPIKey(apiKey)
-	}
-	return false
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
