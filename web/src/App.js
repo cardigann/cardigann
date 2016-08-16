@@ -6,6 +6,7 @@ import './App.css';
 import AddIndexer from "./AddIndexer";
 import IndexerList from "./IndexerList";
 import ConfigModal from "./ConfigModal";
+import AlertDismissable from "./AlertDismissable";
 import Login from './Login';
 
 class App extends Component {
@@ -20,6 +21,7 @@ class App extends Component {
     configure: null,
     apiKey: this.props.apiKey,
     apiKeyCopied: false,
+    errorMessage: false
   }
   isEnabled = (indexer) => {
     return this.state.enabledIndexers.filter((x) => x === indexer.id).length > 0;
@@ -47,9 +49,9 @@ class App extends Component {
         console.log("error response");
       }
     })
-    .catch(function(res){
-      console.error(res);
-    })
+    .catch((err) => {
+      this.setState({errorMessage: err})
+    });
   }
   handleAddIndexer = (selected) => {
     this.loadIndexerConfig(selected, (config) => {
@@ -72,15 +74,14 @@ class App extends Component {
     .then((response) => response.json())
     .then(function(data){
       if(data.ok) {
-        console.log("ok response");
         afterFunc(true);
       } else {
-        console.log("error response", data.error);
+        this.setState({errorMessage: data.error})
         afterFunc(false, data.error);
       }
     })
-    .catch(function(res){
-      console.error(res);
+    .catch((err) => {
+      this.setState({errorMessage: err})
     });
   }
   handleAuthenticate = (apiKey) => {
@@ -112,13 +113,23 @@ class App extends Component {
           'Authorization': 'apitoken ' + this.state.apiKey,
         },
     })
-    .then((response) => response.json())
-    .then(function(indexers) {
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((resp) => {
+          throw Error(resp.error);
+        });
+      }
+      return response.json()
+    })
+    .then((indexers) => {
       this.setState({
         indexers: indexers,
         enabledIndexers: indexers.filter((x) => x.enabled).map((x) => x.id),
       })
-    }.bind(this));
+    })
+    .catch((err) => {
+      this.setState({errorMessage: err.message, errorScope: "loading indexers"})
+    });
   }
   showConfigModal = (indexer, config, afterFunc) => {
     this.setState({
@@ -142,14 +153,23 @@ class App extends Component {
     let isEnabled = this.isEnabled;
     let addableIndexers = this.state.indexers.filter((x) => !isEnabled(x));
     let enabledIndexers = this.state.indexers.filter((x) => isEnabled(x));
+    let errorAlert = null;
 
     if (this.state.apiKey === null) {
       return <Login onAuthenticate={this.handleAuthenticate} />;
     }
 
+    if (this.state.errorMessage) {
+      errorAlert = <AlertDismissable>
+        <h4>An error occurred {this.state.errorScope ? "whilst " + this.state.errorScope : ""}</h4>
+        <p>{this.state.errorMessage}</p>
+      </AlertDismissable>;
+    }
+
     return (
       <div className="App container-fluid">
         <PageHeader>Cardigann <small>Proxy</small></PageHeader>
+        {errorAlert}
         <div className="App__apiKey">
           <strong>API Key: </strong>
           <code>{this.state.apiKey}</code>

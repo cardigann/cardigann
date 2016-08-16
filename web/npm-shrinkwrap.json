@@ -2,6 +2,11 @@
   "name": "cardigann",
   "version": "0.0.1",
   "dependencies": {
+    "bootswatch": {
+      "version": "3.3.7",
+      "from": "bootswatch@*",
+      "resolved": "https://registry.npmjs.org/bootswatch/-/bootswatch-3.3.7.tgz"
+    },
     "react": {
       "version": "15.2.1",
       "from": "react@>=15.2.1 <16.0.0",
@@ -199,6 +204,25 @@
                   "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-1.0.3.tgz"
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "react-copy-to-clipboard": {
+      "version": "4.2.2",
+      "from": "react-copy-to-clipboard@*",
+      "resolved": "https://registry.npmjs.org/react-copy-to-clipboard/-/react-copy-to-clipboard-4.2.2.tgz",
+      "dependencies": {
+        "copy-to-clipboard": {
+          "version": "3.0.4",
+          "from": "copy-to-clipboard@>=3.0.0 <4.0.0",
+          "resolved": "https://registry.npmjs.org/copy-to-clipboard/-/copy-to-clipboard-3.0.4.tgz",
+          "dependencies": {
+            "toggle-selection": {
+              "version": "1.0.5",
+              "from": "toggle-selection@>=1.0.3 <2.0.0",
+              "resolved": "https://registry.npmjs.org/toggle-selection/-/toggle-selection-1.0.5.tgz"
             }
           }
         }

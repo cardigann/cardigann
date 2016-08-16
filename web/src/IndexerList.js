@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, ButtonToolbar, Button } from 'react-bootstrap';
+import { Table, ButtonToolbar, Button, Panel } from 'react-bootstrap';
 
 class StatefulButton extends Component {
   static defaultProps = {
@@ -121,6 +121,10 @@ class IndexerList extends Component {
         />
       );
     });
+
+    if (indexerNodes.length == 0) {
+      return <Panel>No indexers</Panel>;
+    }
 
     return (
       <div>

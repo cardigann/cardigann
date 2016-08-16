@@ -3,15 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "devDependencies": {
-    "react-scripts": "0.1.0"
+    "react-scripts": "0.2.1"
   },
   "dependencies": {
+    "bootswatch": "^3.3.7",
     "react": "^15.2.1",
     "react-bootstrap": "^0.30.0",
     "react-copy-to-clipboard": "^4.2.2",
     "react-dom": "^15.2.1",
-    "react-select": "^1.0.0-beta14",
-    "react-zeroclipboard": "^1.1.0"
+    "react-select": "^1.0.0-beta14"
   },
   "scripts": {
     "start": "react-scripts start",

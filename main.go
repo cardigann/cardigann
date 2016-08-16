@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -81,10 +82,19 @@ func queryCommand() {
 		kingpin.Fatalf(err.Error())
 	}
 
-	query := make(torznab.Query)
+	vals := url.Values{}
 	for _, arg := range *queryArgs {
 		tokens := strings.SplitN(arg, "=", 2)
-		query[tokens[0]] = tokens[1]
+		if len(tokens) == 1 {
+			vals.Set("q", tokens[0])
+		} else {
+			vals.Add(tokens[0], tokens[1])
+		}
+	}
+
+	query, err := torznab.ParseQuery(vals)
+	if err != nil {
+		kingpin.Fatalf("Parsing query failed: %s", err.Error())
 	}
 
 	feed, err := indexer.Search(query)
