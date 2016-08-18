@@ -1,7 +1,7 @@
 package indexer
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/cardigann/cardigann/torznab"
 )
@@ -10,6 +10,8 @@ var (
 	Registered = make(ConstructorMap)
 )
 
+var ErrUnknownIndexer = errors.New("Unknown indexer")
+
 type Constructor func(c Config) (torznab.Indexer, error)
 type ConstructorMap map[string]Constructor
 
@@ -17,7 +19,7 @@ type ConstructorMap map[string]Constructor
 func (c ConstructorMap) New(key string, config Config) (torznab.Indexer, error) {
 	indexerFunc, ok := c[key]
 	if !ok {
-		return nil, fmt.Errorf("Indexer %s doesn't exist", key)
+		return nil, ErrUnknownIndexer
 	}
 
 	indexer, err := indexerFunc(config)

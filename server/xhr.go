@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/cardigann/cardigann/indexer"
@@ -32,7 +33,10 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 
 	for _, section := range sections {
 		i, err := indexer.Registered.New(section, h.Params.Config)
-		if err != nil {
+		if err == indexer.ErrUnknownIndexer {
+			log.Printf("Unknown indexer %q in configuration", section)
+			continue
+		} else if err != nil {
 			return nil, err
 		}
 
