@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/gorilla/mux"
@@ -34,19 +35,17 @@ type Params struct {
 	DevMode    bool
 	APIKey     []byte
 	Passphrase string
-	Config     indexer.Config
+	Config     config.Config
 }
 
 type handler struct {
 	http.Handler
-	Indexers    indexer.ConstructorMap
 	Params      Params
 	FileHandler http.Handler
 }
 
-func NewHandler(cm indexer.ConstructorMap, p Params) http.Handler {
+func NewHandler(p Params) http.Handler {
 	h := &handler{
-		Indexers:    cm,
 		Params:      p,
 		FileHandler: http.FileServer(FS(false)),
 	}
@@ -94,6 +93,15 @@ func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("%s://%s%s", proto, r.Host, path))
 }
 
+func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
+	def, err := indexer.LoadDefinition(key)
+	if err != nil {
+		return nil, err
+	}
+
+	return indexer.NewRunner(def, h.Params.Config), nil
+}
+
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s", r.Method, r.URL.RequestURI())
 
@@ -117,7 +125,7 @@ func (h *handler) torznabHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	indexer, err := indexer.Registered.New(indexerID, h.Params.Config)
+	indexer, err := h.lookupIndexer(indexerID)
 	if err != nil {
 		torznab.Error(w, err.Error(), torznab.ErrIncorrectParameter)
 		return
@@ -170,7 +178,7 @@ func (h *handler) downloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	indexer, err := indexer.Registered.New(t.Site, h.Params.Config)
+	indexer, err := h.lookupIndexer(t.Site)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return

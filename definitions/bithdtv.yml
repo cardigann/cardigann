@@ -29,9 +29,10 @@
       username: $username
       password: $password
     error:
-      path: /login.php
+      path: /takelogin.php
       message:
         selector: table.detail .text
+        remove: style, b
 
   search:
     path: torrents.php
@@ -39,38 +40,34 @@
       search: $keywords
       cat: 0
     rows:
-      selector: table[width='750'] > tbody tr
+      selector: table[width='750'] tbody tr:not(tr:nth-child(1))
     fields:
       category:
-        selector: td:nth-child(1) a
+        selector: td:nth-child(2) a
         attribute: href
         filters:
           - name: querystring
-            args: id
+            args: cat
       title:
-        selector: td:nth-child(2) a
+        selector: td:nth-child(3) a
+        attribute: title
       details:
-        selector: td:nth-child(2) a
-        attribute: href
-      download:
         selector: td:nth-child(3) a
         attribute: href
+      download:
+        selector: td:nth-child(1) p a
+        attribute: href
       size:
-        selector: td:nth-child(4)
+        selector: td:nth-child(7)
+        remove: br
       date:
-        selector: td:nth-child(5)
+        selector: td:nth-child(6)
         filters:
           - name: dateparse
             args: 2006-01-02 15:04:05
       seeders:
-        selector: td:nth-child(6)
-        filters:
-          - name: regexp
-            args: "^(\\d+) seeders"
+        selector: td:nth-child(9)
       leechers:
-        selector: td:nth-child(7)
-        filters:
-          - name: regexp
-            args: "^(\\d+) leechers"
+        selector: td:nth-child(10)
 
 

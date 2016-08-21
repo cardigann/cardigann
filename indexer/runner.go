@@ -71,12 +71,16 @@ func (r *Runner) ResolvePath(urlPath string) (string, error) {
 }
 
 func (r *Runner) checkLoginError() error {
-	msg, match := r.Definition.Login.Error.Match(r.Browser)
-	if !match {
+	if !r.Definition.Login.Error.MatchPage(r.Browser) {
 		return nil
 	}
 
-	return errors.New(msg)
+	msg, err := r.Definition.Login.Error.Message.Text(r.Browser.Dom())
+	if err != nil {
+		return err
+	}
+
+	return errors.New(strings.TrimSpace(msg))
 }
 
 func (r *Runner) Login() error {
@@ -170,7 +174,18 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
-	log.Printf("[%s] Attempting to search via %s", r.Definition.Site, searchUrl)
+	log.Printf("[%s] Opening %s", r.Definition.Site, searchUrl)
+
+	err = r.Browser.Open(searchUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("[%s] Status code is %d, landed on page %s",
+		r.Definition.Site, r.Browser.StatusCode(), r.Browser.Url())
+
+	// log.Println(r.Browser.ResponseHeaders())
+	// log.Println(r.Browser.Body())
 
 	vals := url.Values{}
 
@@ -195,6 +210,9 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
+	log.Printf("[%s] Status code is %d, landed on page %s",
+		r.Definition.Site, r.Browser.StatusCode(), r.Browser.Url())
+
 	items := []torznab.ResultItem{}
 	timer := time.Now()
 	rows := r.Browser.Find(r.Definition.Search.Rows.Selector)
@@ -209,9 +227,9 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			log.Printf("[%s] Processing field %q of row %d (selector %q)",
 				r.Definition.Site, field, i+1, block.Selector)
 
-			val, ok := block.Match(rows.Eq(i))
-			if !ok {
-				return nil, fmt.Errorf("Search result row #%d has no matching %s", i+1, field)
+			val, err := block.Text(rows.Eq(i))
+			if err != nil {
+				return nil, err
 			}
 
 			row[field] = val

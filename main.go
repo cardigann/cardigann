@@ -58,7 +58,7 @@ func lookupIndexer(key string) (torznab.Indexer, error) {
 		return nil, err
 	}
 
-	return indexer.NewRunner(def, conf)
+	return indexer.NewRunner(def, conf), nil
 }
 
 func configureQueryCommand(app *kingpin.Application) {
@@ -205,7 +205,7 @@ func configureServerCommand(app *kingpin.Application) {
 }
 
 func serverCommand(addr, port string, password string, devMode bool) error {
-	conf, err := indexer.NewConfig()
+	conf, err := config.NewConfig()
 	if err != nil {
 		return err
 	}
@@ -213,7 +213,7 @@ func serverCommand(addr, port string, password string, devMode bool) error {
 	listenOn := fmt.Sprintf("%s:%s", addr, port)
 	log.Printf("Starting server on http://%s", listenOn)
 
-	return http.ListenAndServe(listenOn, server.NewHandler(indexer.Registered, server.Params{
+	return http.ListenAndServe(listenOn, server.NewHandler(server.Params{
 		DevMode:    devMode,
 		Passphrase: password,
 		Config:     conf,
@@ -236,7 +236,7 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 }
 
 func testDefinitionCommand(f *os.File) error {
-	conf, err := indexer.NewConfig()
+	conf, err := config.NewConfig()
 	if err != nil {
 		return err
 	}

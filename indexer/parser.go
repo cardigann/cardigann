@@ -4,13 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/headzoo/surf/browser"
-	"github.com/shibukawa/configdir"
 
 	"gopkg.in/yaml.v2"
 )
@@ -20,142 +17,88 @@ type IndexerDefinition struct {
 	Name         string            `yaml:"name"`
 	Description  string            `yaml:"description"`
 	Language     string            `yaml:"language"`
-	Links        Stringorslice     `yaml:"links"`
-	Capabilities CapabilitiesBlock `yaml:"caps"`
-	Login        LoginBlock        `yaml:"login"`
-	Search       SearchBlock       `yaml:"search"`
+	Links        stringorslice     `yaml:"links"`
+	Capabilities capabilitiesBlock `yaml:"caps"`
+	Login        loginBlock        `yaml:"login"`
+	Search       searchBlock       `yaml:"search"`
 }
 
-func (i *IndexerDefinition) applyDefaults() {
-	if i.Language == "" {
-		i.Language = "en-us"
+func ParseDefinitionFile(f *os.File) (*IndexerDefinition, error) {
+	b, err := ioutil.ReadFile(f.Name())
+	if err != nil {
+		return nil, err
 	}
 
-	if i.Login.FormSelector == "" {
-		i.Login.FormSelector = "form"
-	}
+	return ParseDefinition(b)
 }
 
-// Stringorslice represents a string or an array of strings.
-type Stringorslice []string
-
-// UnmarshalYAML implements the Unmarshaller interface.
-func (s *Stringorslice) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var stringType string
-	if err := unmarshal(&stringType); err == nil {
-		*s = Stringorslice{stringType}
-		return nil
+func ParseDefinition(src []byte) (*IndexerDefinition, error) {
+	def := IndexerDefinition{
+		Language:     "en-us",
+		Capabilities: capabilitiesBlock{},
+		Login: loginBlock{
+			FormSelector: "form",
+			Inputs:       inputsBlock{},
+		},
+		Search: searchBlock{},
 	}
 
-	var sliceType []string
-	if err := unmarshal(&sliceType); err == nil {
-		*s = Stringorslice(sliceType)
-		return nil
+	if err := yaml.Unmarshal(src, &def); err != nil {
+		return nil, err
 	}
 
-	return errors.New("Failed to unmarshal Stringorslice")
-}
-
-type InputsBlock map[string]string
-
-type SelectorBlock struct {
-	Selector  string   `yaml:"selector"`
-	Attribute string   `yaml:"attribute"`
-	Filters   []Filter `yaml:"filters,omitempty"`
-}
-
-type Filter struct {
-	Name string      `yaml:"name"`
-	Args interface{} `yaml:"args"`
-}
-
-func (s *SelectorBlock) Match(selection *goquery.Selection) (string, bool) {
-	result := selection.Find(s.Selector)
-
-	if result.Length() == 0 {
-		return "", false
+	if def.Login.Error.Message.IsEmpty() && def.Login.Error.Selector != "" {
+		def.Login.Error.Message.Selector = def.Login.Error.Selector
 	}
 
-	var output string
-
-	if s.Attribute != "" {
-		val, exists := result.Attr(s.Attribute)
-		if !exists {
-			return "", false
-		}
-		output = val
-	} else {
-		output = result.Text()
-	}
-
-	for _, f := range s.Filters {
-		log.Printf("Applying filter %s(%#v)", f.Name, f.Args)
-
-		var err error
-		output, err = dispatchFilter(f.Name, f.Args, output)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return output, true
+	return &def, nil
 }
 
-func (s *SelectorBlock) IsZero() bool {
-	return s.Selector == ""
-}
+type inputsBlock map[string]string
 
-type ErrorBlock struct {
+type errorBlock struct {
 	Path     string        `yaml:"path"`
 	Selector string        `yaml:"selector"`
-	Message  SelectorBlock `yaml:"message"`
+	Message  selectorBlock `yaml:"message"`
 }
 
-func (e *ErrorBlock) Match(browser browser.Browsable) (string, bool) {
+func (e *errorBlock) MatchPage(browser browser.Browsable) bool {
 	if e.Path != "" {
 		if e.Path != browser.Url().Path {
-			return "", false
+			return false
 		}
 	}
 
 	if e.Selector != "" {
-		result := browser.Find(e.Selector)
-
-		if result.Length() == 0 {
-			return "", false
-		}
-
-		if e.Message.IsZero() {
-			return result.Text(), true
-		}
+		return browser.Find(e.Selector).Length() > 0
 	}
 
-	return e.Message.Match(browser.Dom())
+	return false
 }
 
-type LoginBlock struct {
+type loginBlock struct {
 	Path         string      `yaml:"path"`
 	FormSelector string      `yaml:"form"`
-	Inputs       InputsBlock `yaml:"inputs,omitempty"`
-	Error        ErrorBlock  `yaml:"error,omitempty"`
+	Inputs       inputsBlock `yaml:"inputs,omitempty"`
+	Error        errorBlock  `yaml:"error,omitempty"`
 }
 
-type FieldsBlock map[string]SelectorBlock
+type fieldsBlock map[string]selectorBlock
 
-type SearchBlock struct {
+type searchBlock struct {
 	Path   string        `yaml:"path"`
-	Inputs InputsBlock   `yaml:"inputs,omitempty"`
-	Rows   SelectorBlock `yaml:"rows"`
-	Fields FieldsBlock   `yaml:"fields"`
+	Inputs inputsBlock   `yaml:"inputs,omitempty"`
+	Rows   selectorBlock `yaml:"rows"`
+	Fields fieldsBlock   `yaml:"fields"`
 }
 
-type CapabilitiesBlock torznab.Capabilities
+type capabilitiesBlock torznab.Capabilities
 
 // UnmarshalYAML implements the Unmarshaller interface.
-func (c *CapabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (c *capabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var intermediate struct {
 		Categories map[int]string           `yaml:"categories"`
-		Modes      map[string]Stringorslice `yaml:"modes"`
+		Modes      map[string]stringorslice `yaml:"modes"`
 	}
 
 	if err := unmarshal(&intermediate); err == nil {
@@ -187,50 +130,22 @@ func (c *CapabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) err
 	return errors.New("Failed to unmarshal CapabilitiesBlock")
 }
 
-func ParseDefinitionFile(f *os.File) (*IndexerDefinition, error) {
-	b, err := ioutil.ReadFile(f.Name())
-	if err != nil {
-		return nil, err
+// Stringorslice represents a string or an array of strings.
+type stringorslice []string
+
+// UnmarshalYAML implements the Unmarshaller interface.
+func (s *stringorslice) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var stringType string
+	if err := unmarshal(&stringType); err == nil {
+		*s = stringorslice{stringType}
+		return nil
 	}
 
-	return ParseDefinition(b)
-}
-
-func ParseDefinition(src []byte) (*IndexerDefinition, error) {
-	def := IndexerDefinition{
-		Capabilities: CapabilitiesBlock{},
-		Login: LoginBlock{
-			Inputs: InputsBlock{},
-		},
-		Search: SearchBlock{},
+	var sliceType []string
+	if err := unmarshal(&sliceType); err == nil {
+		*s = stringorslice(sliceType)
+		return nil
 	}
 
-	if err := yaml.Unmarshal(src, &def); err != nil {
-		return nil, err
-	}
-
-	def.applyDefaults()
-	return &def, nil
-}
-
-func LoadDefinition(key string) (*IndexerDefinition, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	cd := configdir.New("cardigann", "cardigann")
-	cd.LocalPath = cwd
-
-	fileName := key + ".yml"
-	folder := cd.QueryFolderContainsFile(fileName)
-	if folder == nil {
-		return nil, errors.New("Failed to find " + fileName)
-	}
-
-	data, err := folder.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDefinition(data)
+	return errors.New("Failed to unmarshal stringorslice")
 }

@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/gorilla/mux"
 )
@@ -24,17 +25,16 @@ type indexerView struct {
 }
 
 func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
-	reply := []indexerView{}
-
-	sections, err := h.Params.Config.Sections()
+	defs, err := indexer.ListDefinitions()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, section := range sections {
-		i, err := indexer.Registered.New(section, h.Params.Config)
+	reply := []indexerView{}
+	for _, indexerID := range defs {
+		i, err := h.lookupIndexer(indexerID)
 		if err == indexer.ErrUnknownIndexer {
-			log.Printf("Unknown indexer %q in configuration", section)
+			log.Printf("Unknown indexer %q in configuration", indexerID)
 			continue
 		} else if err != nil {
 			return nil, err
@@ -44,9 +44,9 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 		reply = append(reply, indexerView{
 			ID:      info.ID,
 			Name:    info.Title,
-			Enabled: indexer.IsEnabled(section, h.Params.Config),
+			Enabled: config.IsEnabled(info.ID, h.Params.Config),
 			Feeds: indexerFeedsView{
-				Torznab: fmt.Sprintf("%storznab/%s", baseURL, section),
+				Torznab: fmt.Sprintf("%storznab/%s", baseURL, info.ID),
 			},
 		})
 	}
@@ -94,7 +94,7 @@ func (h *handler) getIndexersConfigHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	if _, ok := config["url"]; !ok {
-		i, err := indexer.Registered.New(indexerID, h.Params.Config)
+		i, err := h.lookupIndexer(indexerID)
 		if err != nil {
 			jsonError(w, err.Error(), http.StatusNotFound)
 			return
@@ -142,7 +142,7 @@ func (h *handler) postIndexerTestHandler(w http.ResponseWriter, r *http.Request)
 	params := mux.Vars(r)
 	indexerID := params["indexer"]
 
-	i, err := indexer.Registered.New(indexerID, h.Params.Config)
+	i, err := h.lookupIndexer(indexerID)
 	if err != nil {
 		jsonError(w, "Not Found", http.StatusNotFound)
 		return
