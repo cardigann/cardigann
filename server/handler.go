@@ -14,9 +14,6 @@ import (
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/gorilla/mux"
-
-	// indexers
-	_ "github.com/cardigann/cardigann/indexer/bithdtv"
 )
 
 const (
@@ -48,12 +45,6 @@ type handler struct {
 }
 
 func NewHandler(cm indexer.ConstructorMap, p Params) http.Handler {
-	if p.DevMode {
-		cm["example"] = indexer.Constructor(func(c indexer.Config) (torznab.Indexer, error) {
-			return &indexer.ExampleIndexer{}, nil
-		})
-	}
-
 	h := &handler{
 		Indexers:    cm,
 		Params:      p,

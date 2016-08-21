@@ -13,25 +13,52 @@ import (
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
+	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/server"
 	"github.com/cardigann/cardigann/torznab"
-
-	// indexer drivers to load
-	_ "github.com/cardigann/cardigann/indexer/bithdtv"
 )
 
 var (
 	Version string
 )
 
+func main() {
+	os.Exit(run(os.Args[1:]...))
+}
+
+func run(args ...string) (exitCode int) {
+	app := kingpin.New("cardigann",
+		`A torznab proxy for torrent indexer sites`)
+
+	app.Version(Version)
+	app.Writer(os.Stdout)
+
+	app.Terminate(func(code int) {
+		exitCode = code
+	})
+
+	configureQueryCommand(app)
+	configureDownloadCommand(app)
+	configureServerCommand(app)
+	configureTestDefinitionCommand(app)
+
+	kingpin.MustParse(app.Parse(args))
+	return
+}
+
 func lookupIndexer(key string) (torznab.Indexer, error) {
-	conf, err := indexer.NewConfig()
+	conf, err := config.NewConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	return indexer.Registered.New(key, conf)
+	def, err := indexer.LoadDefinition(key)
+	if err != nil {
+		return nil, err
+	}
+
+	return indexer.NewRunner(def, conf)
 }
 
 func configureQueryCommand(app *kingpin.Application) {
@@ -164,7 +191,7 @@ func configureServerCommand(app *kingpin.Application) {
 		Default("0.0.0.0").
 		StringVar(&bindAddr)
 
-	cmd.Flag("password", "Require a passphrase to view web interface").
+	cmd.Flag("passphrase", "Require a passphrase to view web interface").
 		Short('p').
 		Required().
 		StringVar(&password)
@@ -193,25 +220,48 @@ func serverCommand(addr, port string, password string, devMode bool) error {
 	}))
 }
 
-func run(args ...string) (exitCode int) {
-	app := kingpin.New("cardigann",
-		`A torznab proxy for torrent indexer sites`)
+func configureTestDefinitionCommand(app *kingpin.Application) {
+	var f *os.File
 
-	app.Version(Version)
-	app.Writer(os.Stdout)
+	cmd := app.Command("test-definition", "Test a yaml indexer definition file")
+	cmd.Alias("test")
 
-	app.Terminate(func(code int) {
-		exitCode = code
+	cmd.Arg("file", "The definition yaml file").
+		Required().
+		FileVar(&f)
+
+	cmd.Action(func(c *kingpin.ParseContext) error {
+		return testDefinitionCommand(f)
 	})
-
-	configureQueryCommand(app)
-	configureDownloadCommand(app)
-	configureServerCommand(app)
-
-	kingpin.MustParse(app.Parse(args))
-	return
 }
 
-func main() {
-	os.Exit(run(os.Args[1:]...))
+func testDefinitionCommand(f *os.File) error {
+	conf, err := indexer.NewConfig()
+	if err != nil {
+		return err
+	}
+
+	def, err := indexer.ParseDefinitionFile(f)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Definition file parsing OK")
+
+	runner := indexer.NewRunner(def, conf)
+
+	err = runner.Login()
+	if err != nil {
+		return fmt.Errorf("Login failed: %s", err.Error())
+	}
+
+	fmt.Println("Login OK")
+
+	err = runner.Test()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Indexer test returned OK")
+	return nil
 }

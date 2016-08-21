@@ -12,6 +12,15 @@ type Capabilities struct {
 	Categories  CategoryMapping
 }
 
+func (c Capabilities) HasSearchMode(key string) (bool, []string) {
+	for _, m := range c.SearchModes {
+		if m.Key == key && m.Available {
+			return true, m.SupportedParams
+		}
+	}
+	return false, nil
+}
+
 type SearchMode struct {
 	Key             string
 	Available       bool

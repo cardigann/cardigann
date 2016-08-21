@@ -1,0 +1,76 @@
+---
+  site: bithdtv
+  name: BIT-HDTV
+  description: Home of High Definition TV
+  language: en-us
+  links:
+    - https://www.bit-hdtv.com/
+
+  caps:
+    categories:
+      1:  TV/Anime
+      2:  Movies/BluRay
+      4:  TV/Documentary
+      5:  TV/Sport
+      6:  Audio
+      7:  Movies
+      8:  Audio/Video
+      10: TV
+      12: TV # season packs
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      username: $username
+      password: $password
+    error:
+      path: /login.php
+      message:
+        selector: table.detail .text
+
+  search:
+    path: torrents.php
+    inputs:
+      search: $keywords
+      cat: 0
+    rows:
+      selector: table[width='750'] > tbody tr
+    fields:
+      category:
+        selector: td:nth-child(1) a
+        attribute: href
+        filters:
+          - name: querystring
+            args: id
+      title:
+        selector: td:nth-child(2) a
+      details:
+        selector: td:nth-child(2) a
+        attribute: href
+      download:
+        selector: td:nth-child(3) a
+        attribute: href
+      size:
+        selector: td:nth-child(4)
+      date:
+        selector: td:nth-child(5)
+        filters:
+          - name: dateparse
+            args: 2006-01-02 15:04:05
+      seeders:
+        selector: td:nth-child(6)
+        filters:
+          - name: regexp
+            args: "^(\\d+) seeders"
+      leechers:
+        selector: td:nth-child(7)
+        filters:
+          - name: regexp
+            args: "^(\\d+) leechers"
+
+
