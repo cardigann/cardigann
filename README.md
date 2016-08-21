@@ -5,7 +5,7 @@ Cardigann
 
 Provides [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) interfaces for [private torrent trackers.](http://lifehacker.com/5897095/whats-a-private-bittorrent-tracker-and-why-should-i-use-one).
 
-Cardigann can be used to add any supported private tracker to your software of choice (e.g Sonarr, SickRage, CouchPotato). This is done by proxying requests to the individual trackers and scraping the responses and converting them to the correct format. Unfortunately this means that as the individual trackers sites update their markup, they need to be addressed with updates to Cardigann.
+Cardigann can be used to add any supported private tracker to your software of choice (e.g Sonarr, SickRage, CouchPotato). This is done by proxying requests to the individual trackers and scraping the responses and converting them to the correct format. The rules for scraping sites is expressed in a custom YAML format to make updating it easy without having to write code. 
 
 Cardigann is implemented in golang, which means it's simply a single binary to execute/install, no runtime. Windows, Linux and OSX will be supported, although it should run on any platform that golang supports.
 
@@ -20,7 +20,7 @@ cardigann query bithdtv t=tv-search "q=mr robot" ep=1 season=2
 Or you can run the proxy server:
 
 ```
-cardigann server
+cardigann server --passphrase "something goes here"
 ```
 
 Once the server is running, visit http://localhost:5060 and configure via the web interface.
