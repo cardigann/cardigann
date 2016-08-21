@@ -1,4 +1,4 @@
-package indexer
+package config
 
 import (
 	"os"
@@ -6,9 +6,7 @@ import (
 	"github.com/shibukawa/configdir"
 )
 
-const (
-	configFileName = "config.json"
-)
+type configMap map[string]map[string]string
 
 type Config interface {
 	Get(section, key string) (string, bool, error)

@@ -1,4 +1,4 @@
-package indexer
+package config
 
 import (
 	"encoding/json"
@@ -6,7 +6,9 @@ import (
 	"github.com/shibukawa/configdir"
 )
 
-type configMap map[string]map[string]string
+const (
+	configFileName = "config.json"
+)
 
 type jsonConfig struct {
 	configDirs configdir.ConfigDir
