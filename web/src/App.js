@@ -8,6 +8,7 @@ import IndexerList from "./IndexerList";
 import ConfigModal from "./ConfigModal";
 import AlertDismissable from "./AlertDismissable";
 import Login from './Login';
+import Logo from './cardigann.gif';
 
 class App extends Component {
   static defaultProps = {
@@ -168,7 +169,7 @@ class App extends Component {
 
     return (
       <div className="App container-fluid">
-        <PageHeader>Cardigann <small>Proxy</small></PageHeader>
+        <PageHeader><img src={Logo} height="40" width="35" /> Cardigann <small>Proxy</small></PageHeader>
         {errorAlert}
         <div className="App__apiKey">
           <strong>API Key: </strong>
