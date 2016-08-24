@@ -122,7 +122,7 @@ class IndexerList extends Component {
       );
     });
 
-    if (indexerNodes.length == 0) {
+    if (indexerNodes.length === 0) {
       return <Panel>No indexers</Panel>;
     }
 

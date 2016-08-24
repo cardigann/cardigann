@@ -107,7 +107,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"method": r.Method,
 		"path":   r.URL.RequestURI(),
 		"remote": r.RemoteAddr,
-	}).Info("Handling http request")
+	}).Infof("%s %s", r.Method, r.URL.RequestURI())
 
 	for _, prefix := range apiRoutePrefixes {
 		if strings.HasPrefix(r.URL.Path, prefix) {

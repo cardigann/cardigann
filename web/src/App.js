@@ -169,7 +169,7 @@ class App extends Component {
 
     return (
       <div className="App container-fluid">
-        <PageHeader><img src={Logo} height="40" width="35" /> Cardigann <small>Proxy</small></PageHeader>
+        <PageHeader><img src={Logo} height="40" width="35" alt="line drawing of cardigan"/> Cardigann <small>Proxy</small></PageHeader>
         {errorAlert}
         <div className="App__apiKey">
           <strong>API Key: </strong>

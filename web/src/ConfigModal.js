@@ -26,7 +26,6 @@ class ConfigModal extends Component {
     this.setState({show: false});
   }
   handleSave = () => {
-    console.log("handling save");
     this.props.onSave(this.props.indexer, {
       url: ReactDOM.findDOMNode(this.refs.url).value,
       username: ReactDOM.findDOMNode(this.refs.username).value,

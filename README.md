@@ -27,10 +27,10 @@ Once the server is running, visit http://localhost:5060 and configure via the we
 
 ## Planned Trackers
 
- * [*] BIT-HDTV
- * [ ] IPTorrents
- * [ ] TV Torrents
- * [ ] Demonoid
+ - [*] BIT-HDTV
+ - [ ] IPTorrents
+ - [ ] TV Torrents
+ - [ ] Demonoid
 
 Open to suggestions on these, please file an issue.
 

@@ -22,4 +22,4 @@ clean:
 
 run-dev:
 	cd web/; npm start &
-	rerun $(PREFIX) server --dev --passphrase "llamasrock"
+	rerun $(PREFIX) --debug server --dev --passphrase "llamasrock"
