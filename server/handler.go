@@ -5,12 +5,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/torznab"
@@ -56,11 +56,11 @@ func NewHandler(p Params) http.Handler {
 			panic(err)
 		}
 
-		log.Printf("Proxying static requests to %s", localReactServer)
+		log.Debugf("Proxying static requests to %s", localReactServer)
 		h.FileHandler = httputil.NewSingleHostReverseProxy(u)
 
 		k, _ := h.sharedKey()
-		log.Printf("API Key is %x", k)
+		log.Debugf("API Key is %x", k)
 	}
 
 	router := mux.NewRouter()
@@ -103,7 +103,11 @@ func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s", r.Method, r.URL.RequestURI())
+	log.WithFields(log.Fields{
+		"method": r.Method,
+		"path":   r.URL.RequestURI(),
+		"remote": r.RemoteAddr,
+	}).Info("Handling http request")
 
 	for _, prefix := range apiRoutePrefixes {
 		if strings.HasPrefix(r.URL.Path, prefix) {
@@ -210,7 +214,6 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 		return nil, err
 	}
 
-	log.Printf("Query: %#v", query)
 	items, err := indexer.Search(query)
 	if err != nil {
 		return nil, err

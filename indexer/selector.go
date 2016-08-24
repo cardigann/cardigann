@@ -2,9 +2,9 @@ package indexer
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/PuerkitoBio/goquery"
+	log "github.com/Sirupsen/logrus"
 )
 
 type filterBlock struct {
@@ -30,7 +30,7 @@ func (s *selectorBlock) Text(selection *goquery.Selection) (string, error) {
 	}
 
 	html, _ := result.Html()
-	log.Printf("Selector %q matched %q", s.Selector, html)
+	log.Debugf("Selector %q matched %q", s.Selector, html)
 
 	if s.Remove != "" {
 		result.Find(s.Remove).Remove()
@@ -47,7 +47,7 @@ func (s *selectorBlock) Text(selection *goquery.Selection) (string, error) {
 	}
 
 	for _, f := range s.Filters {
-		log.Printf("Applying filter %s(%#v) to %q", f.Name, f.Args, output)
+		log.Debugf("Applying filter %s(%#v) to %q", f.Name, f.Args, output)
 
 		var err error
 		output, err = dispatchFilter(f.Name, f.Args, output)
@@ -56,7 +56,7 @@ func (s *selectorBlock) Text(selection *goquery.Selection) (string, error) {
 		}
 	}
 
-	log.Printf("Final text is %q", output)
+	log.Debugf("Final text is %q", output)
 	return output, nil
 }
 

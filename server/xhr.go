@@ -44,7 +44,7 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 		reply = append(reply, indexerView{
 			ID:      info.ID,
 			Name:    info.Title,
-			Enabled: config.IsEnabled(info.ID, h.Params.Config),
+			Enabled: config.IsSectionEnabled(info.ID, h.Params.Config),
 			Feeds: indexerFeedsView{
 				Torznab: fmt.Sprintf("%storznab/%s", baseURL, info.ID),
 			},

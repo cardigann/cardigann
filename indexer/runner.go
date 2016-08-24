@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -19,6 +18,8 @@ import (
 	"github.com/headzoo/surf"
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 var (
@@ -30,6 +31,7 @@ type Runner struct {
 	Browser    browser.Browsable
 	Config     config.Config
 	caps       torznab.Capabilities
+	logger     log.FieldLogger
 }
 
 func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
@@ -42,6 +44,9 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 		Definition: def,
 		Browser:    bow,
 		Config:     conf,
+		logger: log.New().WithFields(log.Fields{
+			"indexer": def.Site,
+		}),
 	}
 }
 
@@ -76,16 +81,16 @@ func (r *Runner) Login() error {
 		return err
 	}
 
-	log.Printf("[%s] Attempting to login to %s",
-		r.Definition.Site, loginUrl)
+	r.logger.WithField("url", loginUrl).Info("Attempting to login")
 
 	err = r.Browser.Open(loginUrl)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[%s] Status code is %d, landed on page %s",
-		r.Definition.Site, r.Browser.StatusCode(), r.Browser.Url())
+	r.logger.
+		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Finished request")
 
 	fm, err := r.Browser.Form(r.Definition.Login.FormSelector)
 	if err != nil {
@@ -93,8 +98,9 @@ func (r *Runner) Login() error {
 	}
 
 	for name, val := range r.Definition.Login.Inputs {
-		log.Printf("[%s] Filling input %q in form %q with %q",
-			r.Definition.Site, name, r.Definition.Login.FormSelector, val)
+		r.logger.
+			WithFields(log.Fields{"key": name, "form": r.Definition.Login.FormSelector, "val": val}).
+			Debugf("Filling input of form")
 
 		resolved, err := r.resolveVariable(val, func(name string) (string, error) {
 			s, _, err := r.Config.Get(r.Definition.Site, strings.TrimPrefix(name, "$"))
@@ -109,22 +115,23 @@ func (r *Runner) Login() error {
 		}
 	}
 
-	log.Printf("[%s] Submitting login form", r.Definition.Site)
+	r.logger.Debug("Submitting login form")
 
 	if err = fm.Submit(); err != nil {
-		log.Printf("[%s] Login failed with %q", r.Definition.Site, err.Error())
+		r.logger.WithError(err).Error("Login failed")
 		return err
 	}
 
-	log.Printf("[%s] Status code is %d, landed on page %s",
-		r.Definition.Site, r.Browser.StatusCode(), r.Browser.Url())
+	r.logger.
+		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Finished request")
 
 	if err = r.Definition.Login.hasError(r.Browser); err != nil {
-		log.Printf("[%s] Failed to login with %q", r.Definition.Site, err.Error())
+		r.logger.WithError(err).Info("Failed to login")
 		return err
 	}
 
-	log.Printf("[%s] Successfully logged in", r.Definition.Site)
+	r.logger.Info("Successfully logged in")
 	return nil
 }
 
@@ -138,7 +145,7 @@ func (r *Runner) Info() torznab.Info {
 
 func (r *Runner) Test() error {
 	for _, mode := range r.Capabilities().SearchModes {
-		log.Printf("[%s] Testing search mode %s", r.Definition.Site, mode.Key)
+		r.logger.Info("Testing search mode %s", mode.Key)
 		results, err := r.Search(torznab.Query{"t": mode.Key})
 		if err != nil {
 			return err
@@ -161,18 +168,18 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
-	log.Printf("[%s] Opening %s", r.Definition.Site, searchUrl)
+	r.logger.
+		WithFields(log.Fields{"page": searchUrl, "query": query}).
+		Infof("Opening search page")
 
 	err = r.Browser.Open(searchUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("[%s] Status code is %d, landed on page %s",
-		r.Definition.Site, r.Browser.StatusCode(), r.Browser.Url())
-
-	// log.Println(r.Browser.ResponseHeaders())
-	// log.Println(r.Browser.Body())
+	r.logger.
+		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Finished request")
 
 	vals := url.Values{}
 
@@ -190,29 +197,34 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		vals.Add(name, resolved)
 	}
 
-	log.Printf("[%s] Query params %s", r.Definition.Site, vals.Encode())
+	r.logger.
+		WithFields(log.Fields{"params": vals, "page": searchUrl}).
+		Debugf("Submitting page with form params")
 
 	err = r.Browser.OpenForm(searchUrl, vals)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("[%s] Status code is %d, landed on page %s",
-		r.Definition.Site, r.Browser.StatusCode(), r.Browser.Url())
+	r.logger.
+		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Finished request")
 
 	items := []torznab.ResultItem{}
 	timer := time.Now()
 	rows := r.Browser.Find(r.Definition.Search.Rows.Selector)
 
-	log.Printf("[%s] Found %d rows matching %q",
-		r.Definition.Site, rows.Length(), r.Definition.Search.Rows.Selector)
+	r.logger.
+		WithFields(log.Fields{"rows": rows.Length(), "selector": r.Definition.Search.Rows.Selector}).
+		Debugf("Found %d rows", rows.Length())
 
 	for i := 0; i < rows.Length(); i++ {
 		row := map[string]string{}
 
 		for field, block := range r.Definition.Search.Fields {
-			log.Printf("[%s] Processing field %q of row %d (selector %q)",
-				r.Definition.Site, field, i+1, block.Selector)
+			r.logger.
+				WithFields(log.Fields{"row": i + 1, "block": block}).
+				Debugf("Processing field %q", field)
 
 			val, err := block.Text(rows.Eq(i))
 			if err != nil {
@@ -228,7 +240,9 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			MinimumSeedTime: time.Hour * 48,
 		}
 
-		log.Printf("[%s] Row %d %+v", r.Definition.Site, i+1, row)
+		r.logger.
+			WithFields(log.Fields{"row": i + 1, "data": row}).
+			Debugf("Finished row %d", i+1)
 
 		for key, val := range row {
 			switch key {
@@ -297,7 +311,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		items = append(items, item)
 	}
 
-	log.Printf("Found %d results in %s", len(items), time.Now().Sub(timer))
+	r.logger.WithFields(log.Fields{"time": time.Now().Sub(timer)}).Infof("Query returned %d results", len(items))
 	return items, nil
 }
 

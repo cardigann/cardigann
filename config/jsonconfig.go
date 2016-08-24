@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"os"
 
 	"github.com/shibukawa/configdir"
 )
@@ -14,11 +15,22 @@ type jsonConfig struct {
 	configDirs configdir.ConfigDir
 }
 
+func NewJSONConfig() (Config, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	cd := configdir.New("cardigann", "cardigann")
+	cd.LocalPath = cwd
+
+	return &jsonConfig{cd}, nil
+}
+
 func (jc *jsonConfig) load() (configMap, error) {
 	config := configMap{}
 	folder := jc.configDirs.QueryFolderContainsFile(configFileName)
 	if folder != nil {
-		// log.Printf("Loading config from %s", folder.Path)
 		data, err := folder.ReadFile(configFileName)
 		if err != nil {
 			return nil, err
@@ -42,7 +54,6 @@ func (jc *jsonConfig) save(c configMap) error {
 		folder = folders[0]
 	}
 
-	// log.Printf("Saving config to %s/%s", folder.Path, configFileName)
 	return folder.WriteFile(configFileName, b)
 }
 
@@ -52,7 +63,6 @@ func (jc *jsonConfig) Get(section, key string) (string, bool, error) {
 		return "", false, err
 	}
 
-	// log.Printf("config.Get[%s,%s] => %#v", section, key, c)
 	v, ok := c[section][key]
 	return v, ok, nil
 }
@@ -70,7 +80,6 @@ func (jc *jsonConfig) Set(section, key, value string) error {
 		return err
 	}
 
-	// log.Printf("config.Set[%s,%s,%s] => %#v", section, key, value, c)
 	return nil
 }
 

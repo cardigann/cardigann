@@ -4,10 +4,11 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 func jsonError(w http.ResponseWriter, errStr string, code int) {
@@ -21,20 +22,22 @@ func (h *handler) postAuthHandler(w http.ResponseWriter, r *http.Request) {
 		Passphrase string `json:"passphrase"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error(err)
 		jsonError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 
 	if h.Params.Passphrase != req.Passphrase {
-		log.Printf("Client failed to authenticate")
+		log.Info("Client failed to authenticate")
 		jsonError(w, "Invalid passphrase", http.StatusUnauthorized)
 		return
 	}
 
-	log.Printf("Client successfully authenticated")
+	log.Debug("Client successfully authenticated")
 	k, err := h.sharedKey()
 	if err != nil {
+		log.Error(err)
 		jsonError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -82,10 +85,10 @@ func (h *handler) checkAPIKey(s string) (result bool) {
 
 func (h *handler) checkRequestAuthorized(r *http.Request) bool {
 	if auth := r.Header.Get("Authorization"); auth != "" {
-		log.Printf("Checking Authorization header")
+		log.Debug("Checking Authorization header")
 		return h.checkAPIKey(strings.TrimPrefix(auth, "apitoken "))
 	} else if apiKey := r.URL.Query().Get("apikey"); apiKey != "" {
-		log.Printf("Checking apikey query string parameter")
+		log.Debug("Checking apikey query string parameter")
 		return h.checkAPIKey(apiKey)
 	}
 	return false
