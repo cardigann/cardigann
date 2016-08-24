@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/headzoo/surf/browser"
 
@@ -47,14 +49,29 @@ func ParseDefinition(src []byte) (*IndexerDefinition, error) {
 		return nil, err
 	}
 
-	if def.Login.Error.Message.IsEmpty() && def.Login.Error.Selector != "" {
-		def.Login.Error.Message.Selector = def.Login.Error.Selector
-	}
-
 	return &def, nil
 }
 
 type inputsBlock map[string]string
+
+type errorBlockOrSlice []errorBlock
+
+// UnmarshalYAML implements the Unmarshaller interface.
+func (e *errorBlockOrSlice) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var blockType errorBlock
+	if err := unmarshal(&blockType); err == nil {
+		*e = errorBlockOrSlice{blockType}
+		return nil
+	}
+
+	var sliceType []errorBlock
+	if err := unmarshal(&sliceType); err == nil {
+		*e = errorBlockOrSlice(sliceType)
+		return nil
+	}
+
+	return errors.New("Failed to unmarshal errorBlockOrSlice")
+}
 
 type errorBlock struct {
 	Path     string        `yaml:"path"`
@@ -62,7 +79,7 @@ type errorBlock struct {
 	Message  selectorBlock `yaml:"message"`
 }
 
-func (e *errorBlock) MatchPage(browser browser.Browsable) bool {
+func (e *errorBlock) matchPage(browser browser.Browsable) bool {
 	if e.Path != "" {
 		if e.Path != browser.Url().Path {
 			return false
@@ -76,11 +93,34 @@ func (e *errorBlock) MatchPage(browser browser.Browsable) bool {
 	return false
 }
 
+func (e *errorBlock) errorText(from *goquery.Selection) (string, error) {
+	if !e.Message.IsEmpty() {
+		return e.Message.Text(from)
+	} else if e.Selector != "" {
+		return from.Find(e.Selector).Text(), nil
+	}
+	return "", errors.New("Error declaration must have either Message block or Selection")
+}
+
 type loginBlock struct {
-	Path         string      `yaml:"path"`
-	FormSelector string      `yaml:"form"`
-	Inputs       inputsBlock `yaml:"inputs,omitempty"`
-	Error        errorBlock  `yaml:"error,omitempty"`
+	Path         string            `yaml:"path"`
+	FormSelector string            `yaml:"form"`
+	Inputs       inputsBlock       `yaml:"inputs,omitempty"`
+	Error        errorBlockOrSlice `yaml:"error,omitempty"`
+}
+
+func (l *loginBlock) hasError(browser browser.Browsable) error {
+	for _, e := range l.Error {
+		if e.matchPage(browser) {
+			msg, err := e.errorText(browser.Dom())
+			if err != nil {
+				return err
+			}
+			return errors.New(strings.TrimSpace(msg))
+		}
+	}
+
+	return nil
 }
 
 type fieldsBlock map[string]selectorBlock
@@ -127,13 +167,11 @@ func (c *capabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) err
 		return nil
 	}
 
-	return errors.New("Failed to unmarshal CapabilitiesBlock")
+	return errors.New("Failed to unmarshal capabilities block")
 }
 
-// Stringorslice represents a string or an array of strings.
 type stringorslice []string
 
-// UnmarshalYAML implements the Unmarshaller interface.
 func (s *stringorslice) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var stringType string
 	if err := unmarshal(&stringType); err == nil {

@@ -45,14 +45,14 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 	}
 }
 
-func (r *Runner) ResolveVariable(name string, resolver func(string) (string, error)) (string, error) {
+func (r *Runner) resolveVariable(name string, resolver func(string) (string, error)) (string, error) {
 	if name[0] == '$' {
 		return resolver(strings.TrimPrefix(name, "$"))
 	}
 	return name, nil
 }
 
-func (r *Runner) ResolvePath(urlPath string) (string, error) {
+func (r *Runner) resolvePath(urlPath string) (string, error) {
 	var urlStr string
 
 	if configUrl, ok, _ := r.Config.Get(r.Definition.Site, "url"); ok {
@@ -70,21 +70,8 @@ func (r *Runner) ResolvePath(urlPath string) (string, error) {
 	return u.String(), nil
 }
 
-func (r *Runner) checkLoginError() error {
-	if !r.Definition.Login.Error.MatchPage(r.Browser) {
-		return nil
-	}
-
-	msg, err := r.Definition.Login.Error.Message.Text(r.Browser.Dom())
-	if err != nil {
-		return err
-	}
-
-	return errors.New(strings.TrimSpace(msg))
-}
-
 func (r *Runner) Login() error {
-	loginUrl, err := r.ResolvePath(r.Definition.Login.Path)
+	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
 	if err != nil {
 		return err
 	}
@@ -109,7 +96,7 @@ func (r *Runner) Login() error {
 		log.Printf("[%s] Filling input %q in form %q with %q",
 			r.Definition.Site, name, r.Definition.Login.FormSelector, val)
 
-		resolved, err := r.ResolveVariable(val, func(name string) (string, error) {
+		resolved, err := r.resolveVariable(val, func(name string) (string, error) {
 			s, _, err := r.Config.Get(r.Definition.Site, strings.TrimPrefix(name, "$"))
 			return s, err
 		})
@@ -132,7 +119,7 @@ func (r *Runner) Login() error {
 	log.Printf("[%s] Status code is %d, landed on page %s",
 		r.Definition.Site, r.Browser.StatusCode(), r.Browser.Url())
 
-	if err = r.checkLoginError(); err != nil {
+	if err = r.Definition.Login.hasError(r.Browser); err != nil {
 		log.Printf("[%s] Failed to login with %q", r.Definition.Site, err.Error())
 		return err
 	}
@@ -169,7 +156,7 @@ func (r *Runner) Capabilities() torznab.Capabilities {
 }
 
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
-	searchUrl, err := r.ResolvePath(r.Definition.Search.Path)
+	searchUrl, err := r.resolvePath(r.Definition.Search.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +177,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	vals := url.Values{}
 
 	for name, val := range r.Definition.Search.Inputs {
-		resolved, err := r.ResolveVariable(val, func(name string) (string, error) {
+		resolved, err := r.resolveVariable(val, func(name string) (string, error) {
 			switch name {
 			case "keywords":
 				return query.Keywords(), nil
