@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -176,8 +175,6 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("%#v %#v", r.Logger, r.Logger.(*logrus.Entry).Logger)
 
 	r.Logger.
 		WithFields(logrus.Fields{"query": query}).
