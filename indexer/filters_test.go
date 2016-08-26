@@ -23,7 +23,7 @@ func TestQueryStringFilter(t *testing.T) {
 }
 
 func TestDateParseFilter(t *testing.T) {
-	now := time.Now()
+	now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 
 	for idx, example := range []struct{ strTime, format, expected string }{
 		{now.Format("Mon Jan 2 15:04:05 MST 2006"), "Mon Jan 2 15:04:05 MST 2006", now.Format(filterTimeFormat)},
@@ -39,15 +39,16 @@ func TestDateParseFilter(t *testing.T) {
 }
 
 func TestTimeAgoFilter(t *testing.T) {
-	now := time.Now()
+	now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 
 	for idx, example := range []struct {
 		timeAgo  string
 		expected time.Time
 	}{
+		{"0.5 months ago", now.Add(time.Hour * -372)},
 		{"1 week, 2.5 days ago", now.Add((time.Hour * ((7 * 24) + 60)) * -1)},
 		{"1 day ago", now.AddDate(0, 0, -1)},
-		{"10.5 years", now.AddDate(-10, 6, 0)},
+		{"10.5 years", now.AddDate(-10, 0, -182).Add(time.Hour * -12)},
 	} {
 		result, err := filterTimeAgo(example.timeAgo, now)
 		if err != nil {
