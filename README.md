@@ -29,8 +29,7 @@ Once the server is running, visit http://localhost:5060 and configure via the we
 
 * BIT-HDTV
 * IPTorrents
-* TV Torrents
-* Demonoid
+* Freshon
 
 ## Planned Trackers
 
@@ -48,7 +47,6 @@ Once the server is running, visit http://localhost:5060 and configure via the we
 * Demonoid
 * EuTorrents
 * FileList
-* Freshon
 * Fuzer
 * HD-Space
 * HD-Torrents

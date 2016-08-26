@@ -44,6 +44,7 @@ const exampleDefinition2 = `
         filters:
           - name: querystring
             args: id
+          - name: mapcats
       title:
         selector: td:nth-child(2) a
       details:

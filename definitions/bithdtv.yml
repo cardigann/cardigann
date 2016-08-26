@@ -49,6 +49,7 @@
         filters:
           - name: querystring
             args: cat
+          - name: mapcats
       title:
         selector: td:nth-child(3) a
         attribute: title

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -63,21 +64,35 @@ func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error
 	return b.String(), nil
 }
 
-func (r *Runner) resolvePath(urlPath string) (string, error) {
-	var urlStr string
-
-	if configUrl, ok, _ := r.Config.Get(r.Definition.Site, "url"); ok {
-		urlStr = configUrl
-	} else {
-		urlStr = r.Definition.Links[0]
+func (r *Runner) currentURL() (*url.URL, error) {
+	if u := r.Browser.Url(); u != nil {
+		return u, nil
 	}
 
-	u, err := url.Parse(strings.TrimRight(urlStr, "/") + "/" + strings.TrimLeft(urlPath, "/"))
+	if configURL, ok, _ := r.Config.Get(r.Definition.Site, "url"); ok {
+		return url.Parse(configURL)
+	}
+
+	return url.Parse(r.Definition.Links[0])
+}
+
+func (r *Runner) resolvePath(urlPath string) (string, error) {
+	base, err := r.currentURL()
 	if err != nil {
 		return "", err
 	}
 
-	return u.String(), nil
+	u, err := url.Parse(urlPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resolved := base.ResolveReference(u)
+	r.Logger.
+		WithFields(logrus.Fields{"base": base.String(), "u": resolved.String()}).
+		Debugf("Resolving url")
+
+	return resolved.String(), nil
 }
 
 func (r *Runner) openPage(u string) error {
@@ -110,6 +125,7 @@ func (r *Runner) openPage(u string) error {
 
 func (r *Runner) Login() error {
 	filterLogger = r.Logger
+	filterCategoryMapping = r.Capabilities().Categories
 
 	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
 	if err != nil {
@@ -235,6 +251,7 @@ func (r *Runner) Capabilities() torznab.Capabilities {
 
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	filterLogger = r.Logger
+	filterCategoryMapping = r.Capabilities().Categories
 
 	searchUrl, err := r.resolvePath(r.Definition.Search.Path)
 	if err != nil {
@@ -346,21 +363,21 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		for key, val := range row {
 			switch key {
 			case "download":
-				u, err := r.Browser.ResolveStringUrl(val)
+				u, err := r.resolvePath(val)
 				if err != nil {
 					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
 					continue
 				}
 				item.Link = u
 			case "details":
-				u, err := r.Browser.ResolveStringUrl(val)
+				u, err := r.resolvePath(val)
 				if err != nil {
 					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
 					continue
 				}
 				item.GUID = u
 			case "comments":
-				u, err := r.Browser.ResolveStringUrl(val)
+				u, err := r.resolvePath(val)
 				if err != nil {
 					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
 					continue
@@ -371,17 +388,12 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			case "description":
 				item.Description = val
 			case "category":
-				catId, err := strconv.Atoi(val)
+				catID, err := strconv.Atoi(val)
 				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed category id in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed categoryid: %s", i+1, err.Error())
 					continue
 				}
-				mappedCat, ok := torznab.Capabilities(r.Definition.Capabilities).Categories[catId]
-				if !ok {
-					r.Logger.Warnf("Search result row #%d has unmappable category id %d in %s", i+1, catId, key)
-					continue
-				}
-				item.Category = mappedCat.ID
+				item.Category = catID
 			case "size":
 				bytes, err := humanize.ParseBytes(val)
 				if err != nil {
@@ -452,7 +464,7 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 		return nil, http.Header{}, err
 	}
 
-	fullUrl, err := r.Browser.ResolveStringUrl(u)
+	fullUrl, err := r.resolvePath(u)
 	if err != nil {
 		return nil, http.Header{}, err
 	}

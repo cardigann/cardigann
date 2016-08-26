@@ -1,0 +1,60 @@
+---
+  site: freshon
+  name: FreshOnTV
+  description: "TV Series anyone?"
+  language: en-us
+  links:
+    - https://freshon.tv/
+
+  caps:
+    modes:
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      - selector: h1:contains("Error:")
+        message:
+          selector: "#login p"
+          remove: style, b
+
+  search:
+    path: /browse.php
+    inputs:
+      search: "{{ .Query.Keywords }}"
+    rows:
+      selector: table#highlight > tbody > tr:not(.colhead)
+    fields:
+      category:
+        text: 5000
+      title:
+        selector: a.torrent_name_link
+        attribute: title
+      details:
+        selector: a.torrent_name_link
+        attribute: href
+      comments:
+        selector: a.torrent_name_link
+        attribute: href
+      download:
+        selector: td.table_links a:nth-child(1)
+        attribute: href
+      size:
+        selector: td.table_size
+        remove: br
+      date:
+        selector: td.table_added
+        remove: br
+        filters:
+          - name: reltime
+            args: 02-Jan-2006
+          - name: dateparse
+            args: 02-Jan-2006 15:04:05
+      seeders:
+        selector: td.table_seeders a span
+      leechers:
+        selector: td.table_leechers a
