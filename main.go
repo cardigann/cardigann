@@ -17,12 +17,19 @@ import (
 	"github.com/cardigann/cardigann/server"
 	"github.com/cardigann/cardigann/torznab"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 )
 
 var (
 	Version string
+	log     logrus.FieldLogger
 )
+
+func init() {
+	log = logrus.New()
+	log.(*logrus.Logger).Level = logrus.InfoLevel
+	log.(*logrus.Logger).Out = os.Stderr
+}
 
 func main() {
 	os.Exit(run(os.Args[1:]...))
@@ -40,12 +47,12 @@ func run(args ...string) (exitCode int) {
 	})
 
 	app.Flag("verbose", "Print out verbose logging").Action(func(c *kingpin.ParseContext) error {
-		log.SetLevel(log.InfoLevel)
+		log.(*logrus.Logger).Level = logrus.InfoLevel
 		return nil
 	}).Bool()
 
 	app.Flag("debug", "Print out debug logging").Action(func(c *kingpin.ParseContext) error {
-		log.SetLevel(log.DebugLevel)
+		log.(*logrus.Logger).Level = logrus.DebugLevel
 		return nil
 	}).Bool()
 
@@ -184,7 +191,7 @@ func downloadCommand(key, url, file string) error {
 		return fmt.Errorf("Creating file failed: %s", err.Error())
 	}
 
-	log.WithFields(log.Fields{"bytes": n}).Info("Downloading file")
+	log.WithFields(logrus.Fields{"bytes": n}).Info("Downloading file")
 	return nil
 }
 
@@ -222,7 +229,7 @@ func serverCommand(addr, port string, password string, devMode bool) error {
 	}
 
 	listenOn := fmt.Sprintf("%s:%s", addr, port)
-	log.WithFields(log.Fields{"bind": listenOn}).Info("Starting server")
+	log.WithFields(logrus.Fields{"bind": listenOn}).Info("Starting server")
 
 	return http.ListenAndServe(listenOn, server.NewHandler(server.Params{
 		DevMode:    devMode,
@@ -260,6 +267,9 @@ func testDefinitionCommand(f *os.File) error {
 	fmt.Println("Definition file parsing OK")
 
 	runner := indexer.NewRunner(def, conf)
+	runner.Logger = logrus.WithFields(logrus.Fields{
+		"site": def.Site,
+	})
 
 	err = runner.Login()
 	if err != nil {
@@ -270,7 +280,7 @@ func testDefinitionCommand(f *os.File) error {
 
 	err = runner.Test()
 	if err != nil {
-		return err
+		return fmt.Errorf("Test failed: %s", err.Error())
 	}
 
 	fmt.Println("Indexer test returned OK")

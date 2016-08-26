@@ -6,20 +6,20 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/dustin/go-humanize"
 	"github.com/headzoo/surf"
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 var (
@@ -30,8 +30,8 @@ type Runner struct {
 	Definition *IndexerDefinition
 	Browser    browser.Browsable
 	Config     config.Config
+	Logger     logrus.FieldLogger
 	caps       torznab.Capabilities
-	logger     log.FieldLogger
 }
 
 func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
@@ -40,13 +40,14 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, false)
 
+	logger := logrus.New()
+	logger.Level = logrus.DebugLevel
+
 	return &Runner{
 		Definition: def,
 		Browser:    bow,
 		Config:     conf,
-		logger: log.New().WithFields(log.Fields{
-			"indexer": def.Site,
-		}),
+		Logger:     logger.WithFields(logrus.Fields{"site": def.Site}),
 	}
 }
 
@@ -75,22 +76,30 @@ func (r *Runner) resolvePath(urlPath string) (string, error) {
 	return u.String(), nil
 }
 
+func (r *Runner) openPage(u string) error {
+	r.Logger.WithField("url", u).Infof("Attempting to open %s", u)
+
+	err := r.Browser.Open(u)
+	if err != nil {
+		return err
+	}
+
+	r.Logger.
+		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Finished request")
+
+	return nil
+}
+
 func (r *Runner) Login() error {
 	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
 	if err != nil {
 		return err
 	}
 
-	r.logger.WithField("url", loginUrl).Info("Attempting to login")
-
-	err = r.Browser.Open(loginUrl)
-	if err != nil {
+	if err = r.openPage(loginUrl); err != nil {
 		return err
 	}
-
-	r.logger.
-		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
-		Debugf("Finished request")
 
 	fm, err := r.Browser.Form(r.Definition.Login.FormSelector)
 	if err != nil {
@@ -98,8 +107,8 @@ func (r *Runner) Login() error {
 	}
 
 	for name, val := range r.Definition.Login.Inputs {
-		r.logger.
-			WithFields(log.Fields{"key": name, "form": r.Definition.Login.FormSelector, "val": val}).
+		r.Logger.
+			WithFields(logrus.Fields{"key": name, "form": r.Definition.Login.FormSelector, "val": val}).
 			Debugf("Filling input of form")
 
 		resolved, err := r.resolveVariable(val, func(name string) (string, error) {
@@ -115,23 +124,23 @@ func (r *Runner) Login() error {
 		}
 	}
 
-	r.logger.Debug("Submitting login form")
+	r.Logger.Debug("Submitting login form")
 
 	if err = fm.Submit(); err != nil {
-		r.logger.WithError(err).Error("Login failed")
+		r.Logger.WithError(err).Error("Login failed")
 		return err
 	}
 
-	r.logger.
-		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+	r.Logger.
+		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
 		Debugf("Finished request")
 
 	if err = r.Definition.Login.hasError(r.Browser); err != nil {
-		r.logger.WithError(err).Info("Failed to login")
+		r.Logger.WithError(err).Error("Failed to login")
 		return err
 	}
 
-	r.logger.Info("Successfully logged in")
+	r.Logger.Info("Successfully logged in")
 	return nil
 }
 
@@ -145,7 +154,7 @@ func (r *Runner) Info() torznab.Info {
 
 func (r *Runner) Test() error {
 	for _, mode := range r.Capabilities().SearchModes {
-		r.logger.Info("Testing search mode %s", mode.Key)
+		r.Logger.Infof("Testing search mode %s", mode.Key)
 		results, err := r.Search(torznab.Query{"t": mode.Key})
 		if err != nil {
 			return err
@@ -168,18 +177,15 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
-	r.logger.
-		WithFields(log.Fields{"page": searchUrl, "query": query}).
-		Infof("Opening search page")
+	log.Printf("%#v %#v", r.Logger, r.Logger.(*logrus.Entry).Logger)
 
-	err = r.Browser.Open(searchUrl)
-	if err != nil {
+	r.Logger.
+		WithFields(logrus.Fields{"query": query}).
+		Infof("Searching indexer")
+
+	if err := r.openPage(searchUrl); err != nil {
 		return nil, err
 	}
-
-	r.logger.
-		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
-		Debugf("Finished request")
 
 	vals := url.Values{}
 
@@ -197,8 +203,8 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		vals.Add(name, resolved)
 	}
 
-	r.logger.
-		WithFields(log.Fields{"params": vals, "page": searchUrl}).
+	r.Logger.
+		WithFields(logrus.Fields{"params": vals, "page": searchUrl}).
 		Debugf("Submitting page with form params")
 
 	err = r.Browser.OpenForm(searchUrl, vals)
@@ -206,24 +212,24 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
-	r.logger.
-		WithFields(log.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
-		Debugf("Finished request")
+	r.Logger.
+		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Finished opening form")
 
 	items := []torznab.ResultItem{}
 	timer := time.Now()
 	rows := r.Browser.Find(r.Definition.Search.Rows.Selector)
 
-	r.logger.
-		WithFields(log.Fields{"rows": rows.Length(), "selector": r.Definition.Search.Rows.Selector}).
+	r.Logger.
+		WithFields(logrus.Fields{"rows": rows.Length(), "selector": r.Definition.Search.Rows.Selector}).
 		Debugf("Found %d rows", rows.Length())
 
 	for i := 0; i < rows.Length(); i++ {
 		row := map[string]string{}
 
 		for field, block := range r.Definition.Search.Fields {
-			r.logger.
-				WithFields(log.Fields{"row": i + 1, "block": block}).
+			r.Logger.
+				WithFields(logrus.Fields{"row": i + 1, "block": block}).
 				Debugf("Processing field %q", field)
 
 			val, err := block.Text(rows.Eq(i))
@@ -240,8 +246,8 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			MinimumSeedTime: time.Hour * 48,
 		}
 
-		r.logger.
-			WithFields(log.Fields{"row": i + 1, "data": row}).
+		r.Logger.
+			WithFields(logrus.Fields{"row": i + 1, "data": row}).
 			Debugf("Finished row %d", i+1)
 
 		for key, val := range row {
@@ -249,19 +255,22 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			case "download":
 				u, err := r.Browser.ResolveStringUrl(val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed url in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
+					continue
 				}
 				item.Link = u
 			case "details":
 				u, err := r.Browser.ResolveStringUrl(val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed url in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
+					continue
 				}
 				item.GUID = u
 			case "comments":
 				u, err := r.Browser.ResolveStringUrl(val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed url in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
+					continue
 				}
 				item.Comments = u
 			case "title":
@@ -271,36 +280,42 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			case "category":
 				catId, err := strconv.Atoi(val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed category id in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed category id in %s", i+1, key)
+					continue
 				}
 				mappedCat, ok := torznab.Capabilities(r.Definition.Capabilities).Categories[catId]
 				if !ok {
-					return nil, fmt.Errorf("Search result row #%d has unmappable category id %d in %s", i+1, catId, key)
+					r.Logger.Warnf("Search result row #%d has unmappable category id %d in %s", i+1, catId, key)
+					continue
 				}
 				item.Category = mappedCat.ID
 			case "size":
 				bytes, err := humanize.ParseBytes(val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed size: %s", i+1, err.Error())
+					r.Logger.Warnf("Search result row #%d has malformed size: %s", i+1, err.Error())
+					continue
 				}
 				item.Size = bytes
 			case "leechers":
 				leechers, err := strconv.Atoi(val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed leechers value in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed leechers value in %s", i+1, key)
+					continue
 				}
 				item.Peers += leechers
 			case "seeders":
 				seeders, err := strconv.Atoi(val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed seeders value in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed seeders value in %s", i+1, key)
+					continue
 				}
 				item.Seeders = seeders
 				item.Peers += seeders
 			case "date":
 				t, err := time.Parse(time.RFC1123Z, val)
 				if err != nil {
-					return nil, fmt.Errorf("Search result row #%d has malformed time value in %s", i+1, key)
+					r.Logger.Warnf("Search result row #%d has malformed time value in %s", i+1, key)
+					continue
 				}
 				item.PublishDate = t
 			default:
@@ -308,10 +323,15 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			}
 		}
 
+		// some trackers have empty rows when there are no results
+		if item.Title == "" {
+			return nil, nil
+		}
+
 		items = append(items, item)
 	}
 
-	r.logger.WithFields(log.Fields{"time": time.Now().Sub(timer)}).Infof("Query returned %d results", len(items))
+	r.Logger.WithFields(logrus.Fields{"time": time.Now().Sub(timer)}).Infof("Query returned %d results", len(items))
 	return items, nil
 }
 
