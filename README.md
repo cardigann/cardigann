@@ -33,6 +33,8 @@ Once the server is running, visit http://localhost:5060 and configure via the we
 
 ## Planned Trackers
 
+I'd love assistance adding these trackers, either via invites or pull-requests. 
+
 * Abnormal
 * AlphaRatio
 * AnimeBytes
@@ -77,8 +79,6 @@ Once the server is running, visit http://localhost:5060 and configure via the we
 * World-In-HD
 * XSpeeds
 * Xthor
-
-Open to suggestions on these, please file an issue.
 
 ## Credits
 
