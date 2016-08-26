@@ -320,12 +320,31 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			}
 		}
 
+		skipItem := false
+
 		// some trackers have empty rows when there are no results
 		if item.Title == "" {
 			return nil, nil
 		}
 
-		items = append(items, item)
+		// some trackers don't support filtering by categories, so do it for them
+		if catFilters, hasCats := query["cat"].([]int); hasCats {
+			var catMatch bool
+			for _, catId := range catFilters {
+				r.Logger.Debugf("Checking item cat %d against query cat %d", item.Category, catId)
+				if catId == item.Category {
+					catMatch = true
+				}
+			}
+			if !catMatch {
+				r.Logger.Debugf("Skipping row due to non-matching category")
+				skipItem = skipItem || !catMatch
+			}
+		}
+
+		if !skipItem {
+			items = append(items, item)
+		}
 	}
 
 	r.Logger.WithFields(logrus.Fields{"time": time.Now().Sub(timer)}).Infof("Query returned %d results", len(items))

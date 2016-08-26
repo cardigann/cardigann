@@ -193,7 +193,7 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 		return resp, nil
 	})
 
-	results, err := r.Search(torznab.Query{"t": "tv-search", "q": "llamas"})
+	results, err := r.Search(torznab.Query{"t": "tv-search", "q": "llamas", "cat": []int{torznab.CategoryAudio.ID}})
 	if err != nil {
 		t.Fatal(err)
 	}

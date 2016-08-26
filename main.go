@@ -65,7 +65,7 @@ func run(args ...string) (exitCode int) {
 	return
 }
 
-func lookupIndexer(key string) (torznab.Indexer, error) {
+func lookupIndexer(key string) (*indexer.Runner, error) {
 	conf, err := config.NewJSONConfig()
 	if err != nil {
 		return nil, err
@@ -106,6 +106,11 @@ func queryCommand(key, format string, args []string) error {
 	indexer, err := lookupIndexer(key)
 	if err != nil {
 		return err
+	}
+
+	err = indexer.Login()
+	if err != nil {
+		return fmt.Errorf("Login failed: %s", err.Error())
 	}
 
 	vals := url.Values{}
