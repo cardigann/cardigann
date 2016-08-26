@@ -27,8 +27,8 @@
     path: /login.php
     form: form
     inputs:
-      username: $username
-      password: $password
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
     error:
       path: /takelogin.php
       message:
@@ -38,7 +38,7 @@
   search:
     path: torrents.php
     inputs:
-      search: $keywords
+      search: "{{ .Keywords }}"
       cat: 0
     rows:
       selector: table[width='750'] tbody tr:not(tr:nth-child(1))

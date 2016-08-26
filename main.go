@@ -272,9 +272,7 @@ func testDefinitionCommand(f *os.File) error {
 	fmt.Println("Definition file parsing OK")
 
 	runner := indexer.NewRunner(def, conf)
-	runner.Logger = logrus.WithFields(logrus.Fields{
-		"site": def.Site,
-	})
+	runner.Logger = log
 
 	err = runner.Login()
 	if err != nil {

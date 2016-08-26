@@ -1,0 +1,115 @@
+---
+  site: iptorrents
+  name: IPTorrents
+  description: "#1 Private Tracker"
+  language: en-us
+  links:
+    - https://iptorrents.com/
+
+  caps:
+    categories:
+      72: Movies
+      77: Movies/SD
+      89: Movies/SD
+      90: Movies/SD
+      96: Movies/SD
+      6:  Movies/SD
+      48: Movies/HD
+      54: Movies
+      62: Movies/SD
+      38: Movies/Foreign
+      68: Movies
+      20: Movies/HD
+      7:  Movies/SD
+      73: TV
+      26: TV/SD
+      55: TV/SD
+      78: TV/SD
+      23: TV/HD
+      24: TV/SD
+      25: TV/SD
+      66: TV/SD
+      82: TV/SD
+      65: TV
+      83: TV
+      79: TV/SD
+      22: TV/HD
+      79: TV/SD
+      4:  TV/SD
+      5:  TV/HD
+      99: TV/HD
+      75: Audio
+      73: Audio
+      80: Audio/Lossless
+      93: Audio
+      60: TV/Anime
+      1:  PC
+      69: PC/Mac
+      64: Audio/Audiobook
+      35: Books
+      94: Books/Comics
+      81: XXX
+      8:  XXX
+      85: XXX
+      88: XXX
+      91: XXX
+      84: XXX
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      - selector: body:contains("Captcha verification failed")
+        message:
+          selector: body
+          remove: br
+      - selector: h1:contains("Error:")
+        message:
+          selector: "#login p"
+          remove: style, b
+
+  search:
+    path: "/t"
+    inputs:
+      $raw: "{{range .Categories}}{{.}}&{{end}}q={{ .Query.Keywords }}"
+    rows:
+      selector: table#torrents > tbody > tr:not(tr:nth-child(1))
+    fields:
+      category:
+        selector: td:nth-child(1) > a
+        attribute: href
+        filters:
+          - name: regexp
+            args: "^\\?(\\d+)$"
+      title:
+        selector: td:nth-child(2) > a
+      details:
+        selector: td:nth-child(2) > a
+        attribute: href
+      comments:
+        selector: td:nth-child(5) > a
+        attribute: href
+      download:
+        selector: td:nth-child(4) > a
+        attribute: href
+      size:
+        selector: td:nth-child(6)
+      date:
+        selector: td:nth-child(2) .t_ctime
+        filters:
+          - name: split
+            args: [ "|", -1 ]
+          - name: split
+            args: [ " by ", 0 ]
+          - name: timeago
+      seeders:
+        selector: td:nth-child(8)
+      leechers:
+        selector: td:nth-child(9)

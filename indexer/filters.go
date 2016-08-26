@@ -4,18 +4,29 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"text/scanner"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 const (
 	filterTimeFormat = time.RFC1123Z
 )
 
-func dispatchFilter(name string, args interface{}, value string) (string, error) {
+var filterLogger logrus.FieldLogger
+
+func init() {
+	filterLogger = logrus.New()
+	filterLogger.(*logrus.Logger).Level = logrus.DebugLevel
+	filterLogger.(*logrus.Logger).Out = os.Stderr
+}
+
+func invokeFilter(name string, args interface{}, value string) (string, error) {
 	switch name {
 	case "querystring":
 		param, ok := args.(string)
@@ -37,6 +48,20 @@ func dispatchFilter(name string, args interface{}, value string) (string, error)
 			return "", fmt.Errorf("Filter %q requires a string argument", name)
 		}
 		return filterRegexp(pattern, value)
+
+	case "split":
+		sep, ok := (args.([]interface{}))[0].(string)
+		if !ok {
+			return "", fmt.Errorf("Filter %q requires a string argument at idx 0", name)
+		}
+		pos, ok := (args.([]interface{}))[1].(int)
+		if !ok {
+			return "", fmt.Errorf("Filter %q requires an int argument at idx 1", name)
+		}
+		return filterSplit(sep, pos, value)
+
+	case "timeago":
+		return filterTimeAgo(value, time.Now())
 	}
 
 	return "", errors.New("Unknown filter " + name)
@@ -58,6 +83,14 @@ func filterDateParse(format string, value string) (string, error) {
 	return t.Format(filterTimeFormat), nil
 }
 
+func filterSplit(sep string, pos int, value string) (string, error) {
+	frags := strings.Split(value, sep)
+	if pos < 0 {
+		pos = len(frags) + pos
+	}
+	return frags[pos], nil
+}
+
 func filterRegexp(pattern string, value string) (string, error) {
 	re, err := regexp.Compile(pattern)
 	if err != nil {
@@ -69,6 +102,8 @@ func filterRegexp(pattern string, value string) (string, error) {
 	if len(matches) == 0 {
 		return "", errors.New("No matches found for pattern")
 	}
+
+	filterLogger.WithFields(logrus.Fields{"matches": matches}).Debug("Regex matched")
 
 	if len(matches) > 1 {
 		return matches[1], nil
@@ -141,15 +176,17 @@ func filterTimeAgo(src string, now time.Time) (string, error) {
 				now = now.Add(time.Minute * -time.Duration(fraction*1440))
 			}
 		case "hour":
-			now = now.Add(-time.Hour)
+			now = now.Add(time.Hour * -time.Duration(v))
 			if fraction > 0 {
 				now = now.Add(time.Second * -time.Duration(fraction*3600))
 			}
 		case "minute":
-			now = now.Add(-time.Minute)
+			now = now.Add(time.Minute * -time.Duration(v))
 			if fraction > 0 {
 				now = now.Add(time.Second * -time.Duration(fraction*60))
 			}
+		case "second":
+			now = now.Add(time.Second * -time.Duration(v))
 		default:
 			return "", fmt.Errorf("Unsupporting unit of time %q", s.TokenText())
 		}

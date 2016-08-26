@@ -2,7 +2,6 @@ package indexer
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -50,11 +50,17 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 	}
 }
 
-func (r *Runner) resolveVariable(name string, resolver func(string) (string, error)) (string, error) {
-	if name[0] == '$' {
-		return resolver(strings.TrimPrefix(name, "$"))
+func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error) {
+	tmpl, err := template.New(name).Parse(tpl)
+	if err != nil {
+		return "", err
 	}
-	return name, nil
+	b := &bytes.Buffer{}
+	err = tmpl.Execute(b, ctx)
+	if err != nil {
+		return "", err
+	}
+	return b.String(), nil
 }
 
 func (r *Runner) resolvePath(urlPath string) (string, error) {
@@ -66,17 +72,16 @@ func (r *Runner) resolvePath(urlPath string) (string, error) {
 		urlStr = r.Definition.Links[0]
 	}
 
-	u, err := url.Parse(urlStr)
+	u, err := url.Parse(strings.TrimRight(urlStr, "/") + "/" + strings.TrimLeft(urlPath, "/"))
 	if err != nil {
 		return "", err
 	}
 
-	u.Path = urlPath
 	return u.String(), nil
 }
 
 func (r *Runner) openPage(u string) error {
-	r.Logger.WithField("url", u).Infof("Attempting to open %s", u)
+	r.Logger.WithField("url", u).Debug("Attempting to open page")
 
 	err := r.Browser.Open(u)
 	if err != nil {
@@ -87,10 +92,25 @@ func (r *Runner) openPage(u string) error {
 		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
 		Debugf("Finished request")
 
+	tmpfile, err := ioutil.TempFile("", r.Definition.Site)
+	if err != nil {
+		return err
+	}
+
+	body := strings.NewReader(r.Browser.Body())
+	io.Copy(tmpfile, body)
+	defer tmpfile.Close()
+
+	r.Logger.
+		WithFields(logrus.Fields{"file": "file://" + tmpfile.Name()}).
+		Debugf("Wrote page output to cache")
+
 	return nil
 }
 
 func (r *Runner) Login() error {
+	filterLogger = r.Logger
+
 	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
 	if err != nil {
 		return err
@@ -110,13 +130,23 @@ func (r *Runner) Login() error {
 			WithFields(logrus.Fields{"key": name, "form": r.Definition.Login.FormSelector, "val": val}).
 			Debugf("Filling input of form")
 
-		resolved, err := r.resolveVariable(val, func(name string) (string, error) {
-			s, _, err := r.Config.Get(r.Definition.Site, strings.TrimPrefix(name, "$"))
-			return s, err
+		cfg, err := r.Config.Section(r.Definition.Site)
+		if err != nil {
+			return err
+		}
+
+		resolved, err := r.applyTemplate("login_inputs", val, struct {
+			Config map[string]string
+		}{
+			cfg,
 		})
 		if err != nil {
 			return err
 		}
+
+		r.Logger.
+			WithFields(logrus.Fields{"key": name, "form": r.Definition.Login.FormSelector, "val": resolved}).
+			Debugf("Resolved input template")
 
 		if err = fm.Input(name, resolved); err != nil {
 			return err
@@ -152,14 +182,47 @@ func (r *Runner) Info() torznab.Info {
 }
 
 func (r *Runner) Test() error {
+	filterLogger = r.Logger
+
 	for _, mode := range r.Capabilities().SearchModes {
-		r.Logger.Infof("Testing search mode %s", mode.Key)
-		results, err := r.Search(torznab.Query{"t": mode.Key})
+		query := torznab.Query{
+			"t":     mode.Key,
+			"limit": 5,
+		}
+
+		switch mode.Key {
+		case "tv-search":
+			query["cat"] = []int{
+				torznab.CategoryTV.ID,
+				torznab.CategoryTV_HD.ID,
+				torznab.CategoryTV_SD.ID,
+			}
+		}
+
+		r.Logger.Infof("Testing search mode %q", mode.Key)
+		results, err := r.Search(query)
 		if err != nil {
 			return err
 		}
 		if len(results) == 0 {
 			return torznab.ErrNoSuchItem
+		}
+		for idx, result := range results {
+			if result.Title == "" {
+				return fmt.Errorf("Result row %d has empty title", idx+1)
+			}
+			if result.Size == 0 {
+				return fmt.Errorf("Result row %d has zero size", idx+1)
+			}
+			if result.Link == "" {
+				return fmt.Errorf("Result row %d has blank link", idx+1)
+			}
+			if result.Site == "" {
+				return fmt.Errorf("Result row %d has blank site", idx+1)
+			}
+			if result.Category == 0 {
+				return fmt.Errorf("Result row %d has blank category", idx+1)
+			}
 		}
 	}
 
@@ -171,6 +234,8 @@ func (r *Runner) Capabilities() torznab.Capabilities {
 }
 
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
+	filterLogger = r.Logger
+
 	searchUrl, err := r.resolvePath(r.Definition.Search.Path)
 	if err != nil {
 		return nil, err
@@ -184,20 +249,46 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
+	localCats := []int{}
+
+	if unmappedCats, ok := query["cat"].([]int); ok {
+		localCats = r.Capabilities().Categories.ReverseMap(unmappedCats)
+	}
+
+	inputCtx := struct {
+		Query      torznab.Query
+		Categories []int
+	}{
+		query,
+		localCats,
+	}
+
 	vals := url.Values{}
 
 	for name, val := range r.Definition.Search.Inputs {
-		resolved, err := r.resolveVariable(val, func(name string) (string, error) {
-			switch name {
-			case "keywords":
-				return query.Keywords(), nil
-			}
-			return "", errors.New("Undefined variable " + name)
-		})
+		resolved, err := r.applyTemplate("search_inputs", val, inputCtx)
 		if err != nil {
 			return nil, err
 		}
-		vals.Add(name, resolved)
+		switch name {
+		case "$raw":
+			parsedVals, err := url.ParseQuery(resolved)
+			if err != nil {
+				return nil, fmt.Errorf("Error parsing $raw input: %s", err.Error())
+			}
+
+			r.Logger.
+				WithFields(logrus.Fields{"source": val, "parsed": parsedVals}).
+				Infof("Processed $raw input")
+
+			for k, values := range parsedVals {
+				for _, val := range values {
+					vals.Add(k, val)
+				}
+			}
+		default:
+			vals.Add(name, resolved)
+		}
 	}
 
 	r.Logger.
@@ -216,12 +307,13 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	items := []torznab.ResultItem{}
 	timer := time.Now()
 	rows := r.Browser.Find(r.Definition.Search.Rows.Selector)
+	limit, hasLimit := query["limit"].(int)
 
 	r.Logger.
 		WithFields(logrus.Fields{"rows": rows.Length(), "selector": r.Definition.Search.Rows.Selector}).
 		Debugf("Found %d rows", rows.Length())
 
-	for i := 0; i < rows.Length(); i++ {
+	for i := 0; i < rows.Length() && (!hasLimit || len(items) < limit); i++ {
 		row := map[string]string{}
 
 		for field, block := range r.Definition.Search.Fields {
@@ -233,6 +325,10 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			if err != nil {
 				return nil, err
 			}
+
+			r.Logger.
+				WithFields(logrus.Fields{"row": i + 1, "output": val}).
+				Debugf("Finished processing field %q", field)
 
 			row[field] = val
 		}

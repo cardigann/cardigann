@@ -166,6 +166,20 @@ func (mapping CategoryMapping) Categories() Categories {
 	return cats
 }
 
+func (mapping CategoryMapping) ReverseMap(cats []int) []int {
+	results := []int{}
+
+	for _, unmapped := range cats {
+		for localID, cat := range mapping {
+			if cat.ID == unmapped {
+				results = append(results, localID)
+			}
+		}
+	}
+
+	return results
+}
+
 type Categories []Category
 
 func (slice Categories) Len() int {

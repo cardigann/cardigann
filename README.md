@@ -25,12 +25,60 @@ cardigann server --passphrase "something goes here"
 
 Once the server is running, visit http://localhost:5060 and configure via the web interface.
 
+## Supported Trackers
+
+* BIT-HDTV
+* IPTorrents
+* TV Torrents
+* Demonoid
+
 ## Planned Trackers
 
- - [*] BIT-HDTV
- - [ ] IPTorrents
- - [ ] TV Torrents
- - [ ] Demonoid
+* Abnormal
+* AlphaRatio
+* AnimeBytes
+* Avistaz
+* bB
+* BeyondHD
+* BitMeTV
+* BitSoup
+* BlueTigers
+* BTN
+* DanishBits
+* Demonoid
+* EuTorrents
+* FileList
+* Freshon
+* Fuzer
+* HD-Space
+* HD-Torrents
+* Hebits
+* Hounddawgs
+* ILoveTorrents
+* Immortalseed
+* PassThePopcorn
+* MoreThanTV
+* MyAnonamouse
+* NCore
+* NextGen
+* Pretome
+* PrivateHD
+* RevolutionTT
+* SceneAccess
+* SceneFZ
+* SceneTime
+* Shazbat
+* SpeedCD
+* TehConnection
+* TorrentBytes
+* TorrentDay
+* TorrentLeech
+* TorrentShack
+* TransmitheNet
+* TV Chaos UK
+* World-In-HD
+* XSpeeds
+* Xthor
 
 Open to suggestions on these, please file an issue.
 

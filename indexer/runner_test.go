@@ -26,16 +26,15 @@ const exampleDefinition2 = `
     path: /login.php
     form: form
     inputs:
-      username: $username
-      llamas_password: $password
+      username: "{{ .Config.username }}"
+      llamas_password: "{{ .Config.password }}"
     error:
       selector: .loginerror a
 
   search:
     path: torrents.php
     inputs:
-      search: $keywords
-      cat: 0
+      $raw: "search={{ .Query.Keywords }}&cat=0"
     rows:
       selector: table.results tbody tr
     fields:

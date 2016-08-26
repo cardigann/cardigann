@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/PuerkitoBio/goquery"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 )
 
 type filterBlock struct {
@@ -30,7 +30,9 @@ func (s *selectorBlock) Text(selection *goquery.Selection) (string, error) {
 	}
 
 	html, _ := result.Html()
-	log.Debugf("Selector %q matched %q", s.Selector, html)
+	filterLogger.
+		WithFields(logrus.Fields{"selector": s.Selector, "html": html}).
+		Debugf("Selector matched %d elements", result.Length())
 
 	if s.Remove != "" {
 		result.Find(s.Remove).Remove()
@@ -47,16 +49,17 @@ func (s *selectorBlock) Text(selection *goquery.Selection) (string, error) {
 	}
 
 	for _, f := range s.Filters {
-		log.Debugf("Applying filter %s(%#v) to %q", f.Name, f.Args, output)
+		filterLogger.
+			WithFields(logrus.Fields{"args": f.Args, "before": output}).
+			Debugf("Applying filter %s", f.Name)
 
 		var err error
-		output, err = dispatchFilter(f.Name, f.Args, output)
+		output, err = invokeFilter(f.Name, f.Args, output)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	log.Debugf("Final text is %q", output)
 	return output, nil
 }
 
