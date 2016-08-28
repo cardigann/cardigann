@@ -6,6 +6,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/Sirupsen/logrus"
+	"github.com/yosssi/gohtml"
 )
 
 type filterBlock struct {
@@ -22,53 +23,74 @@ type selectorBlock struct {
 }
 
 func (s *selectorBlock) Match(selection *goquery.Selection) bool {
-	return selection.Find(s.Selector).Length() > 0
+	return !s.IsEmpty() && (selection.Find(s.Selector).Length() > 0 || s.TextVal != "")
 }
 
-func (s *selectorBlock) Text(selection *goquery.Selection) (string, error) {
-	output := s.TextVal
-
+func (s *selectorBlock) MatchText(from *goquery.Selection) (string, error) {
 	if s.Selector != "" {
-		result := selection.Find(s.Selector)
+		result := from.Find(s.Selector)
 		if result.Length() == 0 {
-			return "", nil
+			return "", fmt.Errorf("Failed to match selector %q", s.Selector)
 		}
+		return s.Text(result)
+	}
+	return s.Text(from)
+}
 
-		html, _ := result.Html()
-		filterLogger.
-			WithFields(logrus.Fields{"selector": s.Selector, "html": strings.TrimSpace(html)}).
-			Debugf("Selector matched %d elements", result.Length())
-
-		if s.Remove != "" {
-			result.Find(s.Remove).Remove()
-		}
-
-		output = strings.TrimSpace(result.Text())
-
-		if s.Attribute != "" {
-			val, exists := result.Attr(s.Attribute)
-			if !exists {
-				return "", fmt.Errorf("Requested attribute %q doesn't exist", s.Attribute)
-			}
-			output = val
-		}
+func (s *selectorBlock) Text(el *goquery.Selection) (string, error) {
+	if s.TextVal != "" {
+		return s.applyFilters(s.TextVal)
 	}
 
+	html, _ := goquery.OuterHtml(el)
+	filterLogger.
+		WithFields(logrus.Fields{"html": gohtml.Format(html)}).
+		Debugf("Extracting text from selection")
+
+	if s.Remove != "" {
+		el.Find(s.Remove).Remove()
+	}
+
+	output := strings.TrimSpace(el.Text())
+
+	if s.Attribute != "" {
+		val, exists := el.Attr(s.Attribute)
+		if !exists {
+			return "", fmt.Errorf("Requested attribute %q doesn't exist", s.Attribute)
+		}
+		output = val
+	}
+
+	return s.applyFilters(output)
+}
+
+func (s *selectorBlock) applyFilters(val string) (string, error) {
 	for _, f := range s.Filters {
 		filterLogger.
-			WithFields(logrus.Fields{"args": f.Args, "before": output}).
+			WithFields(logrus.Fields{"args": f.Args, "before": val}).
 			Debugf("Applying filter %s", f.Name)
 
 		var err error
-		output, err = invokeFilter(f.Name, f.Args, output)
+		val, err = invokeFilter(f.Name, f.Args, val)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return output, nil
+	return val, nil
 }
 
 func (s *selectorBlock) IsEmpty() bool {
-	return s.Selector == ""
+	return s.Selector == "" && s.TextVal == ""
+}
+
+func (s *selectorBlock) String() string {
+	switch {
+	case s.Selector != "":
+		return fmt.Sprintf("Selector(%s)", s.Selector)
+	case s.TextVal != "":
+		return fmt.Sprintf("Text(%s)", s.TextVal)
+	default:
+		return "Empty"
+	}
 }

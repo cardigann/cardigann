@@ -211,7 +211,9 @@ func filterTimeAgo(src string, now time.Time) (string, error) {
 
 func filterRelTime(src string, format string, now time.Time) (string, error) {
 	out := strings.Replace(src, "Today", now.Format(format), -1)
+	out = strings.Replace(src, "today", now.Format(format), -1)
 	out = strings.Replace(out, "Yesterday", now.AddDate(0, 0, -1).Format(format), -1)
+	out = strings.Replace(out, "yesterday", now.AddDate(0, 0, -1).Format(format), -1)
 	return out, nil
 }
 

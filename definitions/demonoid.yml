@@ -1,0 +1,88 @@
+---
+  site: demonoid
+  name: Demonoid
+  description: Demonoid
+  language: en-us
+  links:
+    - http://www.demonoid.pw/
+
+  caps:
+    categories:
+      1:  Movies
+      2:  Audio
+      3:  TV
+      4:  PC/Games
+      5:  PC
+      6:  Other
+      8:  Other
+      9:  TV/Anime
+      10: Books
+      11: Books/Comics
+      13: Audio/Video
+      17: Audio/Audiobook
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /account_handler.php
+    method: post
+    inputs:
+      nickname: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+      returnpath: /
+      Submit: Submit
+      withq: 1
+    error:
+      selector: form[id='bb_code_form'] + tbody font[class='red']:nth-child(1)
+      message:
+        selector: form[id='bb_code_form'] + tbody font[class='red']:nth-child(1)
+        remove: style, b
+
+  search:
+    path: /files
+    inputs:
+      query: "{{ .Keywords }}"
+      category: 0
+      subcategory: All
+      quality: All
+      seeded: 2
+      external: 2
+      uid: 0
+    rows:
+      selector: .ctable_content_no_pad > table > tbody > tr:not([align]):not(:nth-last-child(-n+3))
+      after: 1
+      dateheaders:
+        selector: "[align='left']"
+        filters:
+          - name: regexp
+            args: "^Added (?:on )?(.+?)$"
+          - name: reltime
+            args: Monday, Jan 02, 2006
+          - name: dateparse
+            args: Monday, Jan 02, 2006
+    fields:
+      category:
+        selector: td:nth-child(1) > a
+        attribute: href
+        filters:
+          - name: querystring
+            args: category
+          - name: mapcats
+      title:
+        selector: td:nth-child(2) > a
+      comments:
+        selector: td:nth-child(2) > a
+        attribute: href
+      download:
+        selector: td:nth-child(5) > a
+        attribute: href
+      size:
+        selector: td:nth-child(6)
+      seeders:
+        selector: td:nth-child(9) > font
+      leechers:
+        selector: td:nth-child(10) > font
+
+

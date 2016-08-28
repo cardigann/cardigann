@@ -81,30 +81,32 @@ type errorBlock struct {
 
 func (e *errorBlock) matchPage(browser browser.Browsable) bool {
 	if e.Path != "" {
-		if e.Path != browser.Url().Path {
-			return false
-		}
-	}
-
-	if e.Selector != "" {
+		return e.Path == browser.Url().Path
+	} else if e.Selector != "" {
 		return browser.Find(e.Selector).Length() > 0
 	}
-
 	return false
 }
 
 func (e *errorBlock) errorText(from *goquery.Selection) (string, error) {
 	if !e.Message.IsEmpty() {
-		return e.Message.Text(from)
+		return e.Message.MatchText(from)
 	} else if e.Selector != "" {
 		return from.Find(e.Selector).Text(), nil
 	}
 	return "", errors.New("Error declaration must have either Message block or Selection")
 }
 
+const (
+	loginMethodPost = "post"
+	loginMethodGet  = "get"
+	loginMethodForm = "form"
+)
+
 type loginBlock struct {
 	Path         string            `yaml:"path"`
 	FormSelector string            `yaml:"form"`
+	Method       string            `yaml:"method"`
 	Inputs       inputsBlock       `yaml:"inputs,omitempty"`
 	Error        errorBlockOrSlice `yaml:"error,omitempty"`
 }
@@ -123,13 +125,70 @@ func (l *loginBlock) hasError(browser browser.Browsable) error {
 	return nil
 }
 
-type fieldsBlock map[string]selectorBlock
+type fieldBlock struct {
+	Field string
+	Block selectorBlock
+}
+
+type fieldsListBlock []fieldBlock
+
+func (f *fieldsListBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// Unmarshal as a MapSlice to preserve order of fields
+	var fields yaml.MapSlice
+	if err := unmarshal(&fields); err != nil {
+		return errors.New("Failed to unmarshal fieldsListBlock")
+	}
+
+	// FIXME: there has got to be a better way to do this
+	for _, item := range fields {
+		b, err := yaml.Marshal(item.Value)
+		if err != nil {
+			return err
+		}
+		var sb selectorBlock
+		if err = yaml.Unmarshal(b, &sb); err != nil {
+			return err
+		}
+		*f = append(*f, fieldBlock{
+			Field: item.Key.(string),
+			Block: sb,
+		})
+	}
+
+	return nil
+}
+
+type rowsBlock struct {
+	selectorBlock
+	After       int           `yaml:"after"`
+	DateHeaders selectorBlock `yaml:"dateheaders"`
+}
+
+func (r *rowsBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var sb selectorBlock
+	if err := unmarshal(&sb); err != nil {
+		return errors.New("Failed to unmarshal rowsBlock")
+	}
+
+	var rb struct {
+		After       int           `yaml:"after"`
+		DateHeaders selectorBlock `yaml:"dateheaders"`
+	}
+	if err := unmarshal(&rb); err != nil {
+		return errors.New("Failed to unmarshal rowsBlock")
+	}
+
+	r.After = rb.After
+	r.DateHeaders = rb.DateHeaders
+	r.selectorBlock = sb
+	return nil
+}
 
 type searchBlock struct {
-	Path   string        `yaml:"path"`
-	Inputs inputsBlock   `yaml:"inputs,omitempty"`
-	Rows   selectorBlock `yaml:"rows"`
-	Fields fieldsBlock   `yaml:"fields"`
+	Path   string          `yaml:"path"`
+	Inputs inputsBlock     `yaml:"inputs,omitempty"`
+	Rows   rowsBlock       `yaml:"rows"`
+	Fields fieldsListBlock `yaml:"fields"`
 }
 
 type capabilitiesBlock torznab.Capabilities

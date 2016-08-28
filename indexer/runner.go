@@ -13,6 +13,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/torznab"
@@ -20,6 +21,7 @@ import (
 	"github.com/headzoo/surf"
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
+	"github.com/yosssi/gohtml"
 )
 
 var (
@@ -107,6 +109,10 @@ func (r *Runner) openPage(u string) error {
 		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
 		Debugf("Finished request")
 
+	return r.cachePage()
+}
+
+func (r *Runner) cachePage() error {
 	tmpfile, err := ioutil.TempFile("", r.Definition.Site)
 	if err != nil {
 		return err
@@ -123,6 +129,100 @@ func (r *Runner) openPage(u string) error {
 	return nil
 }
 
+func (r *Runner) fillAndSubmitForm(loginURL, formSelector string, vals map[string]string) error {
+	r.Logger.
+		WithFields(logrus.Fields{"url": loginURL, "form": formSelector, "vals": vals}).
+		Debugf("Filling and submitting login form")
+
+	if err := r.openPage(loginURL); err != nil {
+		return err
+	}
+
+	fm, err := r.Browser.Form(formSelector)
+	if err != nil {
+		return err
+	}
+
+	for name, value := range vals {
+		r.Logger.
+			WithFields(logrus.Fields{"key": name, "form": formSelector, "val": value}).
+			Debugf("Filling input of form")
+
+		if err = fm.Input(name, value); err != nil {
+			r.Logger.WithError(err).Error("Filling input failed")
+			return err
+		}
+	}
+
+	r.Logger.Debug("Submitting login form")
+	defer r.cachePage()
+
+	if err = fm.Submit(); err != nil {
+		r.Logger.WithError(err).Error("Login failed")
+		return err
+	}
+
+	r.Logger.
+		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Submitted login form")
+
+	return nil
+}
+
+func (r *Runner) postForm(loginURL string, vals map[string]string) error {
+	r.Logger.
+		WithFields(logrus.Fields{"url": loginURL, "vals": vals}).
+		Debugf("Posting login form")
+
+	data := url.Values{}
+	for key, value := range vals {
+		data.Add(key, value)
+	}
+
+	defer r.cachePage()
+
+	if err := r.Browser.PostForm(loginURL, data); err != nil {
+		r.Logger.WithError(err).Error("Login failed")
+		return err
+	}
+
+	r.Logger.
+		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+		Debugf("Posted login page")
+
+	return nil
+}
+
+func (r *Runner) extractInputLogins() (map[string]string, error) {
+	result := map[string]string{}
+
+	cfg, err := r.Config.Section(r.Definition.Site)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := struct {
+		Config map[string]string
+	}{
+		cfg,
+	}
+
+	for name, val := range r.Definition.Login.Inputs {
+		resolved, err := r.applyTemplate("login_inputs", val, ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		r.Logger.
+			WithFields(logrus.Fields{"key": name, "val": resolved}).
+			Debugf("Resolved login input template")
+
+		result[name] = resolved
+	}
+
+	return result, nil
+}
+
 func (r *Runner) Login() error {
 	filterLogger = r.Logger
 	filterCategoryMapping = r.Capabilities().Categories
@@ -132,53 +232,23 @@ func (r *Runner) Login() error {
 		return err
 	}
 
-	if err = r.openPage(loginUrl); err != nil {
-		return err
-	}
-
-	fm, err := r.Browser.Form(r.Definition.Login.FormSelector)
+	vals, err := r.extractInputLogins()
 	if err != nil {
 		return err
 	}
 
-	for name, val := range r.Definition.Login.Inputs {
-		r.Logger.
-			WithFields(logrus.Fields{"key": name, "form": r.Definition.Login.FormSelector, "val": val}).
-			Debugf("Filling input of form")
-
-		cfg, err := r.Config.Section(r.Definition.Site)
-		if err != nil {
+	switch r.Definition.Login.Method {
+	case "", loginMethodForm:
+		if err = r.fillAndSubmitForm(loginUrl, r.Definition.Login.FormSelector, vals); err != nil {
 			return err
 		}
-
-		resolved, err := r.applyTemplate("login_inputs", val, struct {
-			Config map[string]string
-		}{
-			cfg,
-		})
-		if err != nil {
+	case loginMethodPost:
+		if err = r.postForm(loginUrl, vals); err != nil {
 			return err
 		}
-
-		r.Logger.
-			WithFields(logrus.Fields{"key": name, "form": r.Definition.Login.FormSelector, "val": resolved}).
-			Debugf("Resolved input template")
-
-		if err = fm.Input(name, resolved); err != nil {
-			return err
-		}
+	default:
+		return fmt.Errorf("Unknown login method %q", r.Definition.Login.Method)
 	}
-
-	r.Logger.Debug("Submitting login form")
-
-	if err = fm.Submit(); err != nil {
-		r.Logger.WithError(err).Error("Login failed")
-		return err
-	}
-
-	r.Logger.
-		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
-		Debugf("Finished request")
 
 	if err = r.Definition.Login.hasError(r.Browser); err != nil {
 		r.Logger.WithError(err).Error("Failed to login")
@@ -274,9 +344,11 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 	inputCtx := struct {
 		Query      torznab.Query
+		Keywords   string
 		Categories []int
 	}{
 		query,
+		query.Keywords(),
 		localCats,
 	}
 
@@ -323,31 +395,49 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 	items := []torznab.ResultItem{}
 	timer := time.Now()
-	rows := r.Browser.Find(r.Definition.Search.Rows.Selector)
+	dom := r.Browser.Dom()
+
+	// merge following rows for After selector
+	if after := r.Definition.Search.Rows.After; after > 0 {
+		rows := dom.Find(r.Definition.Search.Rows.Selector)
+		for i := 0; i < rows.Length(); i += 1 + after {
+			rows.Eq(i).AppendSelection(rows.Slice(i+1, i+1+after).Find("td"))
+			rows.Slice(i+1, i+1+after).Remove()
+		}
+	}
+
+	rows := dom.Find(r.Definition.Search.Rows.Selector)
 	limit, hasLimit := query["limit"].(int)
 
 	r.Logger.
-		WithFields(logrus.Fields{"rows": rows.Length(), "selector": r.Definition.Search.Rows.Selector}).
+		WithFields(logrus.Fields{
+		"rows":     rows.Length(),
+		"selector": r.Definition.Search.Rows.Selector,
+		"limit":    limit,
+	}).
 		Debugf("Found %d rows", rows.Length())
 
 	for i := 0; i < rows.Length() && (!hasLimit || len(items) < limit); i++ {
 		row := map[string]string{}
 
-		for field, block := range r.Definition.Search.Fields {
-			r.Logger.
-				WithFields(logrus.Fields{"row": i + 1, "block": block}).
-				Debugf("Processing field %q", field)
+		html, _ := goquery.OuterHtml(rows.Eq(i))
+		r.Logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing row")
 
-			val, err := block.Text(rows.Eq(i))
+		for _, item := range r.Definition.Search.Fields {
+			r.Logger.
+				WithFields(logrus.Fields{"row": i + 1, "block": item.Block.String()}).
+				Debugf("Processing field %q", item.Field)
+
+			val, err := item.Block.MatchText(rows.Eq(i))
 			if err != nil {
 				return nil, err
 			}
 
 			r.Logger.
 				WithFields(logrus.Fields{"row": i + 1, "output": val}).
-				Debugf("Finished processing field %q", field)
+				Debugf("Finished processing field %q", item.Field)
 
-			row[field] = val
+			row[item.Field] = val
 		}
 
 		item := torznab.ResultItem{
@@ -417,7 +507,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 				item.Seeders = seeders
 				item.Peers += seeders
 			case "date":
-				t, err := time.Parse(time.RFC1123Z, val)
+				t, err := time.Parse(filterTimeFormat, val)
 				if err != nil {
 					r.Logger.Warnf("Search result row #%d has malformed time value in %s", i+1, key)
 					continue
@@ -433,6 +523,32 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		// some trackers have empty rows when there are no results
 		if item.Title == "" {
 			return nil, nil
+		}
+
+		if item.GUID == "" && item.Link != "" {
+			item.GUID = item.Link
+		}
+
+		// if there is a dateheaders field, we need to look for a preceeding date header
+		if dateHeaders := r.Definition.Search.Rows.DateHeaders; !dateHeaders.IsEmpty() {
+			r.Logger.
+				WithFields(logrus.Fields{"selector": dateHeaders.String()}).
+				Debugf("Searching for date header")
+
+			prev := rows.Eq(i).PrevAllFiltered(dateHeaders.Selector).First()
+			if prev.Length() == 0 {
+				r.Logger.
+					WithFields(logrus.Fields{"row": i + 1}).
+					Warnf("No preceding date header found for row %#d", i+1)
+			}
+
+			dv, _ := dateHeaders.Text(prev.First())
+			date, err := time.Parse(filterTimeFormat, dv)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to parse date header: %s", err.Error())
+			}
+
+			item.PublishDate = date
 		}
 
 		// some trackers don't support filtering by categories, so do it for them
@@ -455,7 +571,10 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		}
 	}
 
-	r.Logger.WithFields(logrus.Fields{"time": time.Now().Sub(timer)}).Infof("Query returned %d results", len(items))
+	r.Logger.
+		WithFields(logrus.Fields{"time": time.Now().Sub(timer)}).
+		Infof("Query returned %d results", len(items))
+
 	return items, nil
 }
 
