@@ -291,7 +291,7 @@ func (r *Runner) Test() error {
 			return err
 		}
 		if len(results) == 0 {
-			return torznab.ErrNoSuchItem
+			return fmt.Errorf("Search returned no results, check logs for details")
 		}
 		for idx, result := range results {
 			if result.Title == "" {

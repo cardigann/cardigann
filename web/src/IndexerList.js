@@ -47,6 +47,7 @@ class IndexerListRow extends Component {
   static defaultProps = {
     editing: false,
     testing: false,
+    disabling: false,
   }
   static propTypes = {
    indexer: React.PropTypes.object.isRequired,
@@ -56,11 +57,19 @@ class IndexerListRow extends Component {
     status: "OK",
     editing: this.props.editing,
     testing: this.props.testing,
+    disabling: this.props.disabling,
   }
   handleEditClick = () => {
     this.setState({editing: true});
     this.props.onEdit(this.props.indexer, (config) => {
       this.setState({editing: false});
+    });
+  }
+  handleDisableClick = () => {
+    this.setState({disabling: true});
+    console.log("handling disable click");
+    this.props.onDisable(this.props.indexer, (config) => {
+      this.setState({disabling: false});
     });
   }
   handleTestClick = () => {
@@ -98,8 +107,11 @@ class IndexerListRow extends Component {
               activeLabel="Testing..."
               disabled={this.state.editing}>Test</StatefulButton>
             <StatefulButton
+              onClick={this.handleDisableClick}
               bsSize="xsmall"
               bsStyle="danger"
+              active={this.state.disabling}
+              activeLabel="Disabling..."
               disabled={this.state.testing || this.state.editing}>Disable</StatefulButton>
           </ButtonToolbar>
         </td>
@@ -118,6 +130,7 @@ class IndexerList extends Component {
           onSave={this.props.onSave}
           onEdit={this.props.onEdit}
           onTest={this.props.onTest}
+          onDisable={this.props.onDisable}
         />
       );
     });

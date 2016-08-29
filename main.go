@@ -10,26 +10,19 @@ import (
 	"os"
 	"strings"
 
-	"gopkg.in/alecthomas/kingpin.v2"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
+	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/server"
 	"github.com/cardigann/cardigann/torznab"
-
-	"github.com/Sirupsen/logrus"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
 	Version string
-	log     logrus.FieldLogger
+	log     = logger.Logger
 )
-
-func init() {
-	log = logrus.New()
-	log.(*logrus.Logger).Level = logrus.InfoLevel
-	log.(*logrus.Logger).Out = os.Stderr
-}
 
 func main() {
 	os.Exit(run(os.Args[1:]...))
@@ -47,12 +40,12 @@ func run(args ...string) (exitCode int) {
 	})
 
 	app.Flag("verbose", "Print out verbose logging").Action(func(c *kingpin.ParseContext) error {
-		log.(*logrus.Logger).Level = logrus.InfoLevel
+		logger.SetLevel(logrus.InfoLevel)
 		return nil
 	}).Bool()
 
 	app.Flag("debug", "Print out debug logging").Action(func(c *kingpin.ParseContext) error {
-		log.(*logrus.Logger).Level = logrus.DebugLevel
+		logger.SetLevel(logrus.DebugLevel)
 		return nil
 	}).Bool()
 
@@ -230,7 +223,7 @@ func serverCommand(addr, port string, password string) error {
 	}
 
 	listenOn := fmt.Sprintf("%s:%s", addr, port)
-	log.WithFields(logrus.Fields{"bind": listenOn}).Info("Starting server")
+	log.Infof("Listening on %s", listenOn)
 
 	return http.ListenAndServe(listenOn, server.NewHandler(server.Params{
 		Passphrase: password,

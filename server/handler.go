@@ -9,9 +9,10 @@ import (
 	"net/url"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
+	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/gorilla/mux"
 )
@@ -21,6 +22,7 @@ const (
 )
 
 var (
+	log              = logger.Logger
 	apiRoutePrefixes = []string{
 		"/torznab/",
 		"/download/",
@@ -55,7 +57,7 @@ func NewHandler(p Params) http.Handler {
 	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("GET")
 
 	// xhr routes for the webapp
-	router.HandleFunc("/xhr/indexers/{indexer}/test", h.postIndexerTestHandler).Methods("POST")
+	router.HandleFunc("/xhr/indexers/{indexer}/test", h.getIndexerTestHandler).Methods("GET")
 	router.HandleFunc("/xhr/indexers/{indexer}/config", h.getIndexersConfigHandler).Methods("GET")
 	router.HandleFunc("/xhr/indexers/{indexer}/config", h.patchIndexersConfigHandler).Methods("PATCH")
 	router.HandleFunc("/xhr/indexers", h.getIndexersHandler).Methods("GET")
@@ -77,9 +79,7 @@ func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("%s://%s%s", proto, r.Host, path))
 }
 
-func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
-	log.WithFields(log.Fields{"key": key}).Info("Looking up indexer")
-
+func (h *handler) lookupIndexer(key string) (*indexer.Runner, error) {
 	def, err := indexer.LoadDefinition(key)
 	if err != nil {
 		log.WithError(err).Warnf("Failed to load definition for %q", key)
@@ -90,21 +90,22 @@ func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.WithFields(log.Fields{
-		"method": r.Method,
-		"path":   r.URL.RequestURI(),
-		"remote": r.RemoteAddr,
-	}).Debugf("%s %s", r.Method, r.URL.RequestURI())
-
-	if origin := r.Header.Get("Origin"); origin == "http://localhost:3000" {
+	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Headers",
-			"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+			"Accept, Cache-Control, Content-Type, Content-Length, Accept-Encoding, Authorization, Last-Event-ID")
 	}
 	if r.Method == "OPTIONS" {
 		return
 	}
+
+	log.WithFields(logrus.Fields{
+		"method": r.Method,
+		"path":   r.URL.RequestURI(),
+		"remote": r.RemoteAddr,
+	}).Debugf("%s %s", r.Method, r.URL.RequestURI())
 
 	for _, prefix := range apiRoutePrefixes {
 		if strings.HasPrefix(r.URL.Path, prefix) {

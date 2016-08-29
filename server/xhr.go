@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/cardigann/cardigann/config"
@@ -134,7 +133,7 @@ func (h *handler) patchIndexersConfigHandler(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *handler) postIndexerTestHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getIndexerTestHandler(w http.ResponseWriter, r *http.Request) {
 	if !h.checkRequestAuthorized(r) {
 		jsonError(w, "Not Authorized", http.StatusUnauthorized)
 		return
@@ -144,8 +143,14 @@ func (h *handler) postIndexerTestHandler(w http.ResponseWriter, r *http.Request)
 
 	i, err := h.lookupIndexer(indexerID)
 	if err != nil {
-		jsonError(w, "Not Found", http.StatusNotFound)
+		log.WithError(err).Error(err)
+		jsonError(w, "Indexer not Found", http.StatusNotFound)
 		return
+	}
+
+	if err = i.Login(); err != nil {
+		log.WithError(err).Error("Login failed")
+		jsonError(w, "Login failed: "+err.Error(), http.StatusNotFound)
 	}
 
 	err = i.Test()

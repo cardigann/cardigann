@@ -44,7 +44,7 @@ class App extends Component {
         method: "PATCH",
         body: JSON.stringify(config),
     })
-    .then(function(res){
+    .then((res) => {
       if(res.ok) {
         afterFunc();
       } else {
@@ -52,7 +52,7 @@ class App extends Component {
       }
     })
     .catch((err) => {
-      this.setState({errorMessage: err})
+      this.setState({errorMessage: err.toString()})
     });
   }
   handleAddIndexer = (selected) => {
@@ -65,16 +65,19 @@ class App extends Component {
       this.showConfigModal(selected, config, afterFunc);
     });
   }
+  handleDisableIndexer = (selected, afterFunc) => {
+    this.handleSaveIndexer(selected, {"enabled": false}, afterFunc);
+  }
   handleTestIndexer = (indexer, afterFunc) => {
     fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/test"), {
         headers: {
           'Accept': 'application/json',
           'Authorization': 'apitoken ' + this.state.apiKey,
         },
-        method: "POST",
+        method: "GET"
     })
     .then((response) => response.json())
-    .then(function(data){
+    .then((data) => {
       if(data.ok) {
         afterFunc(true);
       } else {
@@ -83,7 +86,7 @@ class App extends Component {
       }
     })
     .catch((err) => {
-      this.setState({errorMessage: err})
+      this.setState({errorMessage: err.toString()})
     });
   }
   handleAuthenticate = (apiKey) => {
@@ -130,7 +133,7 @@ class App extends Component {
       })
     })
     .catch((err) => {
-      this.setState({errorMessage: err.message, errorScope: "loading indexers"})
+      this.setState({errorMessage: err.toString(), errorScope: "loading indexers"})
     });
   }
   showConfigModal = (indexer, config, afterFunc) => {
@@ -188,7 +191,8 @@ class App extends Component {
             indexers={enabledIndexers}
             onEdit={this.handleEditIndexer}
             onSave={this.handleSaveIndexer}
-            onTest={this.handleTestIndexer} />
+            onTest={this.handleTestIndexer}
+            onDisable={this.handleDisableIndexer} />
           {this.state.configure}
         </div>
       </div>

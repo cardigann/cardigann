@@ -7,8 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 func jsonError(w http.ResponseWriter, errStr string, code int) {

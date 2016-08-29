@@ -7,7 +7,6 @@ import (
 
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/torznab"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jarcoal/httpmock"
 )
 
@@ -359,14 +358,6 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 			"Llama llama 2",
 			results[1].Title)
 	}
-
-	spew.Dump(results)
-
-	// if results[1].GUID != "details.php?2_archive" {
-	// 	t.Fatalf("Expected row 2 to have guid of %q, got %q",
-	// 		"details.php?2_archive",
-	// 		results[1].GUID)
-	// }
 
 	expectedDate := time.Date(2016, time.August, 20, 0, 0, 0, 0, time.UTC)
 	if !results[1].PublishDate.Equal(expectedDate) {
