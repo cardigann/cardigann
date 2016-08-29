@@ -31,7 +31,7 @@ deps: glide
 	./glide install
 
 glide:
-	curl -L https://github.com/Masterminds/glide/releases/download/v0.12.0/glide-v0.12.0-darwin-386.zip -o glide.zip
+	curl -L https://github.com/Masterminds/glide/releases/download/v0.12.0/glide-v0.12.0-linux-386.zip -o glide.zip
 	unzip glide.zip
 	mv ./linux-386/glide ./glide
 	rm -fr ./linux-386
