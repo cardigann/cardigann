@@ -202,7 +202,6 @@ func downloadCommand(key, url, file string) error {
 
 func configureServerCommand(app *kingpin.Application) {
 	var bindPort, bindAddr, password string
-	var devMode bool
 
 	cmd := app.Command("server", "Run the proxy (and web) server")
 	cmd.Flag("port", "The port to listen on").
@@ -219,15 +218,12 @@ func configureServerCommand(app *kingpin.Application) {
 		Required().
 		StringVar(&password)
 
-	cmd.Flag("dev", "Run in local development mode").
-		BoolVar(&devMode)
-
 	cmd.Action(func(c *kingpin.ParseContext) error {
-		return serverCommand(bindAddr, bindPort, password, devMode)
+		return serverCommand(bindAddr, bindPort, password)
 	})
 }
 
-func serverCommand(addr, port string, password string, devMode bool) error {
+func serverCommand(addr, port string, password string) error {
 	conf, err := config.NewJSONConfig()
 	if err != nil {
 		return err
@@ -237,7 +233,6 @@ func serverCommand(addr, port string, password string, devMode bool) error {
 	log.WithFields(logrus.Fields{"bind": listenOn}).Info("Starting server")
 
 	return http.ListenAndServe(listenOn, server.NewHandler(server.Params{
-		DevMode:    devMode,
 		Passphrase: password,
 		Config:     conf,
 	}))

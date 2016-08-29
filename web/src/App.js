@@ -9,6 +9,7 @@ import ConfigModal from "./ConfigModal";
 import AlertDismissable from "./AlertDismissable";
 import Login from './Login';
 import Logo from './cardigann.gif';
+import xhrUrl from './xhr';
 
 class App extends Component {
   static defaultProps = {
@@ -34,7 +35,7 @@ class App extends Component {
         configure: false
       });
     }
-    fetch("/xhr/indexers/"+indexer.id+"/config", {
+    fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/config"), {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -65,7 +66,7 @@ class App extends Component {
     });
   }
   handleTestIndexer = (indexer, afterFunc) => {
-    fetch("/xhr/indexers/"+indexer.id+"/test", {
+    fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/test"), {
         headers: {
           'Accept': 'application/json',
           'Authorization': 'apitoken ' + this.state.apiKey,
@@ -92,7 +93,7 @@ class App extends Component {
     });
   }
   loadIndexerConfig = (indexer, dataFunc) => {
-    fetch("/xhr/indexers/"+indexer.id+"/config", {
+    fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/config"), {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -107,7 +108,7 @@ class App extends Component {
       console.error("No api key is set");
       return;
     }
-    fetch("/xhr/indexers", {
+    fetch(xhrUrl("/xhr/indexers"), {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',

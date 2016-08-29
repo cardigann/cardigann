@@ -29,15 +29,15 @@ func (h *handler) postAuthHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if h.Params.Passphrase != req.Passphrase {
-		log.Info("Client failed to authenticate")
-		jsonError(w, "Invalid passphrase", http.StatusUnauthorized)
+		log.Info("Client provided password was incorrect")
+		jsonError(w, "Incorrect passphrase", http.StatusOK)
 		return
 	}
 
 	log.Debug("Client successfully authenticated")
 	k, err := h.sharedKey()
 	if err != nil {
-		log.Error(err)
+		log.WithError(err).Error("Generating shared key failed")
 		jsonError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -49,6 +49,7 @@ func (h *handler) postAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.WithError(err).Error("Encoding json response failed")
 		jsonError(w, err.Error(), http.StatusInternalServerError)
 	}
 }

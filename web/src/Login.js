@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { HelpBlock, Col, Modal, Button, Form, FormGroup, FormControl, ControlLabel} from 'react-bootstrap';
+import xhrUrl from './xhr';
 
 class Login extends Component {
   static defaultProps = {
@@ -20,16 +21,14 @@ class Login extends Component {
     this.authenticate(this.state.passphrase);
   }
   handleAuthError = (err) => {
+    console.error("Auth error:", err);
     this.setState({
       helpBlock: err,
       validationState: "error",
     });
   }
   authenticate = (passphrase) => {
-    let handleAuth = (data) => this.props.onAuthenticate(data.token);
-    let handleAuthError = (data) => this.handleAuthError(data.error);
-
-    fetch(this.props.authUrl, {
+    fetch(xhrUrl(this.props.authUrl), {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -37,21 +36,26 @@ class Login extends Component {
         method: "POST",
         body: JSON.stringify({ passphrase: passphrase })
     })
-    .then(function(res){
-      if(res.ok) {
-        console.log("ok response");
-        res.json().then(handleAuth);
-      } else {
-        console.log("error response");
-        res.json().then(handleAuthError);
+    .then((res) => {
+      if (!res.ok) {
+        throw Error("Failed XHR request: "+res.statusText);
       }
+      return res;
     })
-    .catch(function(res){
-        this.setState({
-          helpBlock: "Network connection error",
-          validationState: "error",
-        });
+    .then((res) => {
+      res.json().then((data) => {
+        console.log(data);
+        if (!data.hasOwnProperty("error")) {
+          console.log("authed ok", data);
+          this.props.onAuthenticate(data.token);
+        }
+        return this.handleAuthError(data.error);
+      });
+      return res;
     })
+    .catch((err) => {
+      this.handleAuthError(err.toString())
+    });
   }
   render() {
     return (

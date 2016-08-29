@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 
@@ -18,8 +17,7 @@ import (
 )
 
 const (
-	buildDir         = "/web/build"
-	localReactServer = "http://localhost:3000"
+	buildDir = "/web/build"
 )
 
 var (
@@ -32,7 +30,6 @@ var (
 
 type Params struct {
 	BaseURL    string
-	DevMode    bool
 	APIKey     []byte
 	Passphrase string
 	Config     config.Config
@@ -48,19 +45,6 @@ func NewHandler(p Params) http.Handler {
 	h := &handler{
 		Params:      p,
 		FileHandler: http.FileServer(FS(false)),
-	}
-
-	if p.DevMode {
-		u, err := url.Parse(localReactServer)
-		if err != nil {
-			panic(err)
-		}
-
-		log.Debugf("Proxying static requests to %s", localReactServer)
-		h.FileHandler = httputil.NewSingleHostReverseProxy(u)
-
-		k, _ := h.sharedKey()
-		log.Debugf("API Key is %x", k)
 	}
 
 	router := mux.NewRouter()
@@ -94,8 +78,11 @@ func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
 }
 
 func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
+	log.WithFields(log.Fields{"key": key}).Info("Looking up indexer")
+
 	def, err := indexer.LoadDefinition(key)
 	if err != nil {
+		log.WithError(err).Warnf("Failed to load definition for %q", key)
 		return nil, err
 	}
 
@@ -107,7 +94,17 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"method": r.Method,
 		"path":   r.URL.RequestURI(),
 		"remote": r.RemoteAddr,
-	}).Infof("%s %s", r.Method, r.URL.RequestURI())
+	}).Debugf("%s %s", r.Method, r.URL.RequestURI())
+
+	if origin := r.Header.Get("Origin"); origin == "http://localhost:3000" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+	}
+	if r.Method == "OPTIONS" {
+		return
+	}
 
 	for _, prefix := range apiRoutePrefixes {
 		if strings.HasPrefix(r.URL.Path, prefix) {
