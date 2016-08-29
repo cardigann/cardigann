@@ -5,7 +5,7 @@ PREFIX=github.com/cardigann/cardigann
 GOVERSION=$(shell go version)
 GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
-FLAGS=-X main.Version=$(VERSION)
+FLAGS=-X main.Version=$(VERSION) -s -w
 
 test:
 	go test -v ./indexer ./server ./config
