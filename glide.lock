@@ -1,5 +1,5 @@
 hash: d8045f6c45f357b4c8aa069799617c02c4a53049ac090c3445dfe972102f9ebd
-updated: 2016-08-18T14:35:28.644342548+01:00
+updated: 2016-08-29T12:56:41.400677488+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -24,7 +24,7 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: cf79e51a62d8219d52060dfc1b4e810414ba2d15
+  version: 0b13a922203ebdbfd236c818efcd5ed46097d690
 - name: github.com/headzoo/surf
   version: d8096fb5a962ff8edc05a5ebd49b1ebd11ce0389
   subpackages:
@@ -34,16 +34,26 @@ imports:
   - errors
   - util
 - name: github.com/PuerkitoBio/goquery
-  version: 7f4291566cf7cac3be222a933e01a2bed97532b1
+  version: 56a198aba89cdf7a612e6c762eff9d788b9f2dae
 - name: github.com/shibukawa/configdir
   version: f5173a2c50e0358987cec35dfca337496f88f8bf
+- name: github.com/Sirupsen/logrus
+  version: 08a8a7c27e3d058a8989316a850daad1c10bf4ab
 - name: github.com/vaughan0/go-ini
   version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
+- name: github.com/yosssi/gohtml
+  version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: 07b51741c1d6423d4a6abab1c49940ec09cb1aaf
+  version: 6250b412798208e6c90b03b7c4f226de5aa299e2
   subpackages:
   - html
   - html/atom
+- name: golang.org/x/sys
+  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
+  subpackages:
+  - unix
 - name: gopkg.in/alecthomas/kingpin.v2
   version: e5900212cbf65b181d3d8e08308ef06a01d117cf
+- name: gopkg.in/yaml.v2
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 devImports: []

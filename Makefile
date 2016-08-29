@@ -6,6 +6,9 @@ GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
 FLAGS=-X main.Version=$(VERSION)
 
+test:
+	go test -v ./indexer ./server ./config
+
 build: server/static.go
 	go build -o cardigann -ldflags="$(FLAGS)" $(PREFIX)
 
@@ -23,3 +26,13 @@ clean:
 run-dev:
 	cd web/; npm start &
 	rerun $(PREFIX) --debug server --passphrase "llamasrock"
+
+deps: glide
+	./glide install
+
+glide:
+	curl -L https://github.com/Masterminds/glide/releases/download/v0.12.0/glide-v0.12.0-darwin-386.zip -o glide.zip
+	unzip glide.zip
+	mv ./linux-386/glide ./glide
+	rm -fr ./linux-386
+	rm ./glide.zip
