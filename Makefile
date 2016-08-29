@@ -23,6 +23,7 @@ install:
 clean:
 	-rm cardigann
 	-rm -rf web/build server/static.go
+	-rm -rf release/
 
 run-dev:
 	cd web/; npm start &
@@ -38,8 +39,11 @@ glide:
 	rm -fr ./linux-386
 	rm ./glide.zip
 
+release/defs.zip: $(shell find definitions/)
+	zip release/defs.zip definitions/*
+
 .PHONY: release
-release:
+release: release/defs.zip
 	-mkdir -p release/
 	GOOS=linux  GOARCH=386 go build -o release/$(BIN)-linux-386 -ldflags="$(FLAGS)" $(PREFIX)
 	GOOS=linux  GOARCH=amd64 go build -o release/$(BIN)-linux-amd64 -ldflags="$(FLAGS)" $(PREFIX)
