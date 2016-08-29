@@ -1,5 +1,6 @@
 OS=$(shell uname -s)
 ARCH=$(shell uname -m)
+BIN=cardigann
 PREFIX=github.com/cardigann/cardigann
 GOVERSION=$(shell go version)
 GOBIN=$(shell go env GOBIN)
@@ -10,7 +11,7 @@ test:
 	go test -v ./indexer ./server ./config
 
 build: server/static.go
-	go build -o cardigann -ldflags="$(FLAGS)" $(PREFIX)
+	go build -o $(BIN) -ldflags="$(FLAGS)" $(PREFIX)
 
 server/static.go: $(shell find web/src)
 	cd web; npm run build
@@ -36,3 +37,11 @@ glide:
 	mv ./linux-386/glide ./glide
 	rm -fr ./linux-386
 	rm ./glide.zip
+
+.PHONY: release
+release:
+	-mkdir -p release/
+	GOOS=linux  GOARCH=386 go build -o release/$(BIN)-linux-386 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=linux  GOARCH=amd64 go build -o release/$(BIN)-linux-amd64 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=darwin GOARCH=amd64 go build -o release/$(BIN)-darwin-amd64 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=windows GOARCH=386 go build -o release/$(BIN)-windows-386 -ldflags="$(FLAGS)" $(PREFIX)
