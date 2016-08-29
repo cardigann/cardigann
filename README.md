@@ -30,6 +30,7 @@ Once the server is running, visit http://localhost:5060 and configure via the we
 * BIT-HDTV
 * IPTorrents
 * Freshon
+* Demonoid
 
 ## Planned Trackers
 
