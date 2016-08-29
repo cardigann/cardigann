@@ -1,5 +1,5 @@
-hash: d8045f6c45f357b4c8aa069799617c02c4a53049ac090c3445dfe972102f9ebd
-updated: 2016-08-29T12:56:41.400677488+10:00
+hash: d3b0f900c5c6c10a720d8d37f1f64fd3b6c23004f913fb5e8ae3b8ce2a80896b
+updated: 2016-08-29T13:03:34.197092947+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -33,6 +33,8 @@ imports:
   - jar
   - errors
   - util
+- name: github.com/jarcoal/httpmock
+  version: 145b10d659265440f062c31ea15326166bae56ee
 - name: github.com/PuerkitoBio/goquery
   version: 56a198aba89cdf7a612e6c762eff9d788b9f2dae
 - name: github.com/shibukawa/configdir
