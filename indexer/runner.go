@@ -306,9 +306,6 @@ func (r *Runner) Test() error {
 			if result.Site == "" {
 				return fmt.Errorf("Result row %d has blank site", idx+1)
 			}
-			if result.Category == 0 {
-				return fmt.Errorf("Result row %d has blank category", idx+1)
-			}
 		}
 	}
 
