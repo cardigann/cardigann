@@ -50,7 +50,6 @@ func NewJSONConfig() (Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Dirs: %#v", dirs)
 
 	defaultDir, err := DefaultDir()
 	if err != nil {
@@ -99,8 +98,6 @@ func (jc *jsonConfig) Get(section, key string) (string, bool, error) {
 	if err != nil {
 		return "", false, err
 	}
-
-	log.Printf("%#v", c)
 
 	v, ok := c[section][key]
 	if !ok {
