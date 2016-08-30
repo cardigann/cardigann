@@ -2,9 +2,18 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strconv"
 
-	"github.com/shibukawa/configdir"
+	"github.com/Sirupsen/logrus"
+	"github.com/cardigann/cardigann/logger"
+)
+
+var (
+	log = logger.Logger
 )
 
 const (
@@ -12,26 +21,51 @@ const (
 )
 
 type jsonConfig struct {
-	configDirs configdir.ConfigDir
+	dirs       []string
+	defaultDir string
 }
 
+type boolOrString string
+
+func (b *boolOrString) UnmarshalJSON(data []byte) error {
+	var boolVal bool
+	if err := json.Unmarshal(data, &boolVal); err == nil {
+		*b = boolOrString(strconv.FormatBool(boolVal))
+		return nil
+	}
+
+	var strVal string
+	if err := json.Unmarshal(data, &strVal); err == nil {
+		*b = boolOrString(strVal)
+		return nil
+	}
+
+	return errors.New("Failed to unmarshal boolOrString")
+}
+
+type jsonConfigMap map[string]map[string]boolOrString
+
 func NewJSONConfig() (Config, error) {
-	cwd, err := os.Getwd()
+	dirs, err := Dirs()
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Dirs: %#v", dirs)
 
-	cd := configdir.New("cardigann", "cardigann")
-	cd.LocalPath = cwd
-
-	return &jsonConfig{cd}, nil
+	defaultDir, err := DefaultDir()
+	if err != nil {
+		return nil, err
+	}
+	return &jsonConfig{dirs, defaultDir}, nil
 }
 
-func (jc *jsonConfig) load() (configMap, error) {
-	config := configMap{}
-	folder := jc.configDirs.QueryFolderContainsFile(configFileName)
-	if folder != nil {
-		data, err := folder.ReadFile(configFileName)
+func (jc *jsonConfig) load() (jsonConfigMap, error) {
+	config := jsonConfigMap{}
+
+	path, err := Find(configFileName, jc.dirs)
+	if err == nil {
+		log.WithFields(logrus.Fields{"file": path}).Debug("Reading config file")
+		data, err := ioutil.ReadFile(path)
 		if err != nil {
 			return nil, err
 		}
@@ -42,19 +76,22 @@ func (jc *jsonConfig) load() (configMap, error) {
 	return config, nil
 }
 
-func (jc *jsonConfig) save(c configMap) error {
+func (jc *jsonConfig) save(c jsonConfigMap) error {
+	path, err := Find(configFileName, jc.dirs)
+	if err != nil {
+		if err = os.MkdirAll(jc.defaultDir, 0700); err != nil {
+			return err
+		}
+		path = filepath.Join(jc.defaultDir, configFileName)
+	}
+
 	b, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	var folder *configdir.Config
-	if folder = jc.configDirs.QueryFolderContainsFile(configFileName); folder == nil {
-		folders := jc.configDirs.QueryFolders(configdir.Global)
-		folder = folders[0]
-	}
-
-	return folder.WriteFile(configFileName, b)
+	log.WithFields(logrus.Fields{"file": path}).Debug("Writing config file")
+	return ioutil.WriteFile(path, b, 0700)
 }
 
 func (jc *jsonConfig) Get(section, key string) (string, bool, error) {
@@ -63,8 +100,14 @@ func (jc *jsonConfig) Get(section, key string) (string, bool, error) {
 		return "", false, err
 	}
 
+	log.Printf("%#v", c)
+
 	v, ok := c[section][key]
-	return v, ok, nil
+	if !ok {
+		return "", false, nil
+	}
+
+	return string(v), true, nil
 }
 
 func (jc *jsonConfig) Set(section, key, value string) error {
@@ -73,10 +116,12 @@ func (jc *jsonConfig) Set(section, key, value string) error {
 		return err
 	}
 
-	c[section][key] = value
+	if _, ok := c[section]; !ok {
+		c[section] = map[string]boolOrString{}
+	}
 
-	err = jc.save(c)
-	if err != nil {
+	c[section][key] = boolOrString(value)
+	if err = jc.save(c); err != nil {
 		return err
 	}
 
@@ -103,5 +148,10 @@ func (jc *jsonConfig) Section(section string) (map[string]string, error) {
 		return nil, err
 	}
 
-	return c[section], nil
+	result := map[string]string{}
+	for key, val := range c[section] {
+		result[key] = string(val)
+	}
+
+	return result, nil
 }
