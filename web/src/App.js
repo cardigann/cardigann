@@ -29,12 +29,6 @@ class App extends Component {
     return this.state.enabledIndexers.filter((x) => x === indexer.id).length > 0;
   }
   handleSaveIndexer = (indexer, config, afterFunc) => {
-    if (!this.isEnabled(indexer)) {
-      this.setState({
-        enabledIndexers: this.state.enabledIndexers.concat([indexer.id]),
-        configure: false
-      });
-    }
     fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/config"), {
         headers: {
           'Accept': 'application/json',
@@ -52,11 +46,14 @@ class App extends Component {
       }
     })
     .catch((err) => {
+      console.warn(err);
       this.setState({errorMessage: err.toString()})
     });
   }
   handleAddIndexer = (selected) => {
+    console.log("adding indexer", selected);
     this.loadIndexerConfig(selected, (config) => {
+      console.log("showing model for indexer", selected, config);
       this.showConfigModal(selected, config);
     });
   }
@@ -66,7 +63,12 @@ class App extends Component {
     });
   }
   handleDisableIndexer = (selected, afterFunc) => {
-    this.handleSaveIndexer(selected, {"enabled": false}, afterFunc);
+    this.handleSaveIndexer(selected, {"enabled": "false"}, () => {
+      afterFunc();
+      this.setState({
+        enabledIndexers: this.state.enabledIndexers.filter((x) => x !== selected.id)
+      });
+    });
   }
   handleTestIndexer = (indexer, afterFunc) => {
     fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/test"), {
@@ -81,12 +83,13 @@ class App extends Component {
       if(data.ok) {
         afterFunc(true);
       } else {
-        this.setState({errorMessage: data.error})
         afterFunc(false, data.error);
+        throw Error(data.error);
       }
     })
     .catch((err) => {
-      this.setState({errorMessage: err.toString()})
+      console.warn(err);
+      this.setState({errorMessage: err.message}, () => afterFunc(false, err.message))
     });
   }
   handleAuthenticate = (apiKey) => {
@@ -96,6 +99,7 @@ class App extends Component {
     });
   }
   loadIndexerConfig = (indexer, dataFunc) => {
+    console.log("loading config for indexer", indexer);
     fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/config"), {
         headers: {
           'Accept': 'application/json',
@@ -105,6 +109,10 @@ class App extends Component {
     })
     .then((response) => response.json())
     .then(dataFunc)
+    .catch((err) => {
+      console.warn(err);
+      this.setState({errorMessage: err.message})
+    });
   }
   loadIndexers = () => {
     if (!this.state.apiKey) {
@@ -133,10 +141,15 @@ class App extends Component {
       })
     })
     .catch((err) => {
-      this.setState({errorMessage: err.toString(), errorScope: "loading indexers"})
+      console.warn(err);
+      this.setState({errorMessage: err.message, errorScope: "loading indexers"})
     });
   }
   showConfigModal = (indexer, config, afterFunc) => {
+    if (typeof(afterFunc) !== "function") {
+      afterFunc = () => {};
+    }
+    console.log("showConfigModal", indexer, config, afterFunc);
     this.setState({
       configure: <ConfigModal config={config} indexer={indexer} show={true}
         onClose={() => {
@@ -144,10 +157,16 @@ class App extends Component {
           afterFunc();
         }}
         onSave={(indexer, config, afterSaveFunc) => {
+          if (!this.isEnabled(indexer)) {
+            this.setState({
+              enabledIndexers: this.state.enabledIndexers.concat([indexer.id]),
+              configure: false
+            });
+          }
           this.handleSaveIndexer(indexer, config, () => { afterFunc(); afterSaveFunc() });
         }}
       />
-    });
+    }, () => console.log("finished setting modal state"));
   }
   componentWillMount() {
     if (this.state.apiKey) {

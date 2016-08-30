@@ -31,7 +31,7 @@ class ConfigModal extends Component {
       username: ReactDOM.findDOMNode(this.refs.username).value,
       password: ReactDOM.findDOMNode(this.refs.password).value,
       enabled: "true"
-    }, () => this.setState({show: false}));
+    }, () => {});
   }
   render() {
     return (

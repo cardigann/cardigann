@@ -67,7 +67,6 @@ class IndexerListRow extends Component {
   }
   handleDisableClick = () => {
     this.setState({disabling: true});
-    console.log("handling disable click");
     this.props.onDisable(this.props.indexer, (config) => {
       this.setState({disabling: false});
     });
