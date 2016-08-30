@@ -234,6 +234,13 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 		},
 	}
 
+	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
+		resp.Header.Set("Location", "/login.php")
+		resp.Request = req
+		return resp, nil
+	})
+
 	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
 		resp.Request = req
@@ -288,6 +295,13 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 	}
 
 	r := NewRunner(def, conf)
+
+	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
+		resp.Header.Set("Location", "/login.php")
+		resp.Request = req
+		return resp, nil
+	})
 
 	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
@@ -347,6 +361,13 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 	}
 
 	r := NewRunner(def, conf)
+
+	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
+		resp.Header.Set("Location", "/login.php")
+		resp.Request = req
+		return resp, nil
+	})
 
 	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)

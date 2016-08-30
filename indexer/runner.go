@@ -227,6 +227,27 @@ func (r *Runner) login() error {
 	filterLogger = r.Logger
 	filterCategoryMapping = r.Capabilities().Categories
 
+	if r.Definition.Login.Test.Path != "" {
+		r.Logger.
+			WithField("path", r.Definition.Login.Test).
+			Debug("Testing if login is needed")
+
+		testUrl, err := r.resolvePath(r.Definition.Login.Test.Path)
+		if err != nil {
+			return err
+		}
+
+		err = r.openPage(testUrl)
+		if err != nil {
+			return err
+		}
+
+		if testUrl == r.Browser.Url().String() {
+			r.Logger.Debug("No login needed, already logged in")
+			return nil
+		}
+	}
+
 	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
 	if err != nil {
 		return err
