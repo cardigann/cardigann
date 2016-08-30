@@ -1,11 +1,16 @@
-OS=$(shell uname -s)
-ARCH=$(shell uname -m)
 BIN=cardigann
 PREFIX=github.com/cardigann/cardigann
 GOVERSION=$(shell go version)
 GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
 FLAGS=-X main.Version=$(VERSION) -s -w
+OS=$(shell uname -s | tr A-Z a-z)
+
+ifeq ($(shell getconf LONG_BIT),64)
+   ARCH=amd64
+else
+   ARCH=386
+endif
 
 test:
 	go test -v ./indexer ./server ./config
@@ -33,10 +38,10 @@ deps: glide
 	./glide install
 
 glide:
-	curl -L https://github.com/Masterminds/glide/releases/download/v0.12.0/glide-v0.12.0-linux-386.zip -o glide.zip
+	curl -L https://github.com/Masterminds/glide/releases/download/v0.12.0/glide-v0.12.0-$(OS)-$(ARCH).zip -o glide.zip
 	unzip glide.zip
-	mv ./linux-386/glide ./glide
-	rm -fr ./linux-386
+	mv ./$(OS)-$(ARCH)/glide ./glide
+	rm -fr ./$(OS)-$(ARCH)
 	rm ./glide.zip
 
 release/defs.zip: $(shell find definitions/)
