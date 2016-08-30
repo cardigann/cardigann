@@ -13,7 +13,7 @@ else
 endif
 
 test:
-	go test -v ./indexer ./server ./config
+	go test -v ./indexer ./server ./config ./torznab
 
 test-defs:
 	find definitions -name '*.yml' -print -exec go run *.go test {} \;
