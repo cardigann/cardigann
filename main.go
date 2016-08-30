@@ -101,11 +101,6 @@ func queryCommand(key, format string, args []string) error {
 		return err
 	}
 
-	err = indexer.Login()
-	if err != nil {
-		return fmt.Errorf("Login failed: %s", err.Error())
-	}
-
 	vals := url.Values{}
 	for _, arg := range args {
 		tokens := strings.SplitN(arg, "=", 2)
@@ -261,13 +256,6 @@ func testDefinitionCommand(f *os.File) error {
 
 	runner := indexer.NewRunner(def, conf)
 	runner.Logger = log
-
-	err = runner.Login()
-	if err != nil {
-		return fmt.Errorf("Login failed: %s", err.Error())
-	}
-
-	fmt.Println("Login OK")
 
 	err = runner.Test()
 	if err != nil {

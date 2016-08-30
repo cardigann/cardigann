@@ -44,9 +44,7 @@ class Login extends Component {
     })
     .then((res) => {
       res.json().then((data) => {
-        console.log(data);
         if (!data.hasOwnProperty("error")) {
-          console.log("authed ok", data);
           this.props.onAuthenticate(data.token);
         }
         return this.handleAuthError(data.error);

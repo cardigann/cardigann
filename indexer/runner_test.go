@@ -245,7 +245,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 	})
 
 	r := NewRunner(def, conf)
-	err = r.Login()
+	err = r.login()
 
 	if err == nil || err.Error() != "Login failed" {
 		t.Fatalf("Expected 'Login failed', got %#v", err)
@@ -262,7 +262,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 		return resp, nil
 	})
 
-	err = r.Login()
+	err = r.login()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -286,6 +286,12 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 	}
 
 	r := NewRunner(def, conf)
+
+	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
+		resp.Request = req
+		return resp, nil
+	})
 
 	httpmock.RegisterResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, exampleSearchPage)
@@ -333,6 +339,12 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 	}
 
 	r := NewRunner(def, conf)
+
+	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
+		resp.Request = req
+		return resp, nil
+	})
 
 	httpmock.RegisterResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, exampleSearchPageWithDateHeadersAndMultiRow)

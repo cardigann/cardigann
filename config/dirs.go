@@ -45,8 +45,8 @@ func DefaultDir() (string, error) {
 }
 
 func Find(filename string, dirs []string) (string, error) {
-	for i := len(dirs) - 1; i >= 0; i-- {
-		path := filepath.Join(dirs[i], filename)
+	for _, dir := range dirs {
+		path := filepath.Join(dir, filename)
 		if _, err := os.Stat(path); err == nil {
 			return path, nil
 		}

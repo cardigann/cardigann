@@ -39,11 +39,12 @@ class App extends Component {
         body: JSON.stringify(config),
     })
     .then((res) => {
-      if(res.ok) {
-        afterFunc();
-      } else {
-        console.log("error response");
+      if (!res.ok) {
+        return res.json().then((resp) => {
+          throw Error(resp.error);
+        });
       }
+      afterFunc();
     })
     .catch((err) => {
       console.warn(err);
@@ -51,9 +52,7 @@ class App extends Component {
     });
   }
   handleAddIndexer = (selected) => {
-    console.log("adding indexer", selected);
     this.loadIndexerConfig(selected, (config) => {
-      console.log("showing model for indexer", selected, config);
       this.showConfigModal(selected, config);
     });
   }
@@ -99,7 +98,6 @@ class App extends Component {
     });
   }
   loadIndexerConfig = (indexer, dataFunc) => {
-    console.log("loading config for indexer", indexer);
     fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/config"), {
         headers: {
           'Accept': 'application/json',
@@ -149,7 +147,6 @@ class App extends Component {
     if (typeof(afterFunc) !== "function") {
       afterFunc = () => {};
     }
-    console.log("showConfigModal", indexer, config, afterFunc);
     this.setState({
       configure: <ConfigModal config={config} indexer={indexer} show={true}
         onClose={() => {

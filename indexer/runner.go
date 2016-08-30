@@ -223,7 +223,7 @@ func (r *Runner) extractInputLogins() (map[string]string, error) {
 	return result, nil
 }
 
-func (r *Runner) Login() error {
+func (r *Runner) login() error {
 	filterLogger = r.Logger
 	filterCategoryMapping = r.Capabilities().Categories
 
@@ -320,6 +320,11 @@ func (r *Runner) Capabilities() torznab.Capabilities {
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	filterLogger = r.Logger
 	filterCategoryMapping = r.Capabilities().Categories
+
+	if err := r.login(); err != nil {
+		r.Logger.WithError(err).Error("Login failed")
+		return nil, err
+	}
 
 	searchUrl, err := r.resolvePath(r.Definition.Search.Path)
 	if err != nil {
@@ -577,7 +582,8 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 }
 
 func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
-	if err := r.Login(); err != nil {
+	if err := r.login(); err != nil {
+		r.Logger.WithError(err).Error("Login failed")
 		return nil, http.Header{}, err
 	}
 

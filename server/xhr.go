@@ -185,11 +185,6 @@ func (h *handler) getIndexerTestHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = i.Login()
-	if err != nil {
-		log.WithError(err).Error("Login failed")
-	}
-
 	if err == nil {
 		if err = i.Test(); err != nil {
 			log.WithError(err).Error("Test failed")

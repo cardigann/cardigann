@@ -3,7 +3,6 @@ package indexer
 import (
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -28,7 +27,6 @@ func findDefinitions() (map[string]string, error) {
 			}
 			for _, basename := range files {
 				if strings.HasSuffix(basename, ".yml") {
-					log.Printf("Found definition %s", path.Join(dir.Name(), basename))
 					results[strings.TrimSuffix(basename, ".yml")] = path.Join(dir.Name(), basename)
 				}
 			}
