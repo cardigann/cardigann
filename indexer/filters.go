@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/cardigann/cardigann/torznab"
 )
 
 const (
@@ -20,8 +19,7 @@ const (
 )
 
 var (
-	filterLogger          logrus.FieldLogger
-	filterCategoryMapping torznab.CategoryMapping
+	filterLogger logrus.FieldLogger
 )
 
 func init() {
@@ -73,9 +71,6 @@ func invokeFilter(name string, args interface{}, value string) (string, error) {
 			return "", fmt.Errorf("Filter %q requires a string argument", name)
 		}
 		return filterRelTime(value, format, time.Now())
-
-	case "mapcats":
-		return filterMapCategory(value)
 	}
 
 	return "", errors.New("Unknown filter " + name)
@@ -222,16 +217,4 @@ func filterRelTime(src string, format string, now time.Time) (string, error) {
 	}
 
 	return out, nil
-}
-
-func filterMapCategory(value string) (string, error) {
-	catID, err := strconv.Atoi(value)
-	if err != nil {
-		return "", fmt.Errorf("Unable to parse category id %s", value)
-	}
-	mappedCat, ok := filterCategoryMapping[catID]
-	if !ok {
-		return "", fmt.Errorf("No category mapping found for id %d", catID)
-	}
-	return strconv.Itoa(mappedCat.ID), nil
 }

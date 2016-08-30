@@ -7,6 +7,9 @@
     - https://freshon.tv/
 
   caps:
+    categories:
+      1: TV
+
     modes:
       tv-search: [q, season, ep]
 
@@ -30,7 +33,7 @@
       selector: table#highlight > tbody > tr:not(.colhead)
     fields:
       category:
-        text: 5000
+        text: 1
       title:
         selector: a.torrent_name_link
         attribute: title

@@ -16,6 +16,7 @@ import (
 
 type IndexerDefinition struct {
 	Site         string            `yaml:"site"`
+	Options      optionsBlock      `yaml:"options"`
 	Name         string            `yaml:"name"`
 	Description  string            `yaml:"description"`
 	Language     string            `yaml:"language"`
@@ -23,6 +24,10 @@ type IndexerDefinition struct {
 	Capabilities capabilitiesBlock `yaml:"caps"`
 	Login        loginBlock        `yaml:"login"`
 	Search       searchBlock       `yaml:"search"`
+}
+
+type optionsBlock struct {
+	MapChildCatsToParent bool `yaml:"map_child_cats_to_parent"`
 }
 
 func ParseDefinitionFile(f *os.File) (*IndexerDefinition, error) {

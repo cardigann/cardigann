@@ -1,8 +1,14 @@
 package torznab
 
+import "fmt"
+
 type Category struct {
 	ID   int
 	Name string
+}
+
+func (c Category) String() string {
+	return fmt.Sprintf("%s[%d]", c.Name, c.ID)
 }
 
 const (
@@ -80,7 +86,7 @@ var (
 	CategoryBooks_Unknown      = Category{7999, "Books/Unknown"}
 )
 
-var AllCategories = []Category{
+var AllCategories = Categories{
 	CategoryOther,
 	CategoryOther_Misc,
 	CategoryOther_Hashed,
@@ -149,6 +155,28 @@ var AllCategories = []Category{
 	CategoryBooks_Unknown,
 }
 
+func ParentCategory(c Category) Category {
+	switch {
+	case c.ID < 1000:
+		return CategoryOther
+	case c.ID < 2000:
+		return CategoryConsole
+	case c.ID < 3000:
+		return CategoryMovies
+	case c.ID < 4000:
+		return CategoryAudio
+	case c.ID < 5000:
+		return CategoryPC
+	case c.ID < 6000:
+		return CategoryTV
+	case c.ID < 7000:
+		return CategoryXXX
+	case c.ID < 8000:
+		return CategoryBooks
+	}
+	return CategoryOther
+}
+
 type CategoryMapping map[int]Category
 
 func (mapping CategoryMapping) Categories() Categories {
@@ -166,21 +194,47 @@ func (mapping CategoryMapping) Categories() Categories {
 	return cats
 }
 
-func (mapping CategoryMapping) ReverseMap(cats []int) []int {
+func (mapping CategoryMapping) Resolve(cat Category) int {
+	for localID, mappedCat := range mapping {
+		if mappedCat.ID == cat.ID {
+			return localID
+		}
+	}
+
+	for localID, mappedCat := range mapping {
+		if mappedCat.ID == ParentCategory(cat).ID {
+			return localID
+		}
+	}
+
+	return 0
+}
+
+func (mapping CategoryMapping) ResolveAll(cats ...Category) []int {
 	results := []int{}
 
-	for _, unmapped := range cats {
-		for localID, cat := range mapping {
-			if cat.ID == unmapped {
-				results = append(results, localID)
-			}
-		}
+	for _, cat := range cats {
+		results = append(results, mapping.Resolve(cat))
 	}
 
 	return results
 }
 
 type Categories []Category
+
+func (slice Categories) Subset(ids ...int) Categories {
+	cats := Categories{}
+
+	for _, cat := range AllCategories {
+		for _, id := range ids {
+			if cat.ID == id {
+				cats = append(cats, cat)
+			}
+		}
+	}
+
+	return cats
+}
 
 func (slice Categories) Len() int {
 	return len(slice)

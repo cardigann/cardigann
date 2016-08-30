@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -40,7 +41,7 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 	bow := surf.NewBrowser()
 	bow.SetUserAgent(agent.Chrome())
 	bow.SetAttribute(browser.SendReferer, false)
-	bow.SetAttribute(browser.MetaRefreshHandling, false)
+	bow.SetAttribute(browser.MetaRefreshHandling, true)
 
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel
@@ -97,6 +98,27 @@ func (r *Runner) resolvePath(urlPath string) (string, error) {
 	return resolved.String(), nil
 }
 
+// this should eventually upstream into surf browser
+func (r *Runner) handleMetaRefreshHeader() error {
+	h := r.Browser.ResponseHeaders()
+
+	if refresh := h.Get("Refresh"); refresh != "" {
+		if s := regexp.MustCompile(`\s*;\s*`).Split(refresh, 2); len(s) == 2 {
+			r.Logger.
+				WithField("fields", s).
+				Debug("Found refresh header")
+
+			u, err := r.resolvePath(strings.TrimPrefix(s[1], "url="))
+			if err != nil {
+				return err
+			}
+
+			return r.openPage(u)
+		}
+	}
+	return nil
+}
+
 func (r *Runner) openPage(u string) error {
 	r.Logger.WithField("url", u).Debug("Attempting to open page")
 
@@ -108,6 +130,10 @@ func (r *Runner) openPage(u string) error {
 	r.Logger.
 		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
 		Debugf("Finished request")
+
+	if err = r.handleMetaRefreshHeader(); err != nil {
+		return err
+	}
 
 	return r.cachePage()
 }
@@ -223,30 +249,38 @@ func (r *Runner) extractInputLogins() (map[string]string, error) {
 	return result, nil
 }
 
+func (r *Runner) isLoginRequired() bool {
+	if r.Definition.Login.Test.Path == "" {
+		return true
+	}
+
+	r.Logger.
+		WithField("path", r.Definition.Login.Test).
+		Debug("Testing if login is needed")
+
+	testUrl, err := r.resolvePath(r.Definition.Login.Test.Path)
+	if err != nil {
+		r.Logger.WithError(err).Warn("Failed to resolve path")
+		return true
+	}
+
+	err = r.openPage(testUrl)
+	if err != nil {
+		r.Logger.WithError(err).Warn("Failed to open page")
+		return true
+	}
+
+	if testUrl == r.Browser.Url().String() {
+		r.Logger.Debug("No login needed, already logged in")
+		return false
+	}
+
+	r.Logger.Debug("Login is required")
+	return true
+}
+
 func (r *Runner) login() error {
 	filterLogger = r.Logger
-	filterCategoryMapping = r.Capabilities().Categories
-
-	if r.Definition.Login.Test.Path != "" {
-		r.Logger.
-			WithField("path", r.Definition.Login.Test).
-			Debug("Testing if login is needed")
-
-		testUrl, err := r.resolvePath(r.Definition.Login.Test.Path)
-		if err != nil {
-			return err
-		}
-
-		err = r.openPage(testUrl)
-		if err != nil {
-			return err
-		}
-
-		if testUrl == r.Browser.Url().String() {
-			r.Logger.Debug("No login needed, already logged in")
-			return nil
-		}
-	}
 
 	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
 	if err != nil {
@@ -340,11 +374,12 @@ func (r *Runner) Capabilities() torznab.Capabilities {
 
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	filterLogger = r.Logger
-	filterCategoryMapping = r.Capabilities().Categories
 
-	if err := r.login(); err != nil {
-		r.Logger.WithError(err).Error("Login failed")
-		return nil, err
+	if r.isLoginRequired() {
+		if err := r.login(); err != nil {
+			r.Logger.WithError(err).Error("Login failed")
+			return nil, err
+		}
 	}
 
 	searchUrl, err := r.resolvePath(r.Definition.Search.Path)
@@ -361,9 +396,17 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	}
 
 	localCats := []int{}
+	if queryCatIDs, ok := query["cat"].([]int); ok {
+		queryCats := torznab.AllCategories.Subset(queryCatIDs...)
 
-	if unmappedCats, ok := query["cat"].([]int); ok {
-		localCats = r.Capabilities().Categories.ReverseMap(unmappedCats)
+		// resolve query categories to the exact local, or the local based on parent cat
+		for _, id := range r.Capabilities().Categories.ResolveAll(queryCats...) {
+			localCats = append(localCats, id)
+		}
+
+		r.Logger.
+			WithFields(logrus.Fields{"querycats": queryCatIDs, "local": localCats}).
+			Debugf("Resolved torznab cats to local")
 	}
 
 	inputCtx := struct {
@@ -417,7 +460,6 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
 		Debugf("Finished opening form")
 
-	items := []torznab.ResultItem{}
 	timer := time.Now()
 	dom := r.Browser.Dom()
 
@@ -438,161 +480,39 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		"rows":     rows.Length(),
 		"selector": r.Definition.Search.Rows.Selector,
 		"limit":    limit,
-	}).
-		Debugf("Found %d rows", rows.Length())
+	}).Debugf("Found %d rows", rows.Length())
+
+	items := []torznab.ResultItem{}
 
 	for i := 0; i < rows.Length() && (!hasLimit || len(items) < limit); i++ {
-		row := map[string]string{}
-
-		html, _ := goquery.OuterHtml(rows.Eq(i))
-		r.Logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing row")
-
-		for _, item := range r.Definition.Search.Fields {
-			r.Logger.
-				WithFields(logrus.Fields{"row": i + 1, "block": item.Block.String()}).
-				Debugf("Processing field %q", item.Field)
-
-			val, err := item.Block.MatchText(rows.Eq(i))
-			if err != nil {
-				return nil, err
-			}
-
-			r.Logger.
-				WithFields(logrus.Fields{"row": i + 1, "output": val}).
-				Debugf("Finished processing field %q", item.Field)
-
-			row[item.Field] = val
+		item, err := r.extractItem(i+1, rows.Eq(i))
+		if err != nil {
+			return nil, err
 		}
 
-		item := torznab.ResultItem{
-			Site:            r.Definition.Site,
-			MinimumRatio:    1,
-			MinimumSeedTime: time.Hour * 48,
-		}
-
-		r.Logger.
-			WithFields(logrus.Fields{"row": i + 1, "data": row}).
-			Debugf("Finished row %d", i+1)
-
-		for key, val := range row {
-			switch key {
-			case "download":
-				u, err := r.resolvePath(val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
-					continue
-				}
-				item.Link = u
-			case "details":
-				u, err := r.resolvePath(val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
-					continue
-				}
-				item.GUID = u
-			case "comments":
-				u, err := r.resolvePath(val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed url in %s", i+1, key)
-					continue
-				}
-				item.Comments = u
-			case "title":
-				item.Title = val
-			case "description":
-				item.Description = val
-			case "category":
-				catID, err := strconv.Atoi(val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed categoryid: %s", i+1, err.Error())
-					continue
-				}
-				item.Category = catID
-			case "size":
-				bytes, err := humanize.ParseBytes(val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed size: %s", i+1, err.Error())
-					continue
-				}
-				item.Size = bytes
-			case "leechers":
-				leechers, err := strconv.Atoi(val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed leechers value in %s", i+1, key)
-					continue
-				}
-				item.Peers += leechers
-			case "seeders":
-				seeders, err := strconv.Atoi(val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed seeders value in %s", i+1, key)
-					continue
-				}
-				item.Seeders = seeders
-				item.Peers += seeders
-			case "date":
-				t, err := time.Parse(filterTimeFormat, val)
-				if err != nil {
-					r.Logger.Warnf("Search result row #%d has malformed time value in %s", i+1, key)
-					continue
-				}
-				item.PublishDate = t
-			default:
-				return nil, fmt.Errorf("Unknown field %q", key)
-			}
-		}
-
-		skipItem := false
-
-		// some trackers have empty rows when there are no results
-		if item.Title == "" {
-			return nil, nil
-		}
-
-		if item.GUID == "" && item.Link != "" {
-			item.GUID = item.Link
-		}
-
-		// if there is a dateheaders field, we need to look for a preceeding date header
-		if dateHeaders := r.Definition.Search.Rows.DateHeaders; !dateHeaders.IsEmpty() {
-			r.Logger.
-				WithFields(logrus.Fields{"selector": dateHeaders.String()}).
-				Debugf("Searching for date header")
-
-			prev := rows.Eq(i).PrevAllFiltered(dateHeaders.Selector).First()
-			if prev.Length() == 0 {
-				r.Logger.
-					WithFields(logrus.Fields{"row": i + 1}).
-					Warnf("No preceding date header found for row %#d", i+1)
-			}
-
-			dv, _ := dateHeaders.Text(prev.First())
-			date, err := time.Parse(filterTimeFormat, dv)
-			if err != nil {
-				return nil, fmt.Errorf("Failed to parse date header: %s", err.Error())
-			}
-
-			item.PublishDate = date
-		}
-
-		// some trackers don't support filtering by categories, so do it for them
-		if catFilters, hasCats := query["cat"].([]int); hasCats {
-			var catMatch bool
-			for _, catId := range catFilters {
-				r.Logger.Debugf("Checking item cat %d against query cat %d", item.Category, catId)
+		var matchCat bool
+		if len(localCats) > 0 {
+			for _, catId := range localCats {
 				if catId == item.Category {
-					catMatch = true
+					matchCat = true
 				}
-			}
-			if !catMatch {
-				r.Logger.Debugf("Skipping row due to non-matching category")
-				skipItem = skipItem || !catMatch
 			}
 		}
 
-		if !skipItem {
-			items = append(items, item)
+		if !matchCat {
+			r.Logger.
+				WithFields(logrus.Fields{"id": item.Category, "localCats": localCats}).
+				Debug("Skipping non-matching category")
+			continue
 		}
+
+		if mappedCat, ok := r.Definition.Capabilities.Categories[item.Category]; ok {
+			item.Category = mappedCat.ID
+		} else {
+			item.Category = item.Category + torznab.CustomCategoryOffset
+		}
+
+		items = append(items, item)
 	}
 
 	r.Logger.
@@ -602,10 +522,150 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	return items, nil
 }
 
+func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (torznab.ResultItem, error) {
+	row := map[string]string{}
+
+	html, _ := goquery.OuterHtml(selection)
+	r.Logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing row")
+
+	for _, item := range r.Definition.Search.Fields {
+		r.Logger.
+			WithFields(logrus.Fields{"row": rowIdx, "block": item.Block.String()}).
+			Debugf("Processing field %q", item.Field)
+
+		val, err := item.Block.MatchText(selection)
+		if err != nil {
+			return torznab.ResultItem{}, err
+		}
+
+		r.Logger.
+			WithFields(logrus.Fields{"row": rowIdx, "output": val}).
+			Debugf("Finished processing field %q", item.Field)
+
+		row[item.Field] = val
+	}
+
+	item := torznab.ResultItem{
+		Site:            r.Definition.Site,
+		MinimumRatio:    1,
+		MinimumSeedTime: time.Hour * 48,
+	}
+
+	r.Logger.
+		WithFields(logrus.Fields{"row": rowIdx, "data": row}).
+		Debugf("Finished row %d", rowIdx)
+
+	for key, val := range row {
+		switch key {
+		case "download":
+			u, err := r.resolvePath(val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed url in %s", rowIdx, key)
+				continue
+			}
+			item.Link = u
+		case "details":
+			u, err := r.resolvePath(val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed url in %s", rowIdx, key)
+				continue
+			}
+			item.GUID = u
+		case "comments":
+			u, err := r.resolvePath(val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed url in %s", rowIdx, key)
+				continue
+			}
+			item.Comments = u
+		case "title":
+			item.Title = val
+		case "description":
+			item.Description = val
+		case "category":
+			catID, err := strconv.Atoi(val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed categoryid: %s", rowIdx, err.Error())
+				continue
+			}
+			item.Category = catID
+		case "size":
+			bytes, err := humanize.ParseBytes(val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed size: %s", rowIdx, err.Error())
+				continue
+			}
+			item.Size = bytes
+		case "leechers":
+			leechers, err := strconv.Atoi(val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed leechers value in %s", rowIdx, key)
+				continue
+			}
+			item.Peers += leechers
+		case "seeders":
+			seeders, err := strconv.Atoi(val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed seeders value in %s", rowIdx, key)
+				continue
+			}
+			item.Seeders = seeders
+			item.Peers += seeders
+		case "date":
+			t, err := time.Parse(filterTimeFormat, val)
+			if err != nil {
+				r.Logger.Warnf("Search result row #%d has malformed time value in %s", rowIdx, key)
+				continue
+			}
+			item.PublishDate = t
+		default:
+			r.Logger.Warnf("Search result row #%d has unknown field %s", rowIdx, key)
+			continue
+		}
+	}
+
+	if item.GUID == "" && item.Link != "" {
+		item.GUID = item.Link
+	}
+
+	if r.hasDateHeader() {
+		date, err := r.extractDateHeader(selection)
+		if err != nil {
+			return torznab.ResultItem{}, err
+		}
+
+		item.PublishDate = date
+	}
+
+	return item, nil
+}
+
+func (r *Runner) hasDateHeader() bool {
+	return !r.Definition.Search.Rows.DateHeaders.IsEmpty()
+}
+
+func (r *Runner) extractDateHeader(selection *goquery.Selection) (time.Time, error) {
+	dateHeaders := r.Definition.Search.Rows.DateHeaders
+
+	r.Logger.
+		WithFields(logrus.Fields{"selector": dateHeaders.String()}).
+		Debugf("Searching for date header")
+
+	prev := selection.PrevAllFiltered(dateHeaders.Selector).First()
+	if prev.Length() == 0 {
+		return time.Time{}, fmt.Errorf("No date header row found")
+	}
+
+	dv, _ := dateHeaders.Text(prev.First())
+	return time.Parse(filterTimeFormat, dv)
+}
+
 func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
-	if err := r.login(); err != nil {
-		r.Logger.WithError(err).Error("Login failed")
-		return nil, http.Header{}, err
+	if r.isLoginRequired() {
+		if err := r.login(); err != nil {
+			r.Logger.WithError(err).Error("Login failed")
+			return nil, http.Header{}, err
+		}
 	}
 
 	fullUrl, err := r.resolvePath(u)

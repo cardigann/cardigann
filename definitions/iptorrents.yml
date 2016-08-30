@@ -88,7 +88,6 @@
         filters:
           - name: regexp
             args: "^\\?(\\d+)$"
-          - name: mapcats
       title:
         selector: td:nth-child(2) > a
       details:

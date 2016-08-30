@@ -47,7 +47,6 @@ const exampleDefinition2 = `
         filters:
           - name: querystring
             args: id
-          - name: mapcats
       title:
         selector: td:nth-child(2) a
       details:
@@ -140,6 +139,8 @@ const exampleDefinitionWithMultiRow = `
       llamas_password: "{{ .Config.password }}"
     error:
       selector: .loginerror a
+    test:
+      path: /profile.php
 
   search:
     path: torrents.php
@@ -162,7 +163,6 @@ const exampleDefinitionWithMultiRow = `
         filters:
           - name: querystring
             args: id
-          - name: mapcats
       title:
         selector: td:nth-child(2) a
       details:
@@ -321,7 +321,7 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 		return resp, nil
 	})
 
-	results, err := r.Search(torznab.Query{"t": "tv-search", "q": "llamas", "cat": []int{torznab.CategoryAudio.ID}})
+	results, err := r.Search(torznab.Query{"t": "tv-search", "q": "llamas", "cat": []int{torznab.CategoryAudio_Foreign.ID}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -363,8 +363,8 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 	r := NewRunner(def, conf)
 
 	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
-		resp.Header.Set("Location", "/login.php")
+		resp := httpmock.NewStringResponse(http.StatusOK, "")
+		resp.Header.Set("Refresh", "1; /login.php")
 		resp.Request = req
 		return resp, nil
 	})
