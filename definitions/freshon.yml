@@ -24,6 +24,9 @@
         message:
           selector: "#login p"
           remove: style, b
+    test:
+      path: /profile.php
+
 
   search:
     path: /browse.php

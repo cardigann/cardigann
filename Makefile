@@ -15,6 +15,9 @@ endif
 test:
 	go test -v ./indexer ./server ./config
 
+test-defs:
+	find definitions -name '*.yml' -print -exec go run *.go test {} \;
+
 build: server/static.go
 	go build -o $(BIN) -ldflags="$(FLAGS)" $(PREFIX)
 

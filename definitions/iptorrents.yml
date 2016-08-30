@@ -74,6 +74,8 @@
         message:
           selector: "#login p"
           remove: style, b
+    test:
+      path: /my.php
 
   search:
     path: "/t"

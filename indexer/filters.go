@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/cardigann/cardigann/logger"
 )
 
 const (
@@ -19,14 +19,8 @@ const (
 )
 
 var (
-	filterLogger logrus.FieldLogger
+	filterLogger = logger.Logger
 )
-
-func init() {
-	filterLogger = logrus.New()
-	filterLogger.(*logrus.Logger).Level = logrus.DebugLevel
-	filterLogger.(*logrus.Logger).Out = os.Stderr
-}
 
 func invokeFilter(name string, args interface{}, value string) (string, error) {
 	switch name {

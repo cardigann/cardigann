@@ -12,7 +12,7 @@ var (
 
 func init() {
 	Logger = logrus.New()
-	Logger.(*logrus.Logger).Level = logrus.DebugLevel
+	Logger.(*logrus.Logger).Level = logrus.InfoLevel
 	Logger.(*logrus.Logger).Out = os.Stderr
 }
 

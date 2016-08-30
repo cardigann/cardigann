@@ -435,7 +435,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 			r.Logger.
 				WithFields(logrus.Fields{"source": val, "parsed": parsedVals}).
-				Infof("Processed $raw input")
+				Debugf("Processed $raw input")
 
 			for k, values := range parsedVals {
 				for _, val := range values {
@@ -497,13 +497,13 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 					matchCat = true
 				}
 			}
-		}
 
-		if !matchCat {
-			r.Logger.
-				WithFields(logrus.Fields{"id": item.Category, "localCats": localCats}).
-				Debug("Skipping non-matching category")
-			continue
+			if !matchCat {
+				r.Logger.
+					WithFields(logrus.Fields{"id": item.Category, "localCats": localCats}).
+					Debug("Skipping non-matching category")
+				continue
+			}
 		}
 
 		if mappedCat, ok := r.Definition.Capabilities.Categories[item.Category]; ok {
