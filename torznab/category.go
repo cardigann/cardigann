@@ -194,27 +194,34 @@ func (mapping CategoryMapping) Categories() Categories {
 	return cats
 }
 
-func (mapping CategoryMapping) Resolve(cat Category) int {
+func (mapping CategoryMapping) Resolve(cat Category) []int {
+	var matched bool
+	var results = []int{}
+
 	for localID, mappedCat := range mapping {
 		if mappedCat.ID == cat.ID {
-			return localID
+			results = append(results, localID)
+			matched = true
 		}
 	}
 
-	for localID, mappedCat := range mapping {
-		if mappedCat.ID == ParentCategory(cat).ID {
-			return localID
+	if !matched {
+		parent := ParentCategory(cat)
+		for localID, mappedCat := range mapping {
+			if mappedCat.ID == parent.ID {
+				results = append(results, localID)
+			}
 		}
 	}
 
-	return 0
+	return results
 }
 
 func (mapping CategoryMapping) ResolveAll(cats ...Category) []int {
 	results := []int{}
 
 	for _, cat := range cats {
-		results = append(results, mapping.Resolve(cat))
+		results = append(results, mapping.Resolve(cat)...)
 	}
 
 	return results

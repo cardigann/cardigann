@@ -48,7 +48,7 @@ func TestCategoryMapping(t *testing.T) {
 		tCats     []Category
 		localCats []int
 	}{
-		{tCats: []Category{CategoryTV_SD, CategoryTV_HD}, localCats: []int{10, 12}},
+		{tCats: []Category{CategoryTV_Anime, CategoryTV_SD}, localCats: []int{1, 10, 12}},
 	} {
 		if r := cats.ResolveAll(test.tCats...); !reflect.DeepEqual(r, test.localCats) {
 			t.Fatalf("Expected to resolve %#v to %#v, instead got %#v",

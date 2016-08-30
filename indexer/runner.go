@@ -335,7 +335,6 @@ func (r *Runner) Test() error {
 		switch mode.Key {
 		case "tv-search":
 			query["cat"] = []int{
-				torznab.CategoryTV.ID,
 				torznab.CategoryTV_HD.ID,
 				torznab.CategoryTV_SD.ID,
 			}
@@ -473,7 +472,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	}
 
 	rows := dom.Find(r.Definition.Search.Rows.Selector)
-	limit, hasLimit := query["limit"].(int)
+	limit, hasLimit := query.Limit()
 
 	r.Logger.
 		WithFields(logrus.Fields{
@@ -484,7 +483,11 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 	items := []torznab.ResultItem{}
 
-	for i := 0; i < rows.Length() && (!hasLimit || len(items) < limit); i++ {
+	for i := 0; i < rows.Length(); i++ {
+		if hasLimit && len(items) >= limit {
+			break
+		}
+
 		item, err := r.extractItem(i+1, rows.Eq(i))
 		if err != nil {
 			return nil, err

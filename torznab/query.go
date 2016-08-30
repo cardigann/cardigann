@@ -23,6 +23,18 @@ func (query Query) Episode() (s string) {
 	return s
 }
 
+func (query Query) Limit() (int, bool) {
+	if limit, hasLimit := query["limit"].(int); hasLimit {
+		return limit, true
+	}
+	if limit, hasLimit := query["limit"].(string); hasLimit {
+		if limitInt, err := strconv.Atoi(limit); err == nil {
+			return limitInt, true
+		}
+	}
+	return 0, false
+}
+
 // Keywords returns a combination of the q, ep and season parameters formatted for text search
 func (query Query) Keywords() string {
 	keywords := []string{}
