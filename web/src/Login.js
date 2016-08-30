@@ -52,7 +52,7 @@ class Login extends Component {
       return res;
     })
     .catch((err) => {
-      this.handleAuthError(err.toString())
+      this.handleAuthError(err.message)
     });
   }
   render() {
