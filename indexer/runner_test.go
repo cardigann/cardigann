@@ -31,6 +31,8 @@ const exampleDefinition2 = `
       llamas_password: "{{ .Config.password }}"
     error:
       selector: .loginerror a
+    test:
+      path: /profile.php
 
   search:
     path: torrents.php
@@ -293,6 +295,12 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 		return resp, nil
 	})
 
+	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusOK, "Success")
+		resp.Request = req
+		return resp, nil
+	})
+
 	httpmock.RegisterResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, exampleSearchPage)
 		resp.Request = req
@@ -342,6 +350,12 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 
 	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
+		resp.Request = req
+		return resp, nil
+	})
+
+	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusOK, "Success")
 		resp.Request = req
 		return resp, nil
 	})
