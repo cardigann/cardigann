@@ -6,7 +6,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sort"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/gorilla/mux"
@@ -21,6 +23,20 @@ type indexerView struct {
 	Name    string           `json:"name"`
 	Enabled bool             `json:"enabled"`
 	Feeds   indexerFeedsView `json:"feeds"`
+}
+
+type indexerViewByName []indexerView
+
+func (slice indexerViewByName) Len() int {
+	return len(slice)
+}
+
+func (slice indexerViewByName) Less(i, j int) bool {
+	return slice[i].Name < slice[j].Name
+}
+
+func (slice indexerViewByName) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
 }
 
 func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
@@ -49,6 +65,8 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 			},
 		})
 	}
+
+	sort.Sort(indexerViewByName(reply))
 
 	return reply, nil
 }
@@ -92,14 +110,33 @@ func (h *handler) getIndexersConfigHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if config == nil {
+		log.
+			WithFields(logrus.Fields{"indexer": indexerID}).
+			Debugf("No config found for indexer")
+
+		config = map[string]string{
+			"enabled": "false",
+		}
+	}
+
 	if _, ok := config["url"]; !ok {
+		log.
+			WithFields(logrus.Fields{"indexer": indexerID}).
+			Debugf("No url found for indexer")
+
 		i, err := h.lookupIndexer(indexerID)
 		if err != nil {
 			jsonError(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		log.WithFields(logrus.Fields{"info": i.Info()}).Debug("Loaded indexer info")
 		config["url"] = i.Info().Link
 	}
+
+	log.
+		WithFields(logrus.Fields{"indexer": indexerID, "config": config}).
+		Debugf("Getting indexer config")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(config); err != nil {
@@ -148,12 +185,16 @@ func (h *handler) getIndexerTestHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err = i.Login(); err != nil {
+	err = i.Login()
+	if err != nil {
 		log.WithError(err).Error("Login failed")
-		jsonError(w, "Login failed: "+err.Error(), http.StatusNotFound)
 	}
 
-	err = i.Test()
+	if err == nil {
+		if err = i.Test(); err != nil {
+			log.WithError(err).Error("Test failed")
+		}
+	}
 
 	var resp = struct {
 		OK    bool   `json:"ok"`

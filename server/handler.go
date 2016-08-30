@@ -86,6 +86,7 @@ func (h *handler) lookupIndexer(key string) (*indexer.Runner, error) {
 		return nil, err
 	}
 
+	log.WithFields(logrus.Fields{"indexer": key}).Debugf("Loaded indexer")
 	return indexer.NewRunner(def, h.Params.Config), nil
 }
 

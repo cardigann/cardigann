@@ -264,6 +264,7 @@ func (r *Runner) Info() torznab.Info {
 		ID:       r.Definition.Site,
 		Title:    r.Definition.Name,
 		Language: r.Definition.Language,
+		Link:     r.Definition.Links[0],
 	}
 }
 
