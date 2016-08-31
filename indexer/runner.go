@@ -310,6 +310,10 @@ func (r *Runner) login() error {
 		return fmt.Errorf("Unknown login method %q", r.Definition.Login.Method)
 	}
 
+	r.Logger.
+		WithField("block", r.Definition.Login.Error).
+		Debug("Testing if login succeeded")
+
 	if err = r.Definition.Login.hasError(r.Browser); err != nil {
 		r.Logger.WithError(err).Error("Failed to login")
 		return err

@@ -1,0 +1,62 @@
+---
+  site: morethantv
+  name: MoreThan.TV
+  language: en-us
+  links:
+    - https://www.morethan.tv/
+
+  caps:
+    categories:
+      1: Movies
+      2: TV
+      3: Other
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form.auth_form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      path: /login.php
+      message:
+        selector: ".auth_form .warning center"
+    test:
+      path: /top10.php
+
+  search:
+    path: /torrents.php
+    inputs:
+      searchstr: "{{ .Keywords }}"
+    rows:
+      selector: table#torrent_table tr.torrent
+    fields:
+      category:
+        selector: td.cats_col div
+        case:
+          ".cats_movies": 1
+          ".cats_tv": 2
+      title:
+        selector: td.big_info .group_info a:nth-child(2)
+      details:
+        selector: td.big_info .group_info a:nth-child(2)
+        attribute: href
+      download:
+        selector: td.big_info span a:nth-child(1)
+        attribute: href
+      size:
+        selector: td:nth-child(6)
+      date:
+        selector: td:nth-child(5) .time
+        attribute: title
+        filters:
+          - name: dateparse
+            args: Jan 02 2006, 15:04 # Aug 14 2016, 20:59
+      seeders:
+        selector: td:nth-child(8)
+      leechers:
+        selector: td:nth-child(9)

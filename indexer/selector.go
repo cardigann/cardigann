@@ -1,6 +1,7 @@
 package indexer
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -15,11 +16,12 @@ type filterBlock struct {
 }
 
 type selectorBlock struct {
-	Selector  string        `yaml:"selector"`
-	TextVal   string        `yaml:"text"`
-	Attribute string        `yaml:"attribute,omitempty"`
-	Remove    string        `yaml:"remove,omitempty"`
-	Filters   []filterBlock `yaml:"filters,omitempty"`
+	Selector  string            `yaml:"selector"`
+	TextVal   string            `yaml:"text"`
+	Attribute string            `yaml:"attribute,omitempty"`
+	Remove    string            `yaml:"remove,omitempty"`
+	Filters   []filterBlock     `yaml:"filters,omitempty"`
+	Case      map[string]string `yaml:"case,omitempty"`
 }
 
 func (s *selectorBlock) Match(selection *goquery.Selection) bool {
@@ -42,14 +44,26 @@ func (s *selectorBlock) Text(el *goquery.Selection) (string, error) {
 		return s.applyFilters(s.TextVal)
 	}
 
+	if s.Remove != "" {
+		el.Find(s.Remove).Remove()
+	}
+
+	if s.Case != nil {
+		filterLogger.
+			WithFields(logrus.Fields{"case": s.Case}).
+			Debugf("Applying case to selection")
+		for pattern, value := range s.Case {
+			if el.Is(pattern) {
+				return s.applyFilters(value)
+			}
+		}
+		return "", errors.New("None of the cases match")
+	}
+
 	html, _ := goquery.OuterHtml(el)
 	filterLogger.
 		WithFields(logrus.Fields{"html": gohtml.Format(html)}).
 		Debugf("Extracting text from selection")
-
-	if s.Remove != "" {
-		el.Find(s.Remove).Remove()
-	}
 
 	output := strings.TrimSpace(el.Text())
 
