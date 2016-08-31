@@ -2,6 +2,7 @@ package torznab
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -50,7 +51,10 @@ func TestCategoryMapping(t *testing.T) {
 	}{
 		{tCats: []Category{CategoryTV_Anime, CategoryTV_SD}, localCats: []int{1, 10, 12}},
 	} {
-		if r := cats.ResolveAll(test.tCats...); !reflect.DeepEqual(r, test.localCats) {
+		r := cats.ResolveAll(test.tCats...)
+		sort.Sort(sort.IntSlice(r))
+
+		if !reflect.DeepEqual(r, test.localCats) {
 			t.Fatalf("Expected to resolve %#v to %#v, instead got %#v",
 				test.tCats, test.localCats, r)
 		}
