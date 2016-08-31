@@ -1,0 +1,84 @@
+---
+  site: hdtorrents
+  name: HD-Torrents
+  language: en-us
+  links:
+    - https://hd-torrents.org/
+
+  caps:
+    categories:
+      1:  Movies/BluRay
+      2:  Movies
+      3:  Movies/HD
+      4:  Movies/SD
+      5:  Movies/HD
+      64: Movies/HD
+      63: Movies/Other
+      59: TV/HD
+      60: TV/Other
+      30: TV/HD
+      38: TV/SD
+      65: TV/HD
+      44: Audio
+      61: Audio
+      62: Audio
+      57: Audio
+      45: Audio
+      66: Audio
+      58: XXX/DVD
+      48: XXX
+      47: XXX
+      67: XXX
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      uid: "{{ .Config.username }}"
+      pwd: "{{ .Config.password }}"
+    error:
+      selector: table.cblocks font[color='#FF0000']
+    test:
+      path: /wishlist.php
+
+  search:
+    path: torrents.php
+    inputs:
+      $raw: "{{range .Categories}}category[]={{.}}&{{end}}"
+      search: "{{ .Keywords }}"
+      active: 1
+    rows:
+      selector: table.mainblockcontenttt tr:nth-child(n+3)
+      remove: tr:has(td.listas)
+    fields:
+      category:
+        selector: td:nth-child(1) > a:nth-child(1)
+        attribute: href
+        filters:
+          - name: querystring
+            args: category
+      title:
+        selector: td:nth-child(3) b a
+      details:
+        selector: td:nth-child(3) b a
+        attribute: href
+      download:
+        selector: td:nth-child(5) a
+        attribute: href
+      size:
+        selector: td:nth-child(8)
+      date:
+        selector: td:nth-child(7)
+        filters:
+          - name: dateparse
+            args: 15:04:05  02/01/2006
+      seeders:
+        selector: td:nth-child(10) b
+      leechers:
+        selector: td:nth-child(11) b
+
+

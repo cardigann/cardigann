@@ -64,6 +64,11 @@ func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error
 	if err != nil {
 		return "", err
 	}
+	if strings.Contains(tpl, "{{") {
+		r.Logger.
+			WithFields(logrus.Fields{"src": tpl, "result": b.String()}).
+			Debugf("Processed template")
+	}
 	return b.String(), nil
 }
 
@@ -429,6 +434,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		case "$raw":
 			parsedVals, err := url.ParseQuery(resolved)
 			if err != nil {
+				r.Logger.WithError(err).Warn(err)
 				return nil, fmt.Errorf("Error parsing $raw input: %s", err.Error())
 			}
 
@@ -469,6 +475,15 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			rows.Eq(i).AppendSelection(rows.Slice(i+1, i+1+after).Find("td"))
 			rows.Slice(i+1, i+1+after).Remove()
 		}
+	}
+
+	// apply Remove if it exists
+	if remove := r.Definition.Search.Rows.Remove; remove != "" {
+		matching := dom.Find(r.Definition.Search.Rows.Selector).Filter(remove)
+		r.Logger.
+			WithFields(logrus.Fields{"selector": remove}).
+			Debugf("Applying remove to %d rows", matching.Length())
+		matching.Remove()
 	}
 
 	rows := dom.Find(r.Definition.Search.Rows.Selector)

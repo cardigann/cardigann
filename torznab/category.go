@@ -65,7 +65,7 @@ var (
 	CategoryTV_FOREIGN         = Category{5020, "TV/FOREIGN"}
 	CategoryTV_SD              = Category{5030, "TV/SD"}
 	CategoryTV_HD              = Category{5040, "TV/HD"}
-	CategoryTV_OTHER           = Category{5999, "TV/OTHER"}
+	CategoryTV_Other           = Category{5999, "TV/Other"}
 	CategoryTV_Sport           = Category{5060, "TV/Sport"}
 	CategoryTV_Anime           = Category{5070, "TV/Anime"}
 	CategoryTV_Documentary     = Category{5080, "TV/Documentary"}
@@ -134,7 +134,7 @@ var AllCategories = Categories{
 	CategoryTV_FOREIGN,
 	CategoryTV_SD,
 	CategoryTV_HD,
-	CategoryTV_OTHER,
+	CategoryTV_Other,
 	CategoryTV_Sport,
 	CategoryTV_Anime,
 	CategoryTV_Documentary,

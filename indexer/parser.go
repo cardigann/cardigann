@@ -27,7 +27,6 @@ type IndexerDefinition struct {
 }
 
 type optionsBlock struct {
-	MapChildCatsToParent bool `yaml:"map_child_cats_to_parent"`
 }
 
 func ParseDefinitionFile(f *os.File) (*IndexerDefinition, error) {
@@ -171,6 +170,7 @@ func (f *fieldsListBlock) UnmarshalYAML(unmarshal func(interface{}) error) error
 type rowsBlock struct {
 	selectorBlock
 	After       int           `yaml:"after"`
+	Remove      string        `yaml:"remove"`
 	DateHeaders selectorBlock `yaml:"dateheaders"`
 }
 
@@ -182,6 +182,7 @@ func (r *rowsBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	var rb struct {
 		After       int           `yaml:"after"`
+		Remove      string        `yaml:"remove"`
 		DateHeaders selectorBlock `yaml:"dateheaders"`
 	}
 	if err := unmarshal(&rb); err != nil {
@@ -191,6 +192,7 @@ func (r *rowsBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	r.After = rb.After
 	r.DateHeaders = rb.DateHeaders
 	r.selectorBlock = sb
+	r.Remove = rb.Remove
 	return nil
 }
 

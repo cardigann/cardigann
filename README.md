@@ -31,6 +31,7 @@ Once the server is running, visit http://localhost:5060 and configure via the we
 * IPTorrents
 * Freshon
 * Demonoid
+* HD-Torrents
 
 ## Planned Trackers
 
@@ -52,7 +53,6 @@ I'd love assistance adding these trackers, either via invites or pull-requests.
 * FileList
 * Fuzer
 * HD-Space
-* HD-Torrents
 * Hebits
 * Hounddawgs
 * ILoveTorrents
