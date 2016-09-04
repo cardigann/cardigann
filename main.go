@@ -34,6 +34,7 @@ func run(args ...string) (exitCode int) {
 
 	app.Version(Version)
 	app.Writer(os.Stdout)
+	app.DefaultEnvars()
 
 	app.Terminate(func(code int) {
 		exitCode = code
@@ -203,7 +204,6 @@ func configureServerCommand(app *kingpin.Application) {
 
 	cmd.Flag("passphrase", "Require a passphrase to view web interface").
 		Short('p').
-		Required().
 		StringVar(&password)
 
 	cmd.Action(func(c *kingpin.ParseContext) error {
@@ -220,10 +220,15 @@ func serverCommand(addr, port string, password string) error {
 	listenOn := fmt.Sprintf("%s:%s", addr, port)
 	log.Infof("Listening on %s", listenOn)
 
-	return http.ListenAndServe(listenOn, server.NewHandler(server.Params{
+	h, err := server.NewHandler(server.Params{
 		Passphrase: password,
 		Config:     conf,
-	}))
+	})
+	if err != nil {
+		return err
+	}
+
+	return http.ListenAndServe(listenOn, h)
 }
 
 func configureTestDefinitionCommand(app *kingpin.Application) {

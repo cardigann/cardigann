@@ -63,7 +63,6 @@ func (jc *jsonConfig) load() (jsonConfigMap, error) {
 
 	path, err := Find(configFileName, jc.dirs)
 	if err == nil {
-		log.WithFields(logrus.Fields{"file": path}).Debug("Reading config file")
 		data, err := ioutil.ReadFile(path)
 		if err != nil {
 			return nil, err

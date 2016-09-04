@@ -48,6 +48,7 @@ glide:
 	rm ./glide.zip
 
 release/defs.zip: $(shell find definitions/)
+	-mkdir -p release/
 	zip release/defs.zip definitions/*
 
 .PHONY: release

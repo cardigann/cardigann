@@ -15,6 +15,27 @@ func jsonError(w http.ResponseWriter, errStr string, code int) {
 	json.NewEncoder(w).Encode(map[string]string{"error": errStr})
 }
 
+func (h *handler) getAuthHandler(w http.ResponseWriter, r *http.Request) {
+	var resp struct {
+		Token string `json:"token"`
+	}
+
+	if h.Params.Passphrase == "" || h.checkRequestAuthorized(r) {
+		k, err := h.sharedKey()
+		if err != nil {
+			jsonError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		resp.Token = fmt.Sprintf("%x", k)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.WithError(err).Error("Encoding json response failed")
+		jsonError(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func (h *handler) postAuthHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Passphrase string `json:"passphrase"`
@@ -67,6 +88,7 @@ func (h *handler) sharedKey() ([]byte, error) {
 			b[i] = byte(rand.Intn(256))
 		}
 	}
+
 	return b, nil
 }
 
@@ -84,11 +106,12 @@ func (h *handler) checkAPIKey(s string) (result bool) {
 
 func (h *handler) checkRequestAuthorized(r *http.Request) bool {
 	if auth := r.Header.Get("Authorization"); auth != "" {
-		log.Debug("Checking Authorization header")
+		log.WithField("method", "header").Debug("Authenticating request")
 		return h.checkAPIKey(strings.TrimPrefix(auth, "apitoken "))
 	} else if apiKey := r.URL.Query().Get("apikey"); apiKey != "" {
-		log.Debug("Checking apikey query string parameter")
+		log.WithField("method", "query-string").Debug("Authenticating request")
 		return h.checkAPIKey(apiKey)
 	}
+	log.Debug("Failed to authenticate request")
 	return false
 }

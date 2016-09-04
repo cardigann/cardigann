@@ -1,7 +1,5 @@
-Cardigann
+Cardigann [![Build Status](https://travis-ci.org/cardigann/cardigann.svg?branch=master)](https://travis-ci.org/cardigann/cardigann)
 =========
-
-[![Build Status](https://travis-ci.org/cardigann/cardigann.svg?branch=master)](https://travis-ci.org/cardigann/cardigann)
 
 Provides [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) interfaces for [private torrent trackers.](http://lifehacker.com/5897095/whats-a-private-bittorrent-tracker-and-why-should-i-use-one).
 
@@ -20,10 +18,23 @@ cardigann query bithdtv t=tv-search "q=mr robot" ep=1 season=2
 Or you can run the proxy server:
 
 ```
-cardigann server --passphrase "something goes here"
+cardigann server
 ```
 
 Once the server is running, visit http://localhost:5060 and configure via the web interface.
+
+You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting a password in the global config file.
+
+## Configuration
+
+Config is stored in a `config.json` file that is read from the current directory or your user level config dir (e.g `$HOME/.config` in linux). Tracker credentials will be stored here, but you can also set the following keys:
+
+<table>
+<thead><tr><th>Key</th><th>Values</th></tr></thead>
+<tbody>
+<tr><td>apikey</td><td>A 16 character hex value</td></tr>
+</tbody>
+</table>
 
 ## Supported Trackers
 

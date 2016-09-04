@@ -2,6 +2,7 @@
 package server
 
 import (
+	"encoding/hex"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -43,7 +44,7 @@ type handler struct {
 	FileHandler http.Handler
 }
 
-func NewHandler(p Params) http.Handler {
+func NewHandler(p Params) (http.Handler, error) {
 	h := &handler{
 		Params:      p,
 		FileHandler: http.FileServer(FS(false)),
@@ -62,10 +63,34 @@ func NewHandler(p Params) http.Handler {
 	router.HandleFunc("/xhr/indexers/{indexer}/config", h.patchIndexersConfigHandler).Methods("PATCH")
 	router.HandleFunc("/xhr/indexers", h.getIndexersHandler).Methods("GET")
 	router.HandleFunc("/xhr/indexers", h.patchIndexersHandler).Methods("PATCH")
+	router.HandleFunc("/xhr/auth", h.getAuthHandler).Methods("GET")
 	router.HandleFunc("/xhr/auth", h.postAuthHandler).Methods("POST")
 
 	h.Handler = router
-	return h
+	return h, h.initialize()
+}
+
+func (h *handler) initialize() error {
+	if h.Params.Passphrase == "" {
+		apiKey, hasApiKey, err := h.Params.Config.Get("global", "apikey")
+		if err != nil {
+			return err
+		}
+		if !hasApiKey {
+			k, err := h.sharedKey()
+			if err != nil {
+				return err
+			}
+			h.Params.APIKey = k
+			return h.Params.Config.Set("global", "apikey", fmt.Sprintf("%x", k))
+		}
+		k, err := hex.DecodeString(apiKey)
+		if err != nil {
+			return err
+		}
+		h.Params.APIKey = k
+	}
+	return nil
 }
 
 func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
