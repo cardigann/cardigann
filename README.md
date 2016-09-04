@@ -1,7 +1,7 @@
 Cardigann [![Build Status](https://travis-ci.org/cardigann/cardigann.svg?branch=master)](https://travis-ci.org/cardigann/cardigann)
 =========
 
-Provides [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) interfaces for [private torrent trackers.](http://lifehacker.com/5897095/whats-a-private-bittorrent-tracker-and-why-should-i-use-one).
+Provides [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) interfaces for [private torrent trackers](http://lifehacker.com/5897095/whats-a-private-bittorrent-tracker-and-why-should-i-use-one).
 
 Cardigann can be used to add any supported private tracker to your software of choice (e.g Sonarr, SickRage, CouchPotato). This is done by proxying requests to the individual trackers and scraping the responses and converting them to the correct format. The rules for scraping sites is expressed in a custom YAML format to make updating it easy without having to write code. 
 
