@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"os"
 
 	"github.com/Sirupsen/logrus"
@@ -20,6 +21,18 @@ func init() {
 	}
 }
 
+func SetFormatter(f logrus.Formatter) {
+	Logger.(*logrus.Logger).Formatter = f
+}
+
+func SetOutput(out io.Writer) {
+	Logger.(*logrus.Logger).Out = out
+}
+
 func SetLevel(level logrus.Level) {
 	Logger.(*logrus.Logger).Level = level
+}
+
+func AddHook(h logrus.Hook) {
+	Logger.(*logrus.Logger).Hooks.Add(h)
 }
