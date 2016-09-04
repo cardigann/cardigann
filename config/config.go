@@ -15,3 +15,11 @@ func IsSectionEnabled(section string, c Config) bool {
 
 	return v == "ok" || v == "true"
 }
+
+func GetDefault(section, key, defaultVal string, c Config) (string, error) {
+	val, ok, err := c.Get(section, key)
+	if err != nil || !ok {
+		return defaultVal, err
+	}
+	return val, nil
+}

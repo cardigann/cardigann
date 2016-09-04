@@ -21,6 +21,7 @@ class App extends Component {
     indexers: this.props.indexers,
     enabledIndexers: this.props.enabledIndexers,
     configure: null,
+    authChecked: false,
     apiKey: this.props.apiKey,
     apiKeyCopied: false,
     errorMessage: false
@@ -92,10 +93,9 @@ class App extends Component {
     });
   }
   handleAuthenticate = (apiKey) => {
+    apiKey = (apiKey === "") ? null : apiKey;
     localStorage.setItem("apiKey", apiKey);
-    this.setState({apiKey: apiKey}, () => {
-      this.loadIndexers();
-    });
+    this.setState({apiKey: apiKey}, this.loadIndexers);
   }
   loadIndexerConfig = (indexer, dataFunc) => {
     fetch(xhrUrl("/xhr/indexers/"+indexer.id+"/config"), {
@@ -110,6 +110,31 @@ class App extends Component {
     .catch((err) => {
       console.warn(err);
       this.setState({errorMessage: err.message})
+    });
+  }
+  checkAuth = () => {
+    fetch(xhrUrl("/xhr/auth"), {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'apitoken ' + this.state.apiKey,
+      }
+    })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((resp) => {
+          throw Error(resp.error);
+        });
+      }
+      return response.json()
+    })
+    .then((data) => {
+      this.setState({authChecked: true}, () => {
+        this.handleAuthenticate(data.token);
+      });
+    })
+    .catch((err) => {
+      console.error(err);
     });
   }
   loadIndexers = () => {
@@ -166,8 +191,8 @@ class App extends Component {
     }, () => console.log("finished setting modal state"));
   }
   componentWillMount() {
-    if (this.state.apiKey) {
-      this.loadIndexers();
+    if (!this.state.authChecked) {
+      this.checkAuth();
     }
   }
   render() {
@@ -175,6 +200,10 @@ class App extends Component {
     let addableIndexers = this.state.indexers.filter((x) => !isEnabled(x));
     let enabledIndexers = this.state.indexers.filter((x) => isEnabled(x));
     let errorAlert = null;
+
+    if (this.state.authChecked === false) {
+      return <div className="App__spinner">Checking authentication...</div>;
+    }
 
     if (this.state.apiKey === null) {
       return <Login onAuthenticate={this.handleAuthenticate} />;

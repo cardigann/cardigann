@@ -17,6 +17,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
+	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/dustin/go-humanize"
 	"github.com/headzoo/surf"
@@ -43,14 +44,11 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
 
-	logger := logrus.New()
-	logger.Level = logrus.DebugLevel
-
 	return &Runner{
 		Definition: def,
 		Browser:    bow,
 		Config:     conf,
-		Logger:     logger.WithFields(logrus.Fields{"site": def.Site}),
+		Logger:     logger.Logger.WithFields(logrus.Fields{"site": def.Site}),
 	}
 }
 
