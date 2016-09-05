@@ -7,8 +7,3 @@ os:
 
 go:
   - 1.6
-
-install: make deps
-
-env:
-  - GO15VENDOREXPERIMENT=1
