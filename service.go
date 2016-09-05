@@ -13,19 +13,24 @@ import (
 	"github.com/kardianos/service"
 )
 
+type programOpts struct {
+	UserService bool
+}
+
 type program struct {
 	exit    chan struct{}
 	service service.Service
 	logger  service.Logger
 }
 
-func newProgram() (*program, error) {
+func newProgram(opts programOpts) (*program, error) {
 	svcConfig := &service.Config{
 		Name:        "Cardigann",
 		DisplayName: "Cardigann Proxy",
 		Description: "Cardigann Torrent Indexer Proxy",
 		Option: service.KeyValue{
-			"RunAtLoad": true,
+			"RunAtLoad":   true,
+			"UserService": opts.UserService,
 		},
 		Arguments: []string{
 			"service", "run",

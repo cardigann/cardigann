@@ -301,9 +301,13 @@ func testDefinitionCommand(f *os.File) error {
 
 func configureServiceCommand(app *kingpin.Application) {
 	var action string
+	var userService bool
 	var possibleActions = append(service.ControlAction[:], "run")
 
 	cmd := app.Command("service", "Control the cardigann service")
+
+	cmd.Flag("user", "Whether to use a user service rather than a system one").
+		BoolVar(&userService)
 
 	cmd.Arg("action", "One of "+strings.Join(possibleActions, ", ")).
 		Required().
@@ -312,7 +316,9 @@ func configureServiceCommand(app *kingpin.Application) {
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
 
-		prg, err := newProgram()
+		prg, err := newProgram(programOpts{
+			UserService: userService,
+		})
 		if err != nil {
 			return err
 		}
