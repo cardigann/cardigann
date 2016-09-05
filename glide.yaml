@@ -11,3 +11,4 @@ import:
 - package: github.com/vaughan0/go-ini
 - package: gopkg.in/alecthomas/kingpin.v2
 - package: github.com/jarcoal/httpmock
+- package: github.com/kardianos/service

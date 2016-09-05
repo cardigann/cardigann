@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/server"
 	"github.com/cardigann/cardigann/torznab"
+	"github.com/kardianos/service"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -50,10 +52,19 @@ func run(args ...string) (exitCode int) {
 		return nil
 	}).Bool()
 
+	if os.Getenv("DEBUG") != "" {
+		logger.SetLevel(logrus.DebugLevel)
+	}
+
+	if err := configureServerCommand(app); err != nil {
+		log.Error(err)
+		return 1
+	}
+
 	configureQueryCommand(app)
 	configureDownloadCommand(app)
-	configureServerCommand(app)
 	configureTestDefinitionCommand(app)
+	configureServiceCommand(app)
 
 	kingpin.MustParse(app.Parse(args))
 	return
@@ -189,17 +200,32 @@ func downloadCommand(key, url, file string) error {
 	return nil
 }
 
-func configureServerCommand(app *kingpin.Application) {
+func configureServerCommand(app *kingpin.Application) error {
 	var bindPort, bindAddr, password string
+
+	conf, err := config.NewJSONConfig()
+	if err != nil {
+		return err
+	}
+
+	defaultBind, err := config.GetGlobalConfig("bind", "0.0.0.0", conf)
+	if err != nil {
+		return err
+	}
+
+	defaultPort, err := config.GetGlobalConfig("port", "5060", conf)
+	if err != nil {
+		return err
+	}
 
 	cmd := app.Command("server", "Run the proxy (and web) server")
 	cmd.Flag("port", "The port to listen on").
 		OverrideDefaultFromEnvar("PORT").
-		Default("5060").
+		Default(defaultPort).
 		StringVar(&bindPort)
 
-	cmd.Flag("addr", "The address to listen on").
-		Default("0.0.0.0").
+	cmd.Flag("bind", "The address to bind to").
+		Default(defaultBind).
 		StringVar(&bindAddr)
 
 	cmd.Flag("passphrase", "Require a passphrase to view web interface").
@@ -209,6 +235,8 @@ func configureServerCommand(app *kingpin.Application) {
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		return serverCommand(bindAddr, bindPort, password)
 	})
+
+	return nil
 }
 
 func serverCommand(addr, port string, password string) error {
@@ -268,5 +296,66 @@ func testDefinitionCommand(f *os.File) error {
 	}
 
 	fmt.Println("Indexer test returned OK")
+	return nil
+}
+
+func configureServiceCommand(app *kingpin.Application) {
+	var action string
+	var userService bool
+	var possibleActions = append(service.ControlAction[:], "run")
+
+	cmd := app.Command("service", "Control the cardigann service")
+
+	cmd.Flag("user", "Whether to use a user service rather than a system one").
+		BoolVar(&userService)
+
+	cmd.Arg("action", "One of "+strings.Join(possibleActions, ", ")).
+		Required().
+		EnumVar(&action, possibleActions...)
+
+	cmd.Action(func(c *kingpin.ParseContext) error {
+		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
+
+		prg, err := newProgram(programOpts{
+			UserService: userService,
+		})
+		if err != nil {
+			return err
+		}
+
+		if action != "run" {
+			return service.Control(prg.service, action)
+		}
+
+		return runServiceCommand(prg)
+	})
+}
+
+func runServiceCommand(prg *program) error {
+	var err error
+	errs := make(chan error)
+	prg.logger, err = prg.service.Logger(errs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	logger.SetOutput(ioutil.Discard)
+	logger.AddHook(&serviceLogHook{prg.logger})
+	logger.SetFormatter(&serviceLogFormatter{})
+
+	go func() {
+		for {
+			err := <-errs
+			if err != nil {
+				log.Error(err)
+			}
+		}
+	}()
+
+	err = prg.service.Run()
+	if err != nil {
+		prg.logger.Error(err)
+	}
+
 	return nil
 }
