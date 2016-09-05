@@ -36,6 +36,28 @@ Config is stored in a `config.json` file that is read from the current directory
 </tbody>
 </table>
 
+## Installation
+
+Cardigann is distributed as a binary and a collection of tracker definition files. These are available from the releases page for macOS, Linux and Windows. The following example shows how to run the daemon interactively under Linux:
+
+```bash
+curl https://github.com/cardigann/cardigann/releases/download/(VERSION)/cardigann-linux-amd64 
+chmod +x cardigann-linux-amd64 
+curl https://github.com/cardigann/cardigann/releases/download/(VERSION)/defs.zip
+unzip defs.zip
+./cardigann-linux-amd64 server
+```
+
+At this point you can visit the web interface on http://localhost:5060.
+
+If you want to run this service non-interactively, you can install it as a service (supports windows services, macOS launchd, linux upstart, systemv and systemd):
+
+```bash
+./cardigann-linux-amd64 service install
+./cardigann-linux-amd64 service start
+```
+
+
 ## Supported Trackers
 
 * BIT-HDTV
