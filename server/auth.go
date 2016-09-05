@@ -7,7 +7,12 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
 
 func jsonError(w http.ResponseWriter, errStr string, code int) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
