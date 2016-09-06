@@ -1,0 +1,17 @@
+language: go
+
+go:
+  - 1.6
+  - 1.5.3
+  - tip
+
+before_script:
+  - go vet ./...
+
+script:
+  - go test -v -cover -race ./...
+
+sudo: false
+
+notifications:
+  email: false

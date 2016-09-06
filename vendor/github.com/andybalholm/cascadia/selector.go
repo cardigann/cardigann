@@ -402,6 +402,67 @@ func nthChildSelector(a, b int, last, ofType bool) Selector {
 	}
 }
 
+// simpleNthChildSelector returns a selector that implements :nth-child(b).
+// If ofType is true, implements :nth-of-type instead.
+func simpleNthChildSelector(b int, ofType bool) Selector {
+	return func(n *html.Node) bool {
+		if n.Type != html.ElementNode {
+			return false
+		}
+
+		parent := n.Parent
+		if parent == nil {
+			return false
+		}
+
+		count := 0
+		for c := parent.FirstChild; c != nil; c = c.NextSibling {
+			if c.Type != html.ElementNode || (ofType && c.Data != n.Data) {
+				continue
+			}
+			count++
+			if c == n {
+				return count == b
+			}
+			if count >= b {
+				return false
+			}
+		}
+		return false
+	}
+}
+
+// simpleNthLastChildSelector returns a selector that implements
+// :nth-last-child(b). If ofType is true, implements :nth-last-of-type
+// instead.
+func simpleNthLastChildSelector(b int, ofType bool) Selector {
+	return func(n *html.Node) bool {
+		if n.Type != html.ElementNode {
+			return false
+		}
+
+		parent := n.Parent
+		if parent == nil {
+			return false
+		}
+
+		count := 0
+		for c := parent.LastChild; c != nil; c = c.PrevSibling {
+			if c.Type != html.ElementNode || (ofType && c.Data != n.Data) {
+				continue
+			}
+			count++
+			if c == n {
+				return count == b
+			}
+			if count >= b {
+				return false
+			}
+		}
+		return false
+	}
+}
+
 // onlyChildSelector returns a selector that implements :only-child.
 // If ofType is true, it implements :only-of-type instead.
 func onlyChildSelector(ofType bool) Selector {

@@ -13,7 +13,7 @@ and then:
 ```
 // Load the URL
 res, err := http.Get(url)
-if e != nil {
+if err != nil {
     // handle error
 }
 defer res.Body.Close()
@@ -65,4 +65,4 @@ Thanks to github user @jmoiron.
 [otto]: https://github.com/robertkrimen/otto
 [exotto]: https://gist.github.com/cryptix/87127f76a94183747b53
 [iconv]: http://godoc.org/?q=iconv
-[text]: http://godoc.org/code.google.com/p/go.text/encoding
+[text]: https://godoc.org/golang.org/x/text/encoding

@@ -5,6 +5,7 @@ import:
 - package: github.com/dvsekhvalnov/jose2go
 - package: github.com/gorilla/mux
 - package: github.com/headzoo/surf
+  repo: git@github.com:cardigann/surf.git
   subpackages:
   - agent
   - browser
@@ -12,3 +13,4 @@ import:
 - package: gopkg.in/alecthomas/kingpin.v2
 - package: github.com/jarcoal/httpmock
 - package: github.com/kardianos/service
+- package: github.com/f2prateek/train

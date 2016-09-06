@@ -1,18 +1,18 @@
-hash: c348753d2772eb2b9ffec98f32cfbdd90f86c01a78de7f0a91bf57fdb13266e4
-updated: 2016-09-03T13:16:20.30497715+10:00
+hash: 11faf0dc40ba42b3722faf3be88f32384162abc2e3662aae94aa69caf0519c73
+updated: 2016-09-05T19:17:06.285952672+10:00
 imports:
 - name: github.com/alecthomas/template
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
   subpackages:
   - parse
 - name: github.com/alecthomas/units
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/andybalholm/cascadia
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 1c31af6f6c1a7b101ed05aacc7d8a738b43ae86e
 - name: github.com/dustin/go-humanize
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 2fcb5204cdc65b4bec9fd0a87606bb0d0e3c54e8
 - name: github.com/dvsekhvalnov/jose2go
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 2a04a552f4a8adf7d51731877b7a2021bab968bb
   subpackages:
   - aes
   - arrays
@@ -21,12 +21,15 @@ imports:
   - kdf
   - keys/ecc
   - padding
+- name: github.com/f2prateek/train
+  version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
 - name: github.com/gorilla/context
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 0a192a193177452756c362c20087ddafcf6829c4
 - name: github.com/headzoo/surf
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 40151144dcb8eb3fce7599cf59f7d2f50d1cf690
+  repo: git@github.com:cardigann/surf.git
   subpackages:
   - agent
   - browser
@@ -34,30 +37,37 @@ imports:
   - errors
   - util
 - name: github.com/jarcoal/httpmock
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 145b10d659265440f062c31ea15326166bae56ee
+- name: github.com/kardianos/osext
+  version: c2c54e542fb797ad986b31721e1baedf214ca413
 - name: github.com/kardianos/service
   version: 7a88211485df5d3da6ec68f4f8a5ff9bec297327
 - name: github.com/PuerkitoBio/goquery
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 152b1a2c8f5d0340f658bb656032a39b94e52958
 - name: github.com/shibukawa/configdir
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: f5173a2c50e0358987cec35dfca337496f88f8bf
 - name: github.com/Sirupsen/logrus
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 3ec0642a7fb6488f65b06f9040adc67e3990296a
 - name: github.com/vaughan0/go-ini
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
 - name: github.com/yosssi/gohtml
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: 1358eff22f0dd0c54fc521042cc607f6ff4b531a
   subpackages:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
   subpackages:
   - unix
+  - windows/registry
+  - windows/svc
+  - windows/svc/eventlog
+  - windows/svc/mgr
+  - windows
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 - name: gopkg.in/yaml.v2
-  version: 99685cb15371d1fa889f06dc65e19959f9d82fd1
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 devImports: []
