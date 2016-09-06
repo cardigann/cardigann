@@ -152,8 +152,11 @@ func normalizeSpace(s string) string {
 }
 
 func filterTimeAgo(src string, now time.Time) (string, error) {
+	normalized := normalizeSpace(src)
+	normalized = strings.ToLower(normalized)
+
 	var s scanner.Scanner
-	s.Init(strings.NewReader(normalizeSpace(src)))
+	s.Init(strings.NewReader(normalized))
 	var tok rune
 	for tok != scanner.EOF {
 		tok = s.Scan()
