@@ -16,7 +16,6 @@ type Info struct {
 
 type Indexer interface {
 	Info() Info
-	Test() error
 	Search(query Query) ([]ResultItem, error)
 	Download(urlStr string) (io.ReadCloser, http.Header, error)
 	Capabilities() Capabilities

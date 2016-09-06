@@ -186,7 +186,8 @@ func (h *handler) getIndexerTestHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err == nil {
-		if err = i.Test(); err != nil {
+		tester := indexer.Tester{Runner: i}
+		if err = tester.Test(); err != nil {
 			log.WithError(err).Error("Test failed")
 		}
 	}

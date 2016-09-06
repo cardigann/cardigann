@@ -383,50 +383,6 @@ func (r *Runner) Info() torznab.Info {
 	}
 }
 
-func (r *Runner) Test() error {
-	filterLogger = r.Logger
-
-	for _, mode := range r.Capabilities().SearchModes {
-		query := torznab.Query{
-			"t":     mode.Key,
-			"limit": 5,
-		}
-
-		switch mode.Key {
-		case "tv-search":
-			query["cat"] = []int{
-				torznab.CategoryTV_HD.ID,
-				torznab.CategoryTV_SD.ID,
-			}
-		}
-
-		r.Logger.Infof("Testing search mode %q", mode.Key)
-		results, err := r.Search(query)
-		if err != nil {
-			return err
-		}
-		if len(results) == 0 {
-			return fmt.Errorf("Search returned no results, check logs for details")
-		}
-		for idx, result := range results {
-			if result.Title == "" {
-				return fmt.Errorf("Result row %d has empty title", idx+1)
-			}
-			if result.Size == 0 {
-				return fmt.Errorf("Result row %d has zero size", idx+1)
-			}
-			if result.Link == "" {
-				return fmt.Errorf("Result row %d has blank link", idx+1)
-			}
-			if result.Site == "" {
-				return fmt.Errorf("Result row %d has blank site", idx+1)
-			}
-		}
-	}
-
-	return nil
-}
-
 func (r *Runner) Capabilities() torznab.Capabilities {
 	return torznab.Capabilities(r.Definition.Capabilities)
 }

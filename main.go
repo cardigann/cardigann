@@ -279,7 +279,11 @@ func testDefinitionCommand(f *os.File) error {
 	fmt.Println("Definition file parsing OK")
 
 	runner := indexer.NewRunner(def, conf)
-	err = runner.Test()
+	tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
+		Download: true,
+	}}
+
+	err = tester.Test()
 	if err != nil {
 		return fmt.Errorf("Test failed: %s", err.Error())
 	}
