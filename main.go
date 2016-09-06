@@ -42,19 +42,10 @@ func run(args ...string) (exitCode int) {
 		exitCode = code
 	})
 
-	app.Flag("verbose", "Print out verbose logging").Action(func(c *kingpin.ParseContext) error {
-		logger.SetLevel(logrus.InfoLevel)
-		return nil
-	}).Bool()
-
 	app.Flag("debug", "Print out debug logging").Action(func(c *kingpin.ParseContext) error {
 		logger.SetLevel(logrus.DebugLevel)
 		return nil
 	}).Bool()
-
-	if os.Getenv("DEBUG") != "" {
-		logger.SetLevel(logrus.DebugLevel)
-	}
 
 	if err := configureServerCommand(app); err != nil {
 		log.Error(err)
@@ -288,8 +279,6 @@ func testDefinitionCommand(f *os.File) error {
 	fmt.Println("Definition file parsing OK")
 
 	runner := indexer.NewRunner(def, conf)
-	runner.Logger = log
-
 	err = runner.Test()
 	if err != nil {
 		return fmt.Errorf("Test failed: %s", err.Error())

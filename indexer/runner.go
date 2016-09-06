@@ -2,12 +2,14 @@ package indexer
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,9 +22,11 @@ import (
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/dustin/go-humanize"
+	"github.com/f2prateek/train"
 	"github.com/headzoo/surf"
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
+	"github.com/headzoo/surf/jar"
 	"github.com/yosssi/gohtml"
 )
 
@@ -43,6 +47,18 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 	bow.SetUserAgent(agent.Chrome())
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
+
+	if os.Getenv("DEBUG_HTTP") != "" {
+		bow.SetTransport(train.Transport(train.InterceptorFunc(func(chain train.Chain) (*http.Response, error) {
+			req := chain.Request()
+			reqOut, _ := httputil.DumpRequestOut(req, false)
+			fmt.Fprintf(os.Stderr, "%s", reqOut)
+			resp, err := chain.Proceed(req)
+			respOut, _ := httputil.DumpResponse(resp, false)
+			fmt.Fprintf(os.Stderr, "%s", respOut)
+			return resp, err
+		})))
+	}
 
 	return &Runner{
 		Definition: def,
@@ -90,7 +106,7 @@ func (r *Runner) resolvePath(urlPath string) (string, error) {
 
 	u, err := url.Parse(urlPath)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	resolved := base.ResolveReference(u)
