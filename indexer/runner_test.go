@@ -234,9 +234,16 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 		},
 	}
 
+	var loggedIn bool
+
 	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
-		resp.Header.Set("Location", "/login.php")
+		if !loggedIn {
+			resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
+			resp.Header.Set("Location", "/login.php")
+			resp.Request = req
+			return resp, nil
+		}
+		resp := httpmock.NewStringResponse(http.StatusOK, "")
 		resp.Request = req
 		return resp, nil
 	})
@@ -271,6 +278,8 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 		return resp, nil
 	})
 
+	loggedIn = true
+
 	err = r.login()
 	if err != nil {
 		t.Fatal(err)
@@ -296,9 +305,16 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 
 	r := NewRunner(def, conf)
 
+	var loggedIn bool
+
 	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
-		resp.Header.Set("Location", "/login.php")
+		if !loggedIn {
+			resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
+			resp.Header.Set("Location", "/login.php")
+			resp.Request = req
+			return resp, nil
+		}
+		resp := httpmock.NewStringResponse(http.StatusOK, "")
 		resp.Request = req
 		return resp, nil
 	})
@@ -310,6 +326,7 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 	})
 
 	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		loggedIn = true
 		resp := httpmock.NewStringResponse(http.StatusOK, "Success")
 		resp.Request = req
 		return resp, nil
@@ -362,9 +379,16 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 
 	r := NewRunner(def, conf)
 
+	var loggedIn bool
+
 	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+		if !loggedIn {
+			resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
+			resp.Header.Set("Refresh", "1; /login.php")
+			resp.Request = req
+			return resp, nil
+		}
 		resp := httpmock.NewStringResponse(http.StatusOK, "")
-		resp.Header.Set("Refresh", "1; /login.php")
 		resp.Request = req
 		return resp, nil
 	})
@@ -378,6 +402,7 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, "Success")
 		resp.Request = req
+		loggedIn = true
 		return resp, nil
 	})
 
