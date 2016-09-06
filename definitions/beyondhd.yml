@@ -1,0 +1,90 @@
+---
+  site: beyondhd
+  name: BeyondHD
+  language: en-us
+  links:
+    - https://beyondhd.xyz/
+    - https://beyondhd.me/
+
+  settings:
+    - name: cookie
+      type: text
+      label: Cookie
+
+  caps:
+    categories:
+      37: Movies/BluRay   # Movie / Blu-ray
+      71: Movies/3D       # Movie / 3D
+      83: Movies/3D       # FraMeSToR 3D
+      77: Movies/HD       # Movie / 1080p/i
+      94: Movies/HD       # Movie / 4K
+      78: Movies/HD       # Movie / 720p
+      54: Movies/HD       # Movie / MP4
+      17: Movies/HD       # Movie / Remux
+      50: Movies/HD       # Internal / FraMeSToR 1080p
+      75: Movies/HD       # Internal / FraMeSToR 720p
+      49: Movies/HD       # Internal / FraMeSToR REMUX
+      61: Movies/HD       # Internal / HDX REMUX
+      86: Movies/HD       # Internal / SC4R
+      40: TV/HD           # TV Show / Blu-ray
+      44: TV/HD           # TV Show / Encodes
+      48: TV/HD           # TV Show / HDTV
+      89: TV/HD           # TV Show / Packs
+      46: TV/HD           # TV Show / Remux
+      45: TV/HD           # TV Show / WEB-DL
+      36: Audio/Lossless  # Music / Lossless
+      69: Audio/MP3       # Music / MP3
+      55: Audio/Video     # Music / 1080p/i
+      56: Audio/Video     # Music / 720p
+      42: Audio/Video     # Music / Blu-ray
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    method: cookie
+    inputs:
+      cookie: "{{ .Config.cookie }}"
+    test:
+      path: /messages.php
+
+  search:
+    path: browse.php
+    inputs:
+      search: "{{ .Keywords }}"
+    rows:
+      selector: table.torrenttable.tb_detail tr:nth-child(n+2)
+    fields:
+      category:
+        selector: td:nth-child(1) a
+        attribute: href
+        filters:
+          - name: querystring
+            args: cat
+      title:
+        selector: td:nth-child(4) a
+      details:
+        selector: td:nth-child(4) a
+        attribute: href
+      download:
+        selector: td:nth-child(3) a
+        attribute: href
+      size:
+        selector: td:nth-child(8)
+        remove: br
+      date:
+        selector: td:nth-child(4) span:last-child
+        remove: i, br
+        filters:
+          - name: split
+            args: [ "|", 1 ]
+          - name: trim
+            args: "."
+          - name: timeago
+      seeders:
+        selector: td:nth-child(10)
+      leechers:
+        selector: td:nth-child(11)
+
+

@@ -65,6 +65,7 @@ If you want to run this service non-interactively, you can install it as a servi
 * Freshon
 * Demonoid
 * HD-Torrents
+* BeyondHD 
 
 ## Planned Trackers
 
@@ -75,7 +76,6 @@ I'd love assistance adding these trackers, either via invites or pull-requests.
 * AnimeBytes
 * Avistaz
 * bB
-* BeyondHD
 * BitMeTV
 * BitSoup
 * BlueTigers
