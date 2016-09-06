@@ -9,6 +9,7 @@ import (
 	"strings"
 	"text/scanner"
 	"time"
+	"unicode"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/logger"
@@ -55,6 +56,13 @@ func invokeFilter(name string, args interface{}, value string) (string, error) {
 			return "", fmt.Errorf("Filter %q requires an int argument at idx 1", name)
 		}
 		return filterSplit(sep, pos, value)
+
+	case "trim":
+		cutset, ok := args.(string)
+		if !ok {
+			return "", fmt.Errorf("Filter %q requires a string argument at idx 0", name)
+		}
+		return strings.Trim(value, cutset), nil
 
 	case "timeago":
 		return filterTimeAgo(value, time.Now())
@@ -134,12 +142,22 @@ func splitDecimalStr(s string) (int, float64, error) {
 	return i, 0, nil
 }
 
+func normalizeSpace(s string) string {
+	return strings.TrimSpace(strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return ' '
+		}
+		return r
+	}, s))
+}
+
 func filterTimeAgo(src string, now time.Time) (string, error) {
 	var s scanner.Scanner
-	s.Init(strings.NewReader(src))
+	s.Init(strings.NewReader(normalizeSpace(src)))
 	var tok rune
 	for tok != scanner.EOF {
 		tok = s.Scan()
+
 		switch s.TokenText() {
 		case ",", "ago", "", "and":
 			continue
