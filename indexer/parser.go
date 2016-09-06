@@ -16,7 +16,7 @@ import (
 
 type IndexerDefinition struct {
 	Site         string            `yaml:"site"`
-	Options      optionsBlock      `yaml:"options"`
+	Settings     []settingsField   `yaml:"settings"`
 	Name         string            `yaml:"name"`
 	Description  string            `yaml:"description"`
 	Language     string            `yaml:"language"`
@@ -26,7 +26,10 @@ type IndexerDefinition struct {
 	Search       searchBlock       `yaml:"search"`
 }
 
-type optionsBlock struct {
+type settingsField struct {
+	Name  string `yaml:"name"`
+	Type  string `yaml:"type"`
+	Label string `yaml:"label"`
 }
 
 func ParseDefinitionFile(f *os.File) (*IndexerDefinition, error) {
@@ -106,9 +109,10 @@ type testBlock struct {
 }
 
 const (
-	loginMethodPost = "post"
-	loginMethodGet  = "get"
-	loginMethodForm = "form"
+	loginMethodPost   = "post"
+	loginMethodGet    = "get"
+	loginMethodForm   = "form"
+	loginMethodCookie = "cookie"
 )
 
 type loginBlock struct {

@@ -238,6 +238,33 @@ func (r *Runner) postForm(loginURL string, vals map[string]string) error {
 	return nil
 }
 
+func parseCookieString(cookie string) []*http.Cookie {
+	h := http.Header{"Cookie": []string{cookie}}
+	r := http.Request{Header: h}
+	return r.Cookies()
+}
+
+func (r *Runner) loginWithCookie(loginURL string, cookie string) error {
+	u, err := url.Parse(loginURL)
+	if err != nil {
+		return err
+	}
+
+	cookies := parseCookieString(cookie)
+
+	r.Logger.
+		WithFields(logrus.Fields{"url": loginURL, "cookies": cookies}).
+		Debugf("Setting cookies for login")
+
+	cj := jar.NewMemoryCookies()
+	cj.SetCookies(u, cookies)
+
+	r.Browser.SetCookieJar(cj)
+	// r.Logger.Printf("%#v", cj)
+
+	return nil
+}
+
 func (r *Runner) extractInputLogins() (map[string]string, error) {
 	result := map[string]string{}
 
@@ -320,17 +347,27 @@ func (r *Runner) login() error {
 		if err = r.postForm(loginUrl, vals); err != nil {
 			return err
 		}
+	case loginMethodCookie:
+		if err = r.loginWithCookie(loginUrl, vals["cookie"]); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("Unknown login method %q", r.Definition.Login.Method)
 	}
 
-	r.Logger.
-		WithField("block", r.Definition.Login.Error).
-		Debug("Testing if login succeeded")
+	if len(r.Definition.Login.Error) > 0 {
+		r.Logger.
+			WithField("block", r.Definition.Login.Error).
+			Debug("Testing if login succeeded")
 
-	if err = r.Definition.Login.hasError(r.Browser); err != nil {
-		r.Logger.WithError(err).Error("Failed to login")
-		return err
+		if err = r.Definition.Login.hasError(r.Browser); err != nil {
+			r.Logger.WithError(err).Error("Failed to login")
+			return err
+		}
+	}
+
+	if r.Definition.Login.Test.Path != "" && r.isLoginRequired() {
+		return errors.New("Login check after login failed")
 	}
 
 	r.Logger.Info("Successfully logged in")
