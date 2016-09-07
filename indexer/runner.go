@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"regexp"
@@ -23,6 +22,7 @@ import (
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/dustin/go-humanize"
 	"github.com/f2prateek/train"
+	trainlog "github.com/f2prateek/train/log"
 	"github.com/headzoo/surf"
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
@@ -39,32 +39,30 @@ type Runner struct {
 	Browser    browser.Browsable
 	Config     config.Config
 	Logger     logrus.FieldLogger
-	caps       torznab.Capabilities
+
+	caps      torznab.Capabilities
+	transport http.RoundTripper
 }
 
 func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
+	var transport http.RoundTripper = http.DefaultTransport
+
+	if os.Getenv("DEBUG_HTTP") != "" {
+		transport = train.Transport(trainlog.New(os.Stderr, trainlog.Basic))
+	}
+
 	bow := surf.NewBrowser()
 	bow.SetUserAgent(agent.Chrome())
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
-
-	if os.Getenv("DEBUG_HTTP") != "" {
-		bow.SetTransport(train.Transport(train.InterceptorFunc(func(chain train.Chain) (*http.Response, error) {
-			req := chain.Request()
-			reqOut, _ := httputil.DumpRequestOut(req, false)
-			fmt.Fprintf(os.Stderr, "%s", reqOut)
-			resp, err := chain.Proceed(req)
-			respOut, _ := httputil.DumpResponse(resp, false)
-			fmt.Fprintf(os.Stderr, "%s", respOut)
-			return resp, err
-		})))
-	}
+	bow.SetTransport(transport)
 
 	return &Runner{
 		Definition: def,
 		Browser:    bow,
 		Config:     conf,
 		Logger:     logger.Logger.WithFields(logrus.Fields{"site": def.Site}),
+		transport:  transport,
 	}
 }
 
@@ -108,7 +106,10 @@ func (r *Runner) currentURL() (*url.URL, error) {
 func (r *Runner) testURLWorks(u string) bool {
 	r.Logger.WithField("url", u).Debugf("Checking connectivity to url")
 
-	client := http.Client{Timeout: time.Duration(15 * time.Second)}
+	client := http.Client{
+		Timeout:   time.Duration(15 * time.Second),
+		Transport: r.transport,
+	}
 	resp, err := client.Get(u)
 	if err != nil {
 		r.Logger.WithError(err).Warn("URL check failed")

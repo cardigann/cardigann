@@ -217,6 +217,18 @@ const exampleSearchPageWithDateHeadersAndMultiRow = `
 </html>
 `
 
+// registerResponder wraps httpmock.RegisterResponder and fixes bug with Request assignment
+func registerResponder(method, url string, f func(req *http.Request) (*http.Response, error)) {
+	httpmock.RegisterResponder(method, url, func(innerreq *http.Request) (*http.Response, error) {
+		resp, err := f(innerreq)
+		if err != nil {
+			return nil, err
+		}
+		resp.Request = innerreq
+		return resp, nil
+	})
+}
+
 func TestIndexerDefinitionRunner_Login(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
@@ -236,28 +248,26 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 
 	var loggedIn bool
 
-	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+	registerResponder("GET", "https://example.org/", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+	})
+
+	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
 		if !loggedIn {
 			resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
 			resp.Header.Set("Location", "/login.php")
 			resp.Request = req
 			return resp, nil
 		}
-		resp := httpmock.NewStringResponse(http.StatusOK, "")
-		resp.Request = req
-		return resp, nil
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
 	})
 
-	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
-		resp.Request = req
-		return resp, nil
+	registerResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleLoginPage), nil
 	})
 
-	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginErrorPage)
-		resp.Request = req
-		return resp, nil
+	registerResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleLoginErrorPage), nil
 	})
 
 	r := NewRunner(def, conf)
@@ -267,9 +277,8 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 		t.Fatalf("Expected 'Login failed', got %#v", err)
 	}
 
-	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+	registerResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		resp := httpmock.NewStringResponse(http.StatusOK, "Success!")
-		resp.Request = req
 
 		if pwd := req.FormValue("llamas_password"); pwd != "mypassword" {
 			t.Fatalf("Incorrect password %q was provided", pwd)
@@ -307,35 +316,30 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 
 	var loggedIn bool
 
-	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+	registerResponder("GET", "https://example.org/", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+	})
+
+	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
 		if !loggedIn {
 			resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
 			resp.Header.Set("Location", "/login.php")
-			resp.Request = req
 			return resp, nil
 		}
-		resp := httpmock.NewStringResponse(http.StatusOK, "")
-		resp.Request = req
-		return resp, nil
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
 	})
 
-	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
-		resp.Request = req
-		return resp, nil
+	registerResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleLoginPage), nil
 	})
 
-	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+	registerResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		loggedIn = true
-		resp := httpmock.NewStringResponse(http.StatusOK, "Success")
-		resp.Request = req
-		return resp, nil
+		return httpmock.NewStringResponse(http.StatusOK, "Success"), nil
 	})
 
-	httpmock.RegisterResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, exampleSearchPage)
-		resp.Request = req
-		return resp, nil
+	registerResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPage), nil
 	})
 
 	results, err := r.Search(torznab.Query{"t": "tv-search", "q": "llamas", "cat": []int{torznab.CategoryAudio_Foreign.ID}})
@@ -381,35 +385,30 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 
 	var loggedIn bool
 
-	httpmock.RegisterResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+	registerResponder("GET", "https://example.org/", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+	})
+
+	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
 		if !loggedIn {
 			resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
 			resp.Header.Set("Refresh", "1; /login.php")
-			resp.Request = req
 			return resp, nil
 		}
-		resp := httpmock.NewStringResponse(http.StatusOK, "")
-		resp.Request = req
-		return resp, nil
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
 	})
 
-	httpmock.RegisterResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, exampleLoginPage)
-		resp.Request = req
-		return resp, nil
+	registerResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleLoginPage), nil
 	})
 
-	httpmock.RegisterResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, "Success")
-		resp.Request = req
+	registerResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
 		loggedIn = true
-		return resp, nil
+		return httpmock.NewStringResponse(http.StatusOK, "Success"), nil
 	})
 
-	httpmock.RegisterResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, exampleSearchPageWithDateHeadersAndMultiRow)
-		resp.Request = req
-		return resp, nil
+	registerResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPageWithDateHeadersAndMultiRow), nil
 	})
 
 	results, err := r.Search(torznab.Query{
