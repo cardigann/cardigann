@@ -91,11 +91,34 @@ func (r *Runner) currentURL() (*url.URL, error) {
 		return u, nil
 	}
 
-	if configURL, ok, _ := r.Config.Get(r.Definition.Site, "url"); ok {
+	configURL, ok, _ := r.Config.Get(r.Definition.Site, "url")
+	if ok && r.testURLWorks(configURL) {
 		return url.Parse(configURL)
 	}
 
-	return url.Parse(r.Definition.Links[0])
+	for _, u := range r.Definition.Links {
+		if u != configURL && r.testURLWorks(u) {
+			return url.Parse(u)
+		}
+	}
+
+	return nil, errors.New("No working urls found")
+}
+
+func (r *Runner) testURLWorks(u string) bool {
+	r.Logger.WithField("url", u).Debugf("Checking connectivity to url")
+
+	client := http.Client{Timeout: time.Duration(15 * time.Second)}
+	resp, err := client.Get(u)
+	if err != nil {
+		r.Logger.WithError(err).Warn("URL check failed")
+		return false
+	} else if resp.StatusCode != http.StatusOK {
+		r.Logger.Warn("URL returned non-ok status")
+		return false
+	}
+
+	return true
 }
 
 func (r *Runner) resolvePath(urlPath string) (string, error) {
@@ -260,8 +283,6 @@ func (r *Runner) loginWithCookie(loginURL string, cookie string) error {
 	cj.SetCookies(u, cookies)
 
 	r.Browser.SetCookieJar(cj)
-	// r.Logger.Printf("%#v", cj)
-
 	return nil
 }
 
@@ -295,9 +316,9 @@ func (r *Runner) extractInputLogins() (map[string]string, error) {
 	return result, nil
 }
 
-func (r *Runner) isLoginRequired() bool {
+func (r *Runner) isLoginRequired() (bool, error) {
 	if r.Definition.Login.Test.Path == "" {
-		return true
+		return true, nil
 	}
 
 	r.Logger.
@@ -306,23 +327,22 @@ func (r *Runner) isLoginRequired() bool {
 
 	testUrl, err := r.resolvePath(r.Definition.Login.Test.Path)
 	if err != nil {
-		r.Logger.WithError(err).Warn("Failed to resolve path")
-		return true
+		return true, err
 	}
 
 	err = r.openPage(testUrl)
 	if err != nil {
 		r.Logger.WithError(err).Warn("Failed to open page")
-		return true
+		return true, nil
 	}
 
 	if testUrl == r.Browser.Url().String() {
 		r.Logger.Debug("No login needed, already logged in")
-		return false
+		return false, nil
 	}
 
 	r.Logger.Debug("Login is required")
-	return true
+	return true, nil
 }
 
 func (r *Runner) login() error {
@@ -366,8 +386,12 @@ func (r *Runner) login() error {
 		}
 	}
 
-	if r.Definition.Login.Test.Path != "" && r.isLoginRequired() {
-		return errors.New("Login check after login failed")
+	if r.Definition.Login.Test.Path != "" {
+		if required, err := r.isLoginRequired(); err != nil {
+			return err
+		} else if required {
+			return errors.New("Login check after login failed")
+		}
 	}
 
 	r.Logger.Info("Successfully logged in")
@@ -390,7 +414,9 @@ func (r *Runner) Capabilities() torznab.Capabilities {
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	filterLogger = r.Logger
 
-	if r.isLoginRequired() {
+	if required, err := r.isLoginRequired(); err != nil {
+		return nil, err
+	} else if required {
 		if err := r.login(); err != nil {
 			r.Logger.WithError(err).Error("Login failed")
 			return nil, err
@@ -690,11 +716,13 @@ func (r *Runner) extractDateHeader(selection *goquery.Selection) (time.Time, err
 }
 
 func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
-	if r.isLoginRequired() {
+	if required, err := r.isLoginRequired(); required {
 		if err := r.login(); err != nil {
 			r.Logger.WithError(err).Error("Login failed")
 			return nil, http.Header{}, err
 		}
+	} else if err != nil {
+		return nil, http.Header{}, err
 	}
 
 	fullUrl, err := r.resolvePath(u)
