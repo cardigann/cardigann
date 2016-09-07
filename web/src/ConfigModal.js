@@ -1,6 +1,49 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Col, Modal, Button, Form, FormGroup, FormControl, ControlLabel} from 'react-bootstrap';
+import { Col, Modal, Button, Form, FormGroup, FormControl, ControlLabel }  from 'react-bootstrap';
+
+class ConfigForm extends Component {
+  state = {
+    values: {},
+  }
+  static propTypes = {
+   fields: React.PropTypes.array.isRequired,
+  }
+  getValues = () => {
+    let values = {};
+    Object.keys(this.refs).forEach((ref) => {
+      values[ref] = ReactDOM.findDOMNode(this.refs[ref]).value
+    });
+    return values;
+  }
+  render() {
+    let fields = this.props.fields.map((field) => {
+      return (
+        <FormGroup controlId={"formHorizontal" + field.Name} key={field.Name}>
+          <Col componentClass={ControlLabel} sm={2}>{field.Label}</Col>
+            <Col sm={10}>
+              <FormControl
+                type={field.Type}
+                placeholder={field.Placeholder}
+                defaultValue={field.Value}
+                ref={field.Name} />
+          </Col>
+        </FormGroup>
+      );
+    });
+    return <Form horizontal>
+      <FormGroup controlId="formHorizontalUrl">
+        <Col componentClass={ControlLabel} sm={2}>
+          URL
+        </Col>
+        <Col sm={10}>
+          <FormControl type="text" placeholder="URL" defaultValue={this.props.url} ref="url" />
+        </Col>
+      </FormGroup>
+      {fields}
+    </Form>;
+  }
+}
 
 class ConfigModal extends Component {
   static defaultProps = {
@@ -26,12 +69,20 @@ class ConfigModal extends Component {
     this.setState({show: false});
   }
   handleSave = () => {
-    this.props.onSave(this.props.indexer, {
-      url: ReactDOM.findDOMNode(this.refs.url).value,
-      username: ReactDOM.findDOMNode(this.refs.username).value,
-      password: ReactDOM.findDOMNode(this.refs.password).value,
-      enabled: "true"
-    }, () => {});
+    let vals = this.refs.form.getValues();
+    vals.enabled = "true";
+    this.props.onSave(this.props.indexer, vals, () => {
+      this.setState({show: false});
+    });
+  }
+  buildFields = () => {
+    return this.props.indexer.settings.map((s) => {
+      if (typeof(this.state.config[s.Name]) !== undefined) {
+        s.Value = this.state.config[s.Name];
+      }
+      s.Placeholder = s.Placeholder || s.Label
+      return s;
+    });
   }
   render() {
     return (
@@ -40,32 +91,7 @@ class ConfigModal extends Component {
           <Modal.Title>Configuration <small>for {this.props.indexer.name}</small></Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form horizontal>
-            <FormGroup controlId="formHorizontalUrl">
-              <Col componentClass={ControlLabel} sm={2}>
-                URL
-              </Col>
-              <Col sm={10}>
-                <FormControl type="text" placeholder="URL" defaultValue={this.state.config.url} ref="url" />
-              </Col>
-            </FormGroup>
-            <FormGroup controlId="formHorizontalUsername">
-              <Col componentClass={ControlLabel} sm={2}>
-                Username
-              </Col>
-              <Col sm={10}>
-                <FormControl type="username" placeholder="Username" defaultValue={this.state.config.username} ref="username" />
-              </Col>
-            </FormGroup>
-            <FormGroup controlId="formHorizontalPassword">
-              <Col componentClass={ControlLabel} sm={2}>
-                Password
-              </Col>
-              <Col sm={10}>
-                <FormControl type="password" placeholder="Password" defaultValue={this.state.config.password} ref="password" />
-              </Col>
-            </FormGroup>
-          </Form>
+          <ConfigForm fields={this.buildFields()} url={this.state.config.url} ref="form" />
         </Modal.Body>
         <Modal.Footer>
           <Button bsStyle="primary" onClick={this.handleSave}>Save and Close</Button>

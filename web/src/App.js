@@ -188,7 +188,7 @@ class App extends Component {
           this.handleSaveIndexer(indexer, config, () => { afterFunc(); afterSaveFunc() });
         }}
       />
-    }, () => console.log("finished setting modal state"));
+    });
   }
   componentWillMount() {
     if (!this.state.authChecked) {

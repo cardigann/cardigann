@@ -15,9 +15,19 @@ func init() {
 }
 
 func jsonError(w http.ResponseWriter, errStr string, code int) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(map[string]string{"error": errStr})
+	jsonOutput(w, map[string]string{"error": errStr})
+}
+
+func jsonOutput(w http.ResponseWriter, v interface{}) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	w.Write(append(b, '\n'))
 }
 
 func (h *handler) getAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,11 +44,7 @@ func (h *handler) getAuthHandler(w http.ResponseWriter, r *http.Request) {
 		resp.Token = fmt.Sprintf("%x", k)
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.WithError(err).Error("Encoding json response failed")
-		jsonError(w, err.Error(), http.StatusInternalServerError)
-	}
+	jsonOutput(w, resp)
 }
 
 func (h *handler) postAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,16 +72,11 @@ func (h *handler) postAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var resp = struct {
+	jsonOutput(w, struct {
 		Token string `json:"token"`
 	}{
 		fmt.Sprintf("%x", k),
-	}
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.WithError(err).Error("Encoding json response failed")
-		jsonError(w, err.Error(), http.StatusInternalServerError)
-	}
+	})
 }
 
 func (h *handler) sharedKey() ([]byte, error) {

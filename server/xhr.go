@@ -18,11 +18,18 @@ type indexerFeedsView struct {
 	Torznab string `json:"torznab"`
 }
 
+type indexerSettingsView struct {
+	Name  string `yaml:"name"`
+	Type  string `yaml:"type"`
+	Label string `yaml:"label"`
+}
+
 type indexerView struct {
-	ID      string           `json:"id"`
-	Name    string           `json:"name"`
-	Enabled bool             `json:"enabled"`
-	Feeds   indexerFeedsView `json:"feeds"`
+	ID       string                `json:"id"`
+	Name     string                `json:"name"`
+	Enabled  bool                  `json:"enabled"`
+	Feeds    indexerFeedsView      `json:"feeds"`
+	Settings []indexerSettingsView `json:"settings"`
 }
 
 type indexerViewByName []indexerView
@@ -47,7 +54,7 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 
 	reply := []indexerView{}
 	for _, indexerID := range defs {
-		i, err := h.lookupIndexer(indexerID)
+		def, err := indexer.LoadDefinition(indexerID)
 		if err == indexer.ErrUnknownIndexer {
 			log.Printf("Unknown indexer %q in configuration", indexerID)
 			continue
@@ -55,7 +62,18 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 			return nil, err
 		}
 
-		info := i.Info()
+		runner := indexer.NewRunner(def, h.Params.Config)
+		settings := []indexerSettingsView{}
+
+		for _, setting := range def.Settings {
+			settings = append(settings, indexerSettingsView{
+				Name:  setting.Name,
+				Label: setting.Label,
+				Type:  setting.Type,
+			})
+		}
+
+		info := runner.Info()
 		reply = append(reply, indexerView{
 			ID:      info.ID,
 			Name:    info.Title,
@@ -63,6 +81,7 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 			Feeds: indexerFeedsView{
 				Torznab: fmt.Sprintf("%storznab/%s", baseURL, info.ID),
 			},
+			Settings: settings,
 		})
 	}
 
@@ -89,10 +108,7 @@ func (h *handler) getIndexersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err := json.NewEncoder(w).Encode(views); err != nil {
-		panic(err)
-	}
+	jsonOutput(w, views)
 }
 
 func (h *handler) getIndexersConfigHandler(w http.ResponseWriter, r *http.Request) {
@@ -138,10 +154,7 @@ func (h *handler) getIndexersConfigHandler(w http.ResponseWriter, r *http.Reques
 		WithFields(logrus.Fields{"indexer": indexerID, "config": config}).
 		Debugf("Getting indexer config")
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err := json.NewEncoder(w).Encode(config); err != nil {
-		panic(err)
-	}
+	jsonOutput(w, config)
 }
 
 func (h *handler) patchIndexersConfigHandler(w http.ResponseWriter, r *http.Request) {
@@ -203,10 +216,7 @@ func (h *handler) getIndexerTestHandler(w http.ResponseWriter, r *http.Request) 
 		resp.OK = true
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		panic(err)
-	}
+	jsonOutput(w, resp)
 }
 
 func (h *handler) patchIndexersHandler(w http.ResponseWriter, r *http.Request) {

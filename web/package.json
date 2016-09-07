@@ -13,6 +13,7 @@
     "react-copy-to-clipboard": "^4.2.2",
     "react-dom": "^15.2.1",
     "react-select": "^1.0.0-beta14",
+    "react-semantic-form": "^0.1.2",
     "react-spinner": "^0.2.6"
   },
   "scripts": {

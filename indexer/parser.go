@@ -56,7 +56,18 @@ func ParseDefinition(src []byte) (*IndexerDefinition, error) {
 		return nil, err
 	}
 
+	if len(def.Settings) == 0 {
+		def.Settings = defaultSettingsFields()
+	}
+
 	return &def, nil
+}
+
+func defaultSettingsFields() []settingsField {
+	return []settingsField{
+		{Name: "username", Label: "Username", Type: "text"},
+		{Name: "password", Label: "Password", Type: "password"},
+	}
 }
 
 type inputsBlock map[string]string
