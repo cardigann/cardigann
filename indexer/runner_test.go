@@ -1,6 +1,7 @@
 package indexer
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -225,6 +226,7 @@ func registerResponder(method, url string, f func(req *http.Request) (*http.Resp
 			return nil, err
 		}
 		resp.Request = innerreq
+		fmt.Printf("%#v", resp)
 		return resp, nil
 	})
 }
@@ -249,7 +251,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 	var loggedIn bool
 
 	registerResponder("GET", "https://example.org/", func(req *http.Request) (*http.Response, error) {
-		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+		return httpmock.NewStringResponse(http.StatusOK, "Ok"), nil
 	})
 
 	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
@@ -259,7 +261,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 			resp.Request = req
 			return resp, nil
 		}
-		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+		return httpmock.NewStringResponse(http.StatusOK, "Ok"), nil
 	})
 
 	registerResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
@@ -391,7 +393,7 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 
 	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
 		if !loggedIn {
-			resp := httpmock.NewStringResponse(http.StatusTemporaryRedirect, "")
+			resp := httpmock.NewStringResponse(http.StatusOK, "")
 			resp.Header.Set("Refresh", "1; /login.php")
 			return resp, nil
 		}

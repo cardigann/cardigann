@@ -39,30 +39,24 @@ type Runner struct {
 	Browser    browser.Browsable
 	Config     config.Config
 	Logger     logrus.FieldLogger
-
-	caps      torznab.Capabilities
-	transport http.RoundTripper
+	caps       torznab.Capabilities
 }
 
 func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
-	var transport http.RoundTripper = http.DefaultTransport
-
-	if os.Getenv("DEBUG_HTTP") != "" {
-		transport = train.Transport(trainlog.New(os.Stderr, trainlog.Basic))
-	}
-
 	bow := surf.NewBrowser()
 	bow.SetUserAgent(agent.Chrome())
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
-	bow.SetTransport(transport)
+
+	if os.Getenv("DEBUG_HTTP") != "" {
+		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Basic)))
+	}
 
 	return &Runner{
 		Definition: def,
 		Browser:    bow,
 		Config:     conf,
 		Logger:     logger.Logger.WithFields(logrus.Fields{"site": def.Site}),
-		transport:  transport,
 	}
 }
 
@@ -106,15 +100,11 @@ func (r *Runner) currentURL() (*url.URL, error) {
 func (r *Runner) testURLWorks(u string) bool {
 	r.Logger.WithField("url", u).Debugf("Checking connectivity to url")
 
-	client := http.Client{
-		Timeout:   time.Duration(15 * time.Second),
-		Transport: r.transport,
-	}
-	resp, err := client.Get(u)
+	err := r.Browser.Open(u)
 	if err != nil {
 		r.Logger.WithError(err).Warn("URL check failed")
 		return false
-	} else if resp.StatusCode != http.StatusOK {
+	} else if r.Browser.StatusCode() != http.StatusOK {
 		r.Logger.Warn("URL returned non-ok status")
 		return false
 	}
