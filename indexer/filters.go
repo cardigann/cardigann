@@ -57,6 +57,17 @@ func invokeFilter(name string, args interface{}, value string) (string, error) {
 		}
 		return filterSplit(sep, pos, value)
 
+	case "replace":
+		from, ok := (args.([]interface{}))[0].(string)
+		if !ok {
+			return "", fmt.Errorf("Filter %q requires a string argument at idx 0", name)
+		}
+		to, ok := (args.([]interface{}))[1].(string)
+		if !ok {
+			return "", fmt.Errorf("Filter %q requires a string argument at idx 1", name)
+		}
+		return strings.Replace(value, from, to, -1), nil
+
 	case "trim":
 		cutset, ok := args.(string)
 		if !ok {

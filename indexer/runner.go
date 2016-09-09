@@ -399,7 +399,12 @@ func (r *Runner) Info() torznab.Info {
 }
 
 func (r *Runner) Capabilities() torznab.Capabilities {
-	return torznab.Capabilities(r.Definition.Capabilities)
+	return r.Definition.Capabilities.ToTorznab()
+}
+
+type extractedItem struct {
+	torznab.ResultItem
+	LocalCategoryID string
 }
 
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
@@ -427,12 +432,12 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
-	localCats := []int{}
+	localCats := []string{}
 	if queryCatIDs, ok := query["cat"].([]int); ok {
 		queryCats := torznab.AllCategories.Subset(queryCatIDs...)
 
 		// resolve query categories to the exact local, or the local based on parent cat
-		for _, id := range r.Capabilities().Categories.ResolveAll(queryCats...) {
+		for _, id := range r.Definition.Capabilities.CategoryMap.ResolveAll(queryCats...) {
 			localCats = append(localCats, id)
 		}
 
@@ -444,7 +449,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	inputCtx := struct {
 		Query      torznab.Query
 		Keywords   string
-		Categories []int
+		Categories []string
 	}{
 		query,
 		query.Keywords(),
@@ -524,10 +529,10 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		"limit":    limit,
 	}).Debugf("Found %d rows", rows.Length())
 
-	items := []torznab.ResultItem{}
+	extracted := []extractedItem{}
 
 	for i := 0; i < rows.Length(); i++ {
-		if hasLimit && len(items) >= limit {
+		if hasLimit && len(extracted) >= limit {
 			break
 		}
 
@@ -539,36 +544,43 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		var matchCat bool
 		if len(localCats) > 0 {
 			for _, catId := range localCats {
-				if catId == item.Category {
+				if catId == item.LocalCategoryID {
 					matchCat = true
 				}
 			}
 
 			if !matchCat {
 				r.Logger.
-					WithFields(logrus.Fields{"id": item.Category, "localCats": localCats}).
+					WithFields(logrus.Fields{"id": item.LocalCategoryID, "localCats": localCats}).
 					Debug("Skipping non-matching category")
 				continue
 			}
 		}
 
-		if mappedCat, ok := r.Definition.Capabilities.Categories[item.Category]; ok {
+		if mappedCat, ok := r.Definition.Capabilities.CategoryMap[item.LocalCategoryID]; ok {
 			item.Category = mappedCat.ID
+		} else if intCatId, err := strconv.Atoi(item.LocalCategoryID); err != nil {
+			item.Category = intCatId + torznab.CustomCategoryOffset
 		} else {
-			item.Category = item.Category + torznab.CustomCategoryOffset
+			return nil, fmt.Errorf("Unable to handle category id %q", item.LocalCategoryID)
 		}
 
-		items = append(items, item)
+		extracted = append(extracted, item)
 	}
 
 	r.Logger.
 		WithFields(logrus.Fields{"time": time.Now().Sub(timer)}).
-		Infof("Query returned %d results", len(items))
+		Infof("Query returned %d results", len(extracted))
+
+	items := []torznab.ResultItem{}
+	for _, item := range extracted {
+		items = append(items, item.ResultItem)
+	}
 
 	return items, nil
 }
 
-func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (torznab.ResultItem, error) {
+func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extractedItem, error) {
 	row := map[string]string{}
 
 	html, _ := goquery.OuterHtml(selection)
@@ -581,7 +593,7 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (torznab.
 
 		val, err := item.Block.MatchText(selection)
 		if err != nil {
-			return torznab.ResultItem{}, err
+			return extractedItem{}, err
 		}
 
 		r.Logger.
@@ -591,10 +603,12 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (torznab.
 		row[item.Field] = val
 	}
 
-	item := torznab.ResultItem{
-		Site:            r.Definition.Site,
-		MinimumRatio:    1,
-		MinimumSeedTime: time.Hour * 48,
+	item := extractedItem{
+		ResultItem: torznab.ResultItem{
+			Site:            r.Definition.Site,
+			MinimumRatio:    1,
+			MinimumSeedTime: time.Hour * 48,
+		},
 	}
 
 	r.Logger.
@@ -629,12 +643,7 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (torznab.
 		case "description":
 			item.Description = val
 		case "category":
-			catID, err := strconv.Atoi(val)
-			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed categoryid: %s", rowIdx, err.Error())
-				continue
-			}
-			item.Category = catID
+			item.LocalCategoryID = val
 		case "size":
 			bytes, err := humanize.ParseBytes(val)
 			if err != nil {
@@ -677,7 +686,7 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (torznab.
 	if r.hasDateHeader() {
 		date, err := r.extractDateHeader(selection)
 		if err != nil {
-			return torznab.ResultItem{}, err
+			return extractedItem{}, err
 		}
 
 		item.PublishDate = date

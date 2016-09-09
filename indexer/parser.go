@@ -218,23 +218,26 @@ type searchBlock struct {
 	Fields fieldsListBlock `yaml:"fields"`
 }
 
-type capabilitiesBlock torznab.Capabilities
+type capabilitiesBlock struct {
+	CategoryMap categoryMap
+	SearchModes []torznab.SearchMode
+}
 
 // UnmarshalYAML implements the Unmarshaller interface.
 func (c *capabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var intermediate struct {
-		Categories map[int]string           `yaml:"categories"`
+		Categories map[string]string        `yaml:"categories"`
 		Modes      map[string]stringorslice `yaml:"modes"`
 	}
 
 	if err := unmarshal(&intermediate); err == nil {
-		c.Categories = torznab.CategoryMapping{}
+		c.CategoryMap = categoryMap{}
 
 		for id, catName := range intermediate.Categories {
 			matchedCat := false
 			for _, cat := range torznab.AllCategories {
 				if cat.Name == catName {
-					c.Categories[id] = cat
+					c.CategoryMap[id] = cat
 					matchedCat = true
 					break
 				}
@@ -254,6 +257,13 @@ func (c *capabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) err
 	}
 
 	return errors.New("Failed to unmarshal capabilities block")
+}
+
+func (c *capabilitiesBlock) ToTorznab() torznab.Capabilities {
+	return torznab.Capabilities{
+		Categories:  c.CategoryMap.Categories(),
+		SearchModes: c.SearchModes,
+	}
 }
 
 type stringorslice []string

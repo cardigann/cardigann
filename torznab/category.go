@@ -177,56 +177,6 @@ func ParentCategory(c Category) Category {
 	return CategoryOther
 }
 
-type CategoryMapping map[int]Category
-
-func (mapping CategoryMapping) Categories() Categories {
-	cats := Categories{}
-	added := map[int]bool{}
-
-	for _, c := range mapping {
-		if _, exists := added[c.ID]; exists {
-			continue
-		}
-		cats = append(cats, c)
-		added[c.ID] = true
-	}
-
-	return cats
-}
-
-func (mapping CategoryMapping) Resolve(cat Category) []int {
-	var matched bool
-	var results = []int{}
-
-	for localID, mappedCat := range mapping {
-		if mappedCat.ID == cat.ID {
-			results = append(results, localID)
-			matched = true
-		}
-	}
-
-	if !matched {
-		parent := ParentCategory(cat)
-		for localID, mappedCat := range mapping {
-			if mappedCat.ID == parent.ID {
-				results = append(results, localID)
-			}
-		}
-	}
-
-	return results
-}
-
-func (mapping CategoryMapping) ResolveAll(cats ...Category) []int {
-	results := []int{}
-
-	for _, cat := range cats {
-		results = append(results, mapping.Resolve(cat)...)
-	}
-
-	return results
-}
-
 type Categories []Category
 
 func (slice Categories) Subset(ids ...int) Categories {

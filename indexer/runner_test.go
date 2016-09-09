@@ -1,7 +1,6 @@
 package indexer
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -226,7 +225,6 @@ func registerResponder(method, url string, f func(req *http.Request) (*http.Resp
 			return nil, err
 		}
 		resp.Request = innerreq
-		fmt.Printf("%#v", resp)
 		return resp, nil
 	})
 }
