@@ -11,18 +11,26 @@ os:
 
 env:
   global:
-    - secure: "ev6vrprytP3oI4HWIfFfIPd522R84ZwwLJy0eT3gxRCcGQN6mDoYJR6GmhS8CIO1kVDc9+8XLTl+FGq104wlYm8gYVrvBXZnvW+VW+I0ANBV8j1qnwIhsO2GaRN/k4ra/lMa/axhTGxglsKmpGW3Ygd3C6vr5QxW7cw+OnPGQ3m8vH6TRNLGyumi4XLPiinvD1T4OcpBD/HrXcR/cFyl7i7wwR19GYVtVOFdCFGoyiAtuEjgeV6QIQoZbUwcGKhwwJ0tAwj88UbzgPGEGQsnBbVdAaEz8OpN+dDPIfQWEKCvMngnvkoSOpmhkjgd6tdApQIChjCZYoi4097gfK2+iDtproXh/7Dykcu716OoVHTmdmre301twJcHywguFD/goavlLXclV/wh8Eh/hwDr420aAEu0QXncmYXcies6C5CcKrReWmh51fHU5tbd/5ppYIFEn2cEvm8EuECMJG01wman9dQTzxCcJEIv21leVW1dqDkU3pnegXQHGKre06oLE10gUlAdbL0jk9FARd/r3fJE6pb4DhjQjCbDkv7k2b9EEklP+/KOSHA/yI4uIuOzPhE27Uv3PVuU5BHykaovLIlLwHVwXA9Ui3iFxxE6LCJaqh3Rm1InwLHOHybfVSKLzGcV/86UOoGiyyrtDxyrSgg0xr1KVCooFo/i0sZhxS0="
     - COMMIT=${TRAVIS_COMMIT::8}
     - IMAGE=cardigann/cardigann
     - IMAGE_VERSION=$IMAGE:$COMMIT
+    - secure: "bqZwFTgSM9PL+Hqs+8BPhWb3QlpvaxyhXd1eZhJHlxHTzy9sklWVvIHDsrkeSvr12yANewuQZrFv2MTXt60DMWt6KFYOMzDqOyrJzEEl75YzpRstzoVNhK/YlasCRegnmmbtt63m5xZlF8b7HXSP0IRxH7BB2xplYPZT5mRp3bqKiu+Fjhj28Ait46o1uqw70e2AX+6gZlBhhvUafxq0d4stBMnKIuy1sThoVsq8GpJUEojS9wJJTmpJ8GtgqgVieQf60vFJGZT+tAOQOQBU3BFBO+dhBhv46bUsUYJX79K98eIn2BpYf5gU1oZe+ZKv/zJcGyVZXbDbBmVLj8F9FkoPlF6Rd79rDF6stIQOs1qOWKAPS3NR0411CuVt+vQptzeQNICjREvOqa/E5UYrOZsRK8RwXCPIvte8WQieF3UD7GpT4L1/44GtNqdlozChxY5cdtK2AKFO77WyRGUJ7dmbcZR7V0cjZ/Gz9Iz9/cycjSWSOYd2T/PLKoNOgbvf2w/Tlp+dJsuA4BTvrGcOfy45AopcL45fHeXZvmFDQ/ww0FDCXYQLZmbutB1dpB44xRSrOU7pFHjTPnz3lNEumenoithwYzBX4Oym9VXowYTOmP24eO7uUeKwyl3iRliCtjSKKgehi7KD+YXy+JqkINoBvSKSdPa6MWTzOod57vY="
 
 script:
   - make test
 
+before_deploy:
+  - make build-without-static
+  - ./cardigann version
+  - docker build --build-arg BIN=./cardigann -t ${IMAGE}:${COMMIT} .
+  - docker tag ${IMAGE}:${COMMIT} ${IMAGE}:latest
+  - docker tag ${IMAGE}:${COMMIT} ${IMAGE}:travis-${TRAVIS_BUILD_NUMBER}
+  - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+
 deploy:
   skip_cleanup: true
   provider: script
-  script: make travis-docker-push
+  script: docker push ${IMAGE}
   on:
     branch:
       - master

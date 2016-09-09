@@ -40,16 +40,6 @@ run-dev:
 	cd web/; npm start &
 	rerun $(PREFIX) --debug server --passphrase "llamasrock"
 
-deps: glide
-	./glide install
-
-glide:
-	curl -L https://github.com/Masterminds/glide/releases/download/v0.12.0/glide-v0.12.0-$(OS)-$(ARCH).zip -o glide.zip
-	unzip glide.zip
-	mv ./$(OS)-$(ARCH)/glide ./glide
-	rm -fr ./$(OS)-$(ARCH)
-	rm ./glide.zip
-
 release/defs.zip: $(shell find definitions/)
 	-mkdir -p release/
 	zip release/defs.zip definitions/*
