@@ -1,6 +1,5 @@
 language: go
 sudo: false
-
 go:
   - 1.6
 
@@ -9,19 +8,15 @@ services:
 
 env:
   global:
+    - secure: "ev6vrprytP3oI4HWIfFfIPd522R84ZwwLJy0eT3gxRCcGQN6mDoYJR6GmhS8CIO1kVDc9+8XLTl+FGq104wlYm8gYVrvBXZnvW+VW+I0ANBV8j1qnwIhsO2GaRN/k4ra/lMa/axhTGxglsKmpGW3Ygd3C6vr5QxW7cw+OnPGQ3m8vH6TRNLGyumi4XLPiinvD1T4OcpBD/HrXcR/cFyl7i7wwR19GYVtVOFdCFGoyiAtuEjgeV6QIQoZbUwcGKhwwJ0tAwj88UbzgPGEGQsnBbVdAaEz8OpN+dDPIfQWEKCvMngnvkoSOpmhkjgd6tdApQIChjCZYoi4097gfK2+iDtproXh/7Dykcu716OoVHTmdmre301twJcHywguFD/goavlLXclV/wh8Eh/hwDr420aAEu0QXncmYXcies6C5CcKrReWmh51fHU5tbd/5ppYIFEn2cEvm8EuECMJG01wman9dQTzxCcJEIv21leVW1dqDkU3pnegXQHGKre06oLE10gUlAdbL0jk9FARd/r3fJE6pb4DhjQjCbDkv7k2b9EEklP+/KOSHA/yI4uIuOzPhE27Uv3PVuU5BHykaovLIlLwHVwXA9Ui3iFxxE6LCJaqh3Rm1InwLHOHybfVSKLzGcV/86UOoGiyyrtDxyrSgg0xr1KVCooFo/i0sZhxS0="
     - COMMIT=${TRAVIS_COMMIT::8}
     - IMAGE=cardigann/cardigann
     - IMAGE_VERSION=$IMAGE:$COMMIT
 
 script:
-  - export PR=https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST
-  - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo `curl -s $PR | jq -r .head.ref`; fi)
-  - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, PR=$PR, BRANCH=$BRANCH"
   - make test
-
-after_success:
   - docker build -t $IMAGE:$COMMIT app
   - docker tag $IMAGE:$COMMIT $IMAGE:latest
   - docker tag $IMAGE:$COMMIT $IMAGE:travis-$TRAVIS_BUILD_NUMBER
-  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - docker push $IMAGE
