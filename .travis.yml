@@ -17,6 +17,7 @@ script:
   - make test
 
 deploy:
+  skip_cleanup: true
   provider: script
   on:
     branch: [ master, travis-docker-builds ]
