@@ -21,6 +21,9 @@ test-defs:
 build: server/static.go
 	go build -o $(BIN) -ldflags="$(FLAGS)" $(PREFIX)
 
+build-without-static:
+	go build -o $(BIN) -ldflags="$(FLAGS)" $(PREFIX)
+
 server/static.go: $(shell find web/src)
 	cd web; npm run build
 	go generate -v ./server
@@ -60,7 +63,7 @@ release: release/defs.zip
 	GOOS=windows GOARCH=386 go build -o release/$(BIN)-windows-386 -ldflags="$(FLAGS)" $(PREFIX)
 
 .PHONY: travis-docker-push
-travis-docker-push: build
+travis-docker-push: build-without-static
 	docker build --build-arg BIN=./cardigann -t ${IMAGE}:${COMMIT} app
 	docker tag ${IMAGE}:${COMMIT} ${IMAGE}:latest
 	docker tag ${IMAGE}:${COMMIT} ${IMAGE}:travis-${TRAVIS_BUILD_NUMBER}

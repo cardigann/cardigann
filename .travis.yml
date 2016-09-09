@@ -24,5 +24,7 @@ deploy:
   provider: script
   script: make --debug travis-docker-push
   on:
-    branch: [ master, travis-docker-builds ]
+    branch:
+      - master
+      - travis-docker-builds
     condition: $TRAVIS_OS_NAME = linux
