@@ -62,7 +62,7 @@ var (
 	CategoryPC_PhoneAndroid    = Category{4070, "PC/Phone-Android"}
 	CategoryTV                 = Category{5000, "TV"}
 	CategoryTV_WEBDL           = Category{5010, "TV/WEB-DL"}
-	CategoryTV_FOREIGN         = Category{5020, "TV/FOREIGN"}
+	CategoryTV_FOREIGN         = Category{5020, "TV/Foreign"}
 	CategoryTV_SD              = Category{5030, "TV/SD"}
 	CategoryTV_HD              = Category{5040, "TV/HD"}
 	CategoryTV_Other           = Category{5999, "TV/Other"}
@@ -175,56 +175,6 @@ func ParentCategory(c Category) Category {
 		return CategoryBooks
 	}
 	return CategoryOther
-}
-
-type CategoryMapping map[int]Category
-
-func (mapping CategoryMapping) Categories() Categories {
-	cats := Categories{}
-	added := map[int]bool{}
-
-	for _, c := range mapping {
-		if _, exists := added[c.ID]; exists {
-			continue
-		}
-		cats = append(cats, c)
-		added[c.ID] = true
-	}
-
-	return cats
-}
-
-func (mapping CategoryMapping) Resolve(cat Category) []int {
-	var matched bool
-	var results = []int{}
-
-	for localID, mappedCat := range mapping {
-		if mappedCat.ID == cat.ID {
-			results = append(results, localID)
-			matched = true
-		}
-	}
-
-	if !matched {
-		parent := ParentCategory(cat)
-		for localID, mappedCat := range mapping {
-			if mappedCat.ID == parent.ID {
-				results = append(results, localID)
-			}
-		}
-	}
-
-	return results
-}
-
-func (mapping CategoryMapping) ResolveAll(cats ...Category) []int {
-	results := []int{}
-
-	for _, cat := range cats {
-		results = append(results, mapping.Resolve(cat)...)
-	}
-
-	return results
 }
 
 type Categories []Category

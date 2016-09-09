@@ -9,7 +9,7 @@ import (
 
 type Capabilities struct {
 	SearchModes []SearchMode
-	Categories  CategoryMapping
+	Categories  Categories
 }
 
 func (c Capabilities) HasSearchMode(key string) (bool, []string) {
@@ -54,7 +54,7 @@ func (c Capabilities) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		})
 	}
 
-	cats := c.Categories.Categories()
+	cats := c.Categories
 	sort.Sort(cats)
 
 	for _, cat := range cats {

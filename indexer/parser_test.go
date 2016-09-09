@@ -3,8 +3,6 @@ package indexer
 import (
 	"reflect"
 	"testing"
-
-	"github.com/cardigann/cardigann/torznab"
 )
 
 const exampleDefinition1 = `
@@ -57,7 +55,7 @@ func TestIndexerParser(t *testing.T) {
 		t.Fatalf("Expected language to get the default, got %q", def.Language)
 	}
 
-	ok, supported := torznab.Capabilities(def.Capabilities).HasSearchMode("tv-search")
+	ok, supported := def.Capabilities.ToTorznab().HasSearchMode("tv-search")
 	if !ok {
 		t.Fatal("Capabilities should support tv-search")
 	}
@@ -66,12 +64,31 @@ func TestIndexerParser(t *testing.T) {
 		t.Fatalf("Supported parameters for tv-search were parsed incorrectly as %v", supported)
 	}
 
-	cat, ok := torznab.Capabilities(def.Capabilities).Categories[6]
-	if !ok {
-		t.Fatalf("Failed to find a mapping for category 6")
+	if l := len(def.Capabilities.ToTorznab().Categories); l != 5 {
+		t.Fatalf("Expected 6 categories, got %d", l)
 	}
+}
 
-	if cat != torznab.CategoryAudio {
-		t.Fatalf("Failed to find a mapping for category 6 to torznab.CategoryAudio")
+const exampleDefinitionWithStringCats = `
+---
+  site: testsite
+  name: Test Site
+  links:
+    - https://www.example.org
+
+  caps:
+    categories:
+      abc:  Movies/BluRay
+      qyz:  Audio
+
+    modes:
+      search: q
+      tv-search: [q, season, ep]
+`
+
+func TestIndexerParserWithStringLocalCats(t *testing.T) {
+	_, err := ParseDefinition([]byte(exampleDefinitionWithStringCats))
+	if err != nil {
+		t.Fatal(err)
 	}
 }
