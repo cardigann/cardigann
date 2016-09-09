@@ -1,6 +1,11 @@
 version: "2"
 
 services:
+  cardigann:
+    build: .
+    ports:
+    - 5060:5060
+
   couchpotato:
     image: linuxserver/couchpotato
     environment:
