@@ -23,13 +23,7 @@ script:
 deploy:
   skip_cleanup: true
   provider: script
+  script: travis-docker-push
   on:
     branch: [ master, travis-docker-builds ]
     condition: $TRAVIS_OS_NAME = linux
-  script:
-    - make build
-    - docker build --build-arg BIN=./cardigann -t $IMAGE:$COMMIT app
-    - docker tag $IMAGE:$COMMIT $IMAGE:latest
-    - docker tag $IMAGE:$COMMIT $IMAGE:travis-$TRAVIS_BUILD_NUMBER
-    - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-    - docker push $IMAGE
