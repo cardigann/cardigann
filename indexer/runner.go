@@ -48,8 +48,11 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
 
-	if os.Getenv("DEBUG_HTTP") != "" {
+	switch os.Getenv("DEBUG_HTTP") {
+	case "1", "true", "basic":
 		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Basic)))
+	case "body":
+		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Body)))
 	}
 
 	return &Runner{
