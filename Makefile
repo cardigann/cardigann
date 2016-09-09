@@ -64,6 +64,7 @@ release: release/defs.zip
 
 .PHONY: travis-docker-push
 travis-docker-push: build-without-static
+	./cardigann version
 	docker build --build-arg BIN=./cardigann -t ${IMAGE}:${COMMIT} .
 	docker tag ${IMAGE}:${COMMIT} ${IMAGE}:latest
 	docker tag ${IMAGE}:${COMMIT} ${IMAGE}:travis-${TRAVIS_BUILD_NUMBER}
