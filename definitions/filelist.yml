@@ -1,0 +1,79 @@
+---
+  site: filelist
+  name: FileList
+  language: en-us
+  links:
+    - http://filelist.ro/
+
+  caps:
+    categories:
+      24:   TV/Anime
+      11:   Audio
+      25:   Movies/3D
+      20:   Movies/BluRay
+      2:    Movies/Foreign
+      3:    Movies/DVD
+      4:    Movies/HD
+      19:   Movies/Foreign
+      1:    Movies/SD
+      10:   Console
+      9:    PC/Games
+      17:   PC
+      22:   PC
+      8:    PC
+      21:   TV/HD # season packs
+      23:   TV/SD # season packs
+      13:   TV/Sport
+      14:   TV
+      7:    XXX
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form[action='takelogin.php']
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+      unlock: "1"
+
+  search:
+    path: browse.php
+    inputs:
+      search: "{{ .Keywords }}"
+      cat: 0
+    rows:
+      selector: .torrentrow
+    fields:
+      category:
+        selector: .torrenttable:nth-child(1) span a
+        attribute: href
+        filters:
+          - name: querystring
+            args: cat
+      title:
+        selector: .torrenttable:nth-child(2) span a
+        attribute: title
+      details:
+        selector: .torrenttable:nth-child(2) span a
+        attribute: href
+      download:
+        selector: .torrenttable:nth-child(3) span a
+        attribute: href
+      size:
+        selector: .torrenttable:nth-child(7) font
+        remove: br
+      date:
+        selector: .torrenttable:nth-child(6) font
+        remove: br
+        filters:
+          - name: dateparse
+            args: 15:04:0502/01/2006
+      seeders:
+        selector: .torrenttable:nth-child(9)
+      leechers:
+        selector: .torrenttable:nth-child(10)
+
+

@@ -66,6 +66,7 @@ If you want to run this service non-interactively, you can install it as a servi
 * Demonoid
 * HD-Torrents
 * BeyondHD 
+* FileList
 
 ## Planned Trackers
 
@@ -81,9 +82,7 @@ I'd love assistance adding these trackers, either via invites or pull-requests.
 * BlueTigers
 * BTN
 * DanishBits
-* Demonoid
 * EuTorrents
-* FileList
 * Fuzer
 * HD-Space
 * Hebits
