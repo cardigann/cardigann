@@ -16,7 +16,7 @@ func TestCategoryMap(t *testing.T) {
 		"4":   torznab.CategoryTV_Sport,
 		"5":   torznab.CategoryAudio,
 		"6":   torznab.CategoryAudio,
-		"7":   torznab.CategoryMovies,
+		"7":   torznab.CategoryMovies_HD,
 		"8":   torznab.CategoryAudio_Video,
 		"10":  torznab.CategoryTV,
 		"12":  torznab.CategoryTV,
@@ -29,6 +29,7 @@ func TestCategoryMap(t *testing.T) {
 	}{
 		{tCats: []torznab.Category{torznab.CategoryTV_Anime, torznab.CategoryTV_SD}, localCats: []string{"1", "10", "12"}},
 		{tCats: []torznab.Category{torznab.CategoryAudio_Foreign}, localCats: []string{"xyz"}},
+		{tCats: []torznab.Category{torznab.CategoryMovies}, localCats: []string{"2", "7"}},
 	} {
 		r := cats.ResolveAll(test.tCats...)
 		sort.Sort(sort.StringSlice(r))

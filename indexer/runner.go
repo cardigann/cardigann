@@ -559,10 +559,14 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 		if mappedCat, ok := r.Definition.Capabilities.CategoryMap[item.LocalCategoryID]; ok {
 			item.Category = mappedCat.ID
-		} else if intCatId, err := strconv.Atoi(item.LocalCategoryID); err != nil {
-			item.Category = intCatId + torznab.CustomCategoryOffset
 		} else {
-			return nil, fmt.Errorf("Unable to handle category id %q", item.LocalCategoryID)
+			r.Logger.
+				WithFields(logrus.Fields{"localId": item.LocalCategoryID}).
+				Warn("Unknown local category")
+
+			if intCatId, err := strconv.Atoi(item.LocalCategoryID); err == nil {
+				item.Category = intCatId + torznab.CustomCategoryOffset
+			}
 		}
 
 		extracted = append(extracted, item)
