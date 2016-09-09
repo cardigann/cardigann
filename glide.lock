@@ -1,5 +1,5 @@
 hash: 11faf0dc40ba42b3722faf3be88f32384162abc2e3662aae94aa69caf0519c73
-updated: 2016-09-05T19:17:06.285952672+10:00
+updated: 2016-09-09T22:59:26.644601083+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -23,12 +23,14 @@ imports:
   - padding
 - name: github.com/f2prateek/train
   version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
+  subpackages:
+  - log
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 0a192a193177452756c362c20087ddafcf6829c4
 - name: github.com/headzoo/surf
-  version: 40151144dcb8eb3fce7599cf59f7d2f50d1cf690
+  version: 7ce0920552c70dae633192a73923ed71d9f899ef
   repo: git@github.com:cardigann/surf.git
   subpackages:
   - agent
@@ -53,12 +55,12 @@ imports:
 - name: github.com/yosssi/gohtml
   version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: 1358eff22f0dd0c54fc521042cc607f6ff4b531a
+  version: 9313baa13d9262e49d07b20ed57dceafcd7240cc
   subpackages:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
+  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
   subpackages:
   - unix
   - windows/registry
