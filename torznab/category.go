@@ -62,7 +62,7 @@ var (
 	CategoryPC_PhoneAndroid    = Category{4070, "PC/Phone-Android"}
 	CategoryTV                 = Category{5000, "TV"}
 	CategoryTV_WEBDL           = Category{5010, "TV/WEB-DL"}
-	CategoryTV_FOREIGN         = Category{5020, "TV/FOREIGN"}
+	CategoryTV_FOREIGN         = Category{5020, "TV/Foreign"}
 	CategoryTV_SD              = Category{5030, "TV/SD"}
 	CategoryTV_HD              = Category{5040, "TV/HD"}
 	CategoryTV_Other           = Category{5999, "TV/Other"}
