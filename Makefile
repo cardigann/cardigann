@@ -61,9 +61,8 @@ release: release/defs.zip
 
 .PHONY: travis-docker-push
 travis-docker-push: build
-	docker build --build-arg BIN=./cardigann -t $IMAGE:$COMMIT app
-	docker tag $IMAGE:$COMMIT $IMAGE:latest
-	docker tag $IMAGE:$COMMIT $IMAGE:travis-$TRAVIS_BUILD_NUMBER
-	docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-	docker push $IMAGE
-
+	docker build --build-arg BIN=./cardigann -t ${IMAGE}:${COMMIT} app
+	docker tag ${IMAGE}:${COMMIT} ${IMAGE}:latest
+	docker tag ${IMAGE}:${COMMIT} ${IMAGE}:travis-${TRAVIS_BUILD_NUMBER}
+	docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+	docker push ${IMAGE}
