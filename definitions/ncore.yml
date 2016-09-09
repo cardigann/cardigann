@@ -1,0 +1,85 @@
+---
+  site: ncore
+  name: NCore
+  language: en-us
+  links:
+    - https://ncore.cc
+
+  caps:
+    categories:
+      xvid_hun:     Movies/Foreign
+      xvid:         Movies/SD
+      dvd_hu:       Movies/Foreign
+      dvd:          Movies/SD
+      dvd9_hun:     Movies/Foreign
+      dvd9:         Movies/SD
+      hd_hun:       Movies/Foreign
+      hd:           Movies/HD
+      xvidser_hun:  TV/Foreign
+      xvidser:      TV/SD
+      dvdser_hun:   TV/Foreign
+      dvdser:       TV/SD
+      hdser_hun:    TV/Foreign
+      hdser:        TV/HD
+      mp3_hun:      Audio/Foreign
+      mp3:          Audio/MP3
+      lossless_hun: Audio/Foreign
+      lossless:     Audio/Lossless
+      clip:         Audio/Lossless
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      nev: "{{ .Config.username }}"
+      pass: "{{ .Config.password }}"
+    error:
+      path: /login.php
+      message:
+        selector: "#hibauzenet td[valign='middle']"
+    test:
+      path: /profile.php
+
+  search:
+    path: /torrents.php
+    inputs:
+      $raw: "{{range .Categories}}kivalasztott_tipus[]={{.}}&{{end}}mire={{ .Query.Keywords }}&miben=name&tipus=kivalasztottak_kozott&submit.x=44&submit.y=16&submit=Ok&tags="
+    rows:
+      selector: .box_torrent_all > .box_torrent
+    fields:
+      category:
+        selector: .box_alap_img > a
+        attribute: href
+        filters:
+          - name: querystring
+            args: tipus
+      title:
+        selector: .torrent_txt > a, .torrent_txt2 > a
+        attribute: title
+      details:
+        selector: .torrent_txt > a, .torrent_txt2 > a
+        attribute: href
+      download:
+        selector: .torrent_txt > a, .torrent_txt2 > a
+        attribute: href
+        filters:
+          - name: replace
+            args: ["action=details", "action=download"]
+      size:
+        selector: .box_meret2
+      date:
+        selector: .box_feltoltve2
+        remove: i, br
+        filters:
+          - name: dateparse
+            args: 2006-01-0215:04:05
+      seeders:
+        selector: .box_s2 a
+      leechers:
+        selector: .box_l2 a
+
+
