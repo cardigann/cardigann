@@ -19,7 +19,7 @@ script:
 deploy:
   provider: script
   on:
-    branch: master
+    branch: [ master, travis-docker-builds ]
   script:
     - make build
     - docker build --build-arg BIN=./cardigann -t $IMAGE:$COMMIT app
