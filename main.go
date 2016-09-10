@@ -34,7 +34,6 @@ func run(args ...string) (exitCode int) {
 	app := kingpin.New("cardigann",
 		`A torznab proxy for torrent indexer sites`)
 
-	app.Version(Version)
 	app.Writer(os.Stdout)
 	app.DefaultEnvars()
 
@@ -56,6 +55,11 @@ func run(args ...string) (exitCode int) {
 	configureDownloadCommand(app)
 	configureTestDefinitionCommand(app)
 	configureServiceCommand(app)
+
+	app.Command("version", "Print the application version").Action(func(c *kingpin.ParseContext) error {
+		fmt.Print(Version)
+		return nil
+	})
 
 	kingpin.MustParse(app.Parse(args))
 	return

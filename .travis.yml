@@ -1,9 +1,38 @@
 language: go
-sudo: false
+go:
+  - 1.6
+
+services:
+  - docker
 
 os:
   - linux
   - osx
 
-go:
-  - 1.6
+env:
+  global:
+    - COMMIT=${TRAVIS_COMMIT::8}
+    - IMAGE=cardigann/cardigann
+    - IMAGE_VERSION=$IMAGE:$COMMIT
+    - secure: "bpv+ZtPnIH6jzYOefJLNW1bI8Eu337baqIf9tinPFKMr5JSISKQUUY8+NvnNnAVIHbMhik/7aCF1iFED0OIJFe5t4d21uNU3pGmKN9wADI9vCfEsKzEwvDW8wuVpjZY7IAdIwH7J0Np5Imz9nZ62A9y5aNoKzAe2ksaa1kic7j1jHHKJoqV5S+nhTCBisAdEcUNq2EJNU0q2zQLJdr/rDZ3zEhNo78QHnsD+13JFMbJ6lGCtXFUXTnyTSAGQjAw2zyxNYZNxlsqDgN4aFJ6a3hj1IYdZOI5/spD8UF9fSfEVvTmyeKFxLoHKZL0QEKy9TSPV7h7EOOki+IcLgXlZBZyFjfRIKjFGc0XnLQdRIgBAkNsMQqGw6/jy08AbDBN8HV13u9263137NGL/tZpx/x2COBk0BaNx5cjV2EUbRRys+4gaNI/Y4qCwTnAEVs/tbU9ocSYxmfjyF2iqnbVChq3COstc0M0EqYW0UtR2JfENgkAryhOHUQKZNph/AJOOpU7gp5V6A48hk/wsngW7DWmHc45ZwAFeqXKfiIlGtZQr+WgkPj2l5gRjzK+aknSPlzLnxBuSfj9kwaQzX6iLvHgnfXogjFk5aMH4b16k1fdqAVeYKGOTM0AvNzwLpGBj3AlPPPls1Fgzg3fgRWe8nrC9YWPjMiwncCKdV9jj9/0="
+
+script:
+  - make test
+
+before_deploy:
+  - make build-without-static
+  - ./cardigann version
+  - docker build --build-arg BIN=./cardigann -t ${IMAGE}:${COMMIT} .
+  - docker tag ${IMAGE}:${COMMIT} ${IMAGE}:latest
+  - docker tag ${IMAGE}:${COMMIT} ${IMAGE}:travis-${TRAVIS_BUILD_NUMBER}
+  - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: docker push ${IMAGE}
+  on:
+    branch:
+      - master
+      - travis-docker-builds
+    condition: $TRAVIS_OS_NAME = linux
