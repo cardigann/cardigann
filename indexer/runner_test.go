@@ -342,7 +342,7 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPage), nil
 	})
 
-	results, err := r.Search(torznab.Query{"t": "tv-search", "q": "llamas", "cat": []int{torznab.CategoryAudio_Foreign.ID}})
+	results, err := r.Search(torznab.Query{Type: "tv-search", Q: "llamas", Categories: []int{torznab.CategoryAudio_Foreign.ID}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -412,9 +412,9 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 	})
 
 	results, err := r.Search(torznab.Query{
-		"t":   "tv-search",
-		"q":   "llamas",
-		"cat": []int{torznab.CategoryAudio.ID},
+		Type:       "tv-search",
+		Q:          "llamas",
+		Categories: []int{torznab.CategoryAudio.ID},
 	})
 	if err != nil {
 		t.Fatal(err)

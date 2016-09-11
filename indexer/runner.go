@@ -436,8 +436,8 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	}
 
 	localCats := []string{}
-	if queryCatIDs, ok := query["cat"].([]int); ok {
-		queryCats := torznab.AllCategories.Subset(queryCatIDs...)
+	if len(query.Categories) > 0 {
+		queryCats := torznab.AllCategories.Subset(query.Categories...)
 
 		// resolve query categories to the exact local, or the local based on parent cat
 		for _, id := range r.Definition.Capabilities.CategoryMap.ResolveAll(queryCats...) {
@@ -445,7 +445,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		}
 
 		r.Logger.
-			WithFields(logrus.Fields{"querycats": queryCatIDs, "local": localCats}).
+			WithFields(logrus.Fields{"querycats": query.Categories, "local": localCats}).
 			Debugf("Resolved torznab cats to local")
 	}
 
@@ -523,19 +523,19 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	}
 
 	rows := dom.Find(r.Definition.Search.Rows.Selector)
-	limit, hasLimit := query.Limit()
 
 	r.Logger.
 		WithFields(logrus.Fields{
-		"rows":     rows.Length(),
-		"selector": r.Definition.Search.Rows.Selector,
-		"limit":    limit,
-	}).Debugf("Found %d rows", rows.Length())
+			"rows":     rows.Length(),
+			"selector": r.Definition.Search.Rows.Selector,
+			"limit":    query.Limit,
+			"offset":   query.Offset,
+		}).Debugf("Found %d rows", rows.Length())
 
 	extracted := []extractedItem{}
 
 	for i := 0; i < rows.Length(); i++ {
-		if hasLimit && len(extracted) >= limit {
+		if query.Limit > 0 && len(extracted) >= query.Limit {
 			break
 		}
 

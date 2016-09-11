@@ -26,3 +26,16 @@ func TestParsingQueryKeywords(t *testing.T) {
 		}
 	}
 }
+
+func TestQueryEncode(t *testing.T) {
+	for _, row := range []struct {
+		left, right Query
+	}{
+		{Query{}, Query{}},
+		{Query{Type: "search", Q: "the llama show"}, Query{Q: "the llama show"}},
+	} {
+		if row.left.Encode() != row.right.Encode() {
+			t.Fatalf("Expected %#v to equal %#v", row.left.Encode(), row.right.Encode())
+		}
+	}
+}

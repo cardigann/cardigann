@@ -25,13 +25,13 @@ type Tester struct {
 func (t *Tester) Test() error {
 	for _, mode := range t.Runner.Capabilities().SearchModes {
 		query := torznab.Query{
-			"t":     mode.Key,
-			"limit": 5,
+			Type:  mode.Key,
+			Limit: 5,
 		}
 
 		switch mode.Key {
 		case "tv-search":
-			query["cat"] = []int{
+			query.Categories = []int{
 				torznab.CategoryTV_HD.ID,
 				torznab.CategoryTV_SD.ID,
 			}
