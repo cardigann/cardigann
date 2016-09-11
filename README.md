@@ -67,6 +67,8 @@ If you want to run this service non-interactively, you can install it as a servi
 * HD-Torrents
 * BeyondHD 
 * FileList
+* MoreThanTV
+* NCore
 
 ## Planned Trackers
 
@@ -90,9 +92,7 @@ I'd love assistance adding these trackers, either via invites or pull-requests.
 * ILoveTorrents
 * Immortalseed
 * PassThePopcorn
-* MoreThanTV
 * MyAnonamouse
-* NCore
 * NextGen
 * Pretome
 * PrivateHD
