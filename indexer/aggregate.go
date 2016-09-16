@@ -2,7 +2,6 @@ package indexer
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -24,7 +23,8 @@ func (ag Aggregate) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		g.Go(func() error {
 			result, err := indexer.Search(query)
 			if err != nil {
-				return fmt.Errorf("Indexer %q failed: %s", indexerID, err)
+				log.Warnf("Indexer %q failed: %s", indexerID, err)
+				return nil
 			}
 			allResults[idx] = result
 			if l := len(result); l > maxLength {
@@ -34,6 +34,7 @@ func (ag Aggregate) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		})
 	}
 	if err := g.Wait(); err != nil {
+		log.Warn(err)
 		return nil, err
 	}
 
@@ -41,9 +42,9 @@ func (ag Aggregate) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 	// interleave search results to preserve ordering
 	for i := 0; i <= maxLength; i++ {
-		for _, row := range allResults {
-			if len(results) > i {
-				results = append(results, row[i])
+		for _, r := range allResults {
+			if len(r) > i {
+				results = append(results, r[i])
 			}
 		}
 	}
