@@ -15,3 +15,6 @@ import:
 - package: github.com/kardianos/service
 - package: github.com/f2prateek/train
 - package: github.com/bcampbell/fuzzytime
+- package: golang.org/x/sync
+  subpackages:
+  - errgroup
