@@ -1,5 +1,5 @@
 hash: 11faf0dc40ba42b3722faf3be88f32384162abc2e3662aae94aa69caf0519c73
-updated: 2016-09-09T22:59:26.644601083+10:00
+updated: 2016-09-17T14:59:18.939047234+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -30,7 +30,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 0a192a193177452756c362c20087ddafcf6829c4
 - name: github.com/headzoo/surf
-  version: 7ce0920552c70dae633192a73923ed71d9f899ef
+  version: 1cb8c19456546da4be54c897a35e174117e21441
   repo: git@github.com:cardigann/surf.git
   subpackages:
   - agent
@@ -55,12 +55,12 @@ imports:
 - name: github.com/yosssi/gohtml
   version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: 9313baa13d9262e49d07b20ed57dceafcd7240cc
+  version: 71a035914f99bb58fe82eac0f1289f10963d876c
   subpackages:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
   - windows/registry
@@ -71,5 +71,5 @@ imports:
 - name: gopkg.in/alecthomas/kingpin.v2
   version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 - name: gopkg.in/yaml.v2
-  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
+  version: 31c299268d302dd0aa9a0dcf765a3d58971ac83f
 devImports: []

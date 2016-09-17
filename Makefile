@@ -47,7 +47,8 @@ release/defs.zip: $(shell find definitions/)
 .PHONY: release
 release: release/defs.zip
 	-mkdir -p release/
-	GOOS=linux  GOARCH=386 go build -o release/$(BIN)-linux-386 -ldflags="$(FLAGS)" $(PREFIX)
-	GOOS=linux  GOARCH=amd64 go build -o release/$(BIN)-linux-amd64 -ldflags="$(FLAGS)" $(PREFIX)
-	GOOS=darwin GOARCH=amd64 go build -o release/$(BIN)-darwin-amd64 -ldflags="$(FLAGS)" $(PREFIX)
-	GOOS=windows GOARCH=386 go build -o release/$(BIN)-windows-386 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=linux   GOARCH=arm    GOARM=5    go build -o release/$(BIN)-linux-armv5 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=linux   GOARCH=386               go build -o release/$(BIN)-linux-386 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=linux   GOARCH=amd64             go build -o release/$(BIN)-linux-amd64 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=darwin  GOARCH=amd64             go build -o release/$(BIN)-darwin-amd64 -ldflags="$(FLAGS)" $(PREFIX)
+	GOOS=windows GOARCH=386               go build -o release/$(BIN)-windows-386 -ldflags="$(FLAGS)" $(PREFIX)
