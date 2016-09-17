@@ -49,6 +49,10 @@ func (ag Aggregate) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		}
 	}
 
+	if query.Limit > 0 {
+		results = results[:query.Limit]
+	}
+
 	return results, nil
 }
 
