@@ -47,7 +47,8 @@
   search:
     path: /torrents.php
     inputs:
-      $raw: "{{range .Categories}}kivalasztott_tipus[]={{.}}&{{end}}mire={{ .Query.Keywords }}&miben=name&tipus=kivalasztottak_kozott&submit.x=44&submit.y=16&submit=Ok&tags="
+      $raw: |
+        {{range .Categories}}kivalasztott_tipus[]={{.}}&{{end}}mire={{ .Query.Keywords }}&miben=name&tipus={{if .Categories}}kivalasztottak_kozott{{else}}all_own{{end}}&submit.x=44&submit.y=16&submit=Ok&tags="
     rows:
       selector: .box_torrent_all > .box_torrent
     fields:
