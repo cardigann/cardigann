@@ -3,6 +3,10 @@ version: "2"
 services:
   cardigann:
     build: .
+    volumes:
+    - ./definitions:/definitions
+    - ./config.json:/config.json
+    command: ["--debug", "server"]
     ports:
     - 5060:5060
 
