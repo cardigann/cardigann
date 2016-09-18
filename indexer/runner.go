@@ -34,12 +34,17 @@ var (
 	_ torznab.Indexer = &Runner{}
 )
 
+var (
+	WriteCache = false
+)
+
 type Runner struct {
 	Definition *IndexerDefinition
 	Browser    browser.Browsable
 	Config     config.Config
 	Logger     logrus.FieldLogger
-	caps       torznab.Capabilities
+
+	caps torznab.Capabilities
 }
 
 func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
@@ -199,6 +204,10 @@ func (r *Runner) postToPage(u string, vals url.Values) error {
 }
 
 func (r *Runner) cachePage() error {
+	if !WriteCache {
+		return nil
+	}
+
 	tmpfile, err := ioutil.TempFile("", r.Definition.Site)
 	if err != nil {
 		return err

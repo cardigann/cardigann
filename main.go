@@ -41,8 +41,9 @@ func run(args ...string) (exitCode int) {
 		exitCode = code
 	})
 
-	app.Flag("debug", "Print out debug logging").Action(func(c *kingpin.ParseContext) error {
+	app.Flag("debug", "Print out debug logging and caches responses for debug").Action(func(c *kingpin.ParseContext) error {
 		logger.SetLevel(logrus.DebugLevel)
+		indexer.WriteCache = true
 		return nil
 	}).Bool()
 
