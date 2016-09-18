@@ -653,21 +653,21 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		case "download":
 			u, err := r.resolvePath(val)
 			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed url in %s", rowIdx, key)
+				r.Logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Link = u
 		case "details":
 			u, err := r.resolvePath(val)
 			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed url in %s", rowIdx, key)
+				r.Logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.GUID = u
 		case "comments":
 			u, err := r.resolvePath(val)
 			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed url in %s", rowIdx, key)
+				r.Logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Comments = u
@@ -680,21 +680,21 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		case "size":
 			bytes, err := humanize.ParseBytes(val)
 			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed size: %s", rowIdx, err.Error())
+				r.Logger.Warnf("Row #%d has unparseable size %q: %v", rowIdx, val, err.Error())
 				continue
 			}
 			item.Size = bytes
 		case "leechers":
 			leechers, err := strconv.Atoi(val)
 			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed leechers value in %s", rowIdx, key)
+				r.Logger.Warnf("Row #%d has unparseable leechers value %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Peers += leechers
 		case "seeders":
 			seeders, err := strconv.Atoi(val)
 			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed seeders value in %s", rowIdx, key)
+				r.Logger.Warnf("Row #%d has unparseable seeders value %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Seeders = seeders
@@ -702,12 +702,12 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		case "date":
 			t, err := parseFuzzyTime(val, time.Now())
 			if err != nil {
-				r.Logger.Warnf("Search result row #%d has malformed time value in %s", rowIdx, key)
+				r.Logger.Warnf("Row #%d has unparseable time %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.PublishDate = t
 		default:
-			r.Logger.Warnf("Search result row #%d has unknown field %s", rowIdx, key)
+			r.Logger.Warnf("Row #%d has unknown field %s", rowIdx, key)
 			continue
 		}
 	}

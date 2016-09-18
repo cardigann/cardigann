@@ -73,6 +73,9 @@
         selector: td:nth-child(8)
       date:
         selector: td:nth-child(7)
+        filters:
+          - name: dateparse
+            args: 15:04:05  02/01/2006
       seeders:
         selector: td:nth-child(10) b
       leechers:
