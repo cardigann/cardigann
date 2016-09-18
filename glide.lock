@@ -1,20 +1,20 @@
 hash: 81953eea23782222a17d567f27364295c586e1366dd37f68b5ff52504967e9af
-updated: 2016-09-18T11:48:25.454626402+10:00
+updated: 2016-09-18T13:45:31.474011833+10:00
 imports:
 - name: github.com/alecthomas/template
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
   subpackages:
   - parse
 - name: github.com/alecthomas/units
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/andybalholm/cascadia
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 1c31af6f6c1a7b101ed05aacc7d8a738b43ae86e
 - name: github.com/bcampbell/fuzzytime
   version: 39f1cd4b72489d771d9407a46ec1c6a5cf3d1c73
 - name: github.com/dustin/go-humanize
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 2fcb5204cdc65b4bec9fd0a87606bb0d0e3c54e8
 - name: github.com/dvsekhvalnov/jose2go
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 2a04a552f4a8adf7d51731877b7a2021bab968bb
   subpackages:
   - aes
   - arrays
@@ -24,15 +24,15 @@ imports:
   - keys/ecc
   - padding
 - name: github.com/f2prateek/train
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
   subpackages:
   - log
 - name: github.com/gorilla/context
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 0a192a193177452756c362c20087ddafcf6829c4
 - name: github.com/headzoo/surf
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 1cb8c19456546da4be54c897a35e174117e21441
   repo: git@github.com:cardigann/surf.git
   subpackages:
   - agent
@@ -41,30 +41,28 @@ imports:
   - errors
   - util
 - name: github.com/jarcoal/httpmock
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
-- name: github.com/jinzhu/now
-  version: d9861969c7a7e84746d341c09020c2ef8a617f8f
+  version: 145b10d659265440f062c31ea15326166bae56ee
 - name: github.com/kardianos/osext
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: c2c54e542fb797ad986b31721e1baedf214ca413
 - name: github.com/kardianos/service
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 7a88211485df5d3da6ec68f4f8a5ff9bec297327
 - name: github.com/PuerkitoBio/goquery
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 152b1a2c8f5d0340f658bb656032a39b94e52958
 - name: github.com/shibukawa/configdir
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: f5173a2c50e0358987cec35dfca337496f88f8bf
 - name: github.com/Sirupsen/logrus
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 3ec0642a7fb6488f65b06f9040adc67e3990296a
 - name: github.com/vaughan0/go-ini
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
 - name: github.com/yosssi/gohtml
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 71a035914f99bb58fe82eac0f1289f10963d876c
   subpackages:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
   - windows/registry
@@ -73,7 +71,7 @@ imports:
   - windows/svc/mgr
   - windows
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 - name: gopkg.in/yaml.v2
-  version: fb658a82d15c602472da00a2a8beec8b4b6a2a45
+  version: 31c299268d302dd0aa9a0dcf765a3d58971ac83f
 devImports: []
