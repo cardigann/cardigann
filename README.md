@@ -1,9 +1,7 @@
 Cardigann [![Build Status](https://travis-ci.org/cardigann/cardigann.svg?branch=master)](https://travis-ci.org/cardigann/cardigann) [![Go Report Card](https://goreportcard.com/badge/github.com/cardigann/cardigann)](https://goreportcard.com/report/github.com/cardigann/cardigann)
 =========
 
-Provides [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) interfaces for [private torrent trackers](http://lifehacker.com/5897095/whats-a-private-bittorrent-tracker-and-why-should-i-use-one).
-
-Cardigann can be used to add any supported private tracker to your software of choice (e.g Sonarr, SickRage, CouchPotato). This is done by proxying requests to the individual trackers and scraping the responses and converting them to the correct format. The rules for scraping sites is expressed in a custom YAML format to make updating it easy without having to write code. 
+A server for adding extra indexers to Sonarr, SickRage and CouchPotato via [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) proxies. Behind the scenese Cardigann logs in and runs searches and then transforms the results into a compatible format. 
 
 Cardigann is implemented in golang, which means it's simply a single binary to execute/install, no runtime. Windows, Linux and OSX will be supported, although it should run on any platform that golang supports.
 
@@ -12,7 +10,7 @@ Cardigann is implemented in golang, which means it's simply a single binary to e
 Cardigann provides a cli tool for debugging and development:
 
 ```bash
-cardigann query bithdtv t=tv-search "q=mr robot" ep=1 season=2
+cardigann query bithdtv t=tv-search "q=my show name" ep=1 season=2
 ```
 
 Or you can run the proxy server:
@@ -57,8 +55,11 @@ If you want to run this service non-interactively, you can install it as a servi
 ./cardigann-linux-amd64 service start
 ```
 
+Install your definitions in `/etc/xdg/cardigann/definitions` for them to be found.
 
-## Supported Trackers
+## Supported Indexers
+
+Cardigann simply provides a format for describing how to log into and scrape the search results of various forums and sites. It is not endorsed by the various sites, nor is it intended for piracy. You are using Cardigann at your own risk.
 
 * BIT-HDTV
 * IPTorrents
@@ -69,49 +70,9 @@ If you want to run this service non-interactively, you can install it as a servi
 * FileList
 * MoreThanTV
 * NCore
+* ThePirateBay (TPB)
 
-## Planned Trackers
-
-I'd love assistance adding these trackers, either via invites or pull-requests. 
-
-* Abnormal
-* AlphaRatio
-* AnimeBytes
-* Avistaz
-* bB
-* BitMeTV
-* BitSoup
-* BlueTigers
-* BTN
-* DanishBits
-* EuTorrents
-* Fuzer
-* HD-Space
-* Hebits
-* Hounddawgs
-* ILoveTorrents
-* Immortalseed
-* PassThePopcorn
-* MyAnonamouse
-* NextGen
-* Pretome
-* PrivateHD
-* RevolutionTT
-* SceneAccess
-* SceneFZ
-* SceneTime
-* Shazbat
-* SpeedCD
-* TehConnection
-* TorrentBytes
-* TorrentDay
-* TorrentLeech
-* TorrentShack
-* TransmitheNet
-* TV Chaos UK
-* World-In-HD
-* XSpeeds
-* Xthor
+I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 
 ## Credits
 
