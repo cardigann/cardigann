@@ -58,10 +58,6 @@
         filters:
           - name: regexp
             args: "^Added (?:on )?(.+?)$"
-          - name: reltime
-            args: Monday, Jan 02, 2006
-          - name: dateparse
-            args: Monday, Jan 02, 2006
     fields:
       category:
         selector: td:nth-child(1) > a

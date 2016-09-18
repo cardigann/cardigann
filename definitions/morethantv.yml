@@ -53,9 +53,6 @@
       date:
         selector: td:nth-child(5) .time
         attribute: title
-        filters:
-          - name: dateparse
-            args: Jan 02 2006, 15:04 # Aug 14 2016, 20:59
       seeders:
         selector: td:nth-child(8)
       leechers:

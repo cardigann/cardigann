@@ -14,3 +14,4 @@ import:
 - package: github.com/jarcoal/httpmock
 - package: github.com/kardianos/service
 - package: github.com/f2prateek/train
+- package: github.com/bcampbell/fuzzytime

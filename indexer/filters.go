@@ -12,6 +12,7 @@ import (
 	"unicode"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/bcampbell/fuzzytime"
 	"github.com/cardigann/cardigann/logger"
 )
 
@@ -32,12 +33,14 @@ func invokeFilter(name string, args interface{}, value string) (string, error) {
 		}
 		return filterQueryString(param, value)
 
-	case "dateparse":
-		format, ok := args.(string)
-		if !ok {
-			return "", fmt.Errorf("Filter %q requires a string argument", name)
+	case "timeparse", "dateparse":
+		if args == nil {
+			return filterDateParse(nil, value)
 		}
-		return filterDateParse(format, value)
+		if layout, ok := args.(string); ok {
+			return filterDateParse([]string{layout}, value)
+		}
+		return "", fmt.Errorf("Filter argument type %T was invalid", args)
 
 	case "regexp":
 		pattern, ok := args.(string)
@@ -75,15 +78,8 @@ func invokeFilter(name string, args interface{}, value string) (string, error) {
 		}
 		return strings.Trim(value, cutset), nil
 
-	case "timeago":
-		return filterTimeAgo(value, time.Now())
-
-	case "reltime":
-		format, ok := args.(string)
-		if !ok {
-			return "", fmt.Errorf("Filter %q requires a string argument", name)
-		}
-		return filterRelTime(value, format, time.Now())
+	case "timeago", "fuzzytime", "reltime":
+		return filterFuzzyTime(value, time.Now())
 	}
 
 	return "", errors.New("Unknown filter " + name)
@@ -97,12 +93,13 @@ func filterQueryString(param string, value string) (string, error) {
 	return u.Query().Get(param), nil
 }
 
-func filterDateParse(format string, value string) (string, error) {
-	t, err := time.Parse(format, value)
-	if err != nil {
-		return "", err
+func filterDateParse(layouts []string, value string) (string, error) {
+	for _, layout := range layouts {
+		if t, err := time.Parse(layout, value); err == nil {
+			return t.Format(filterTimeFormat), nil
+		}
 	}
-	return t.Format(filterTimeFormat), nil
+	return "", fmt.Errorf("No matching date pattern for %s", value)
 }
 
 func filterSplit(sep string, pos int, value string) (string, error) {
@@ -153,6 +150,14 @@ func splitDecimalStr(s string) (int, float64, error) {
 	return i, 0, nil
 }
 
+var (
+	timeAgoRegexp     = regexp.MustCompile(`(?i)\bago`)
+	todayRegexp       = regexp.MustCompile(`(?i)\btoday([\s,]+|$)`)
+	tomorrowRegexp    = regexp.MustCompile(`(?i)\btomorrow([\s,]+|$)`)
+	yesterdayRegexp   = regexp.MustCompile(`(?i)\byesterday([\s,]+|$)`)
+	missingYearRegexp = regexp.MustCompile(`^\d{1,2}-\d{1,2}\b`)
+)
+
 func normalizeSpace(s string) string {
 	return strings.TrimSpace(strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
@@ -162,7 +167,7 @@ func normalizeSpace(s string) string {
 	}, s))
 }
 
-func filterTimeAgo(src string, now time.Time) (string, error) {
+func parseTimeAgo(src string, now time.Time) (time.Time, error) {
 	normalized := normalizeSpace(src)
 	normalized = strings.ToLower(normalized)
 
@@ -179,68 +184,103 @@ func filterTimeAgo(src string, now time.Time) (string, error) {
 
 		v, fraction, err := splitDecimalStr(s.TokenText())
 		if err != nil {
-			return "", fmt.Errorf(
-				"Failed to parse decimal time %q in time format at %s", s.TokenText(), s.Pos())
+			return now, fmt.Errorf(
+				"failed to parse decimal time %q in time format at %s", s.TokenText(), s.Pos())
 		}
 
 		tok = s.Scan()
 		if tok == scanner.EOF {
-			return "", fmt.Errorf(
-				"Expected a time unit at %s", s.TokenText(), s.Pos())
+			return now, fmt.Errorf(
+				"expected a time unit at %s", s.TokenText(), s.Pos())
 		}
 
 		switch strings.TrimSuffix(s.TokenText(), "s") {
-		case "year":
+		case "year", "yr", "y":
 			now = now.AddDate(-v, 0, 0)
 			if fraction > 0 {
 				now = now.Add(time.Duration(float64(now.AddDate(-1, 0, 0).Sub(now)) * fraction))
 			}
-		case "month":
+		case "month", "mnth":
 			now = now.AddDate(0, -v, 0)
 			if fraction > 0 {
 				now = now.Add(time.Duration(float64(now.AddDate(0, -1, 0).Sub(now)) * fraction))
 			}
-		case "week":
+		case "week", "wk", "w":
 			now = now.AddDate(0, 0, -7)
 			if fraction > 0 {
 				now = now.Add(time.Duration(float64(now.AddDate(0, 0, -7).Sub(now)) * fraction))
 			}
-		case "day":
+		case "day", "d":
 			now = now.AddDate(0, 0, -v)
 			if fraction > 0 {
 				now = now.Add(time.Minute * -time.Duration(fraction*1440))
 			}
-		case "hour":
+		case "hour", "hr", "h":
 			now = now.Add(time.Hour * -time.Duration(v))
 			if fraction > 0 {
 				now = now.Add(time.Second * -time.Duration(fraction*3600))
 			}
-		case "minute":
+		case "minute", "min", "m":
 			now = now.Add(time.Minute * -time.Duration(v))
 			if fraction > 0 {
 				now = now.Add(time.Second * -time.Duration(fraction*60))
 			}
-		case "second":
+		case "second", "sec", "s":
 			now = now.Add(time.Second * -time.Duration(v))
 		default:
-			return "", fmt.Errorf("Unsupporting unit of time %q", s.TokenText())
+			return now, fmt.Errorf("Unsupporting unit of time %q", s.TokenText())
 		}
 	}
 
-	return now.Format(filterTimeFormat), nil
+	return now, nil
 }
 
-func filterRelTime(src string, format string, now time.Time) (string, error) {
-	out := src
-
-	for from, to := range map[string]string{
-		"today":     now.Format(format),
-		"Today":     now.Format(format),
-		"yesterday": now.AddDate(0, 0, -1).Format(format),
-		"Yesterday": now.AddDate(0, 0, -1).Format(format),
-	} {
-		out = strings.Replace(out, from, to, -1)
+func parseFuzzyTime(src string, now time.Time) (time.Time, error) {
+	if timeAgoRegexp.MatchString(src) {
+		t, err := parseTimeAgo(src, now)
+		if err != nil {
+			return t, fmt.Errorf("error parsing time ago %q: %v", src, err)
+		}
+		return t, nil
 	}
 
-	return out, nil
+	out := todayRegexp.ReplaceAllLiteralString(src, now.Format("Mon, 02 Jan 2006 "))
+	out = tomorrowRegexp.ReplaceAllLiteralString(out, now.AddDate(0, 0, 1).Format("Mon, 02 Jan 2006 "))
+	out = yesterdayRegexp.ReplaceAllLiteralString(out, now.AddDate(0, 0, -1).Format("Mon, 02 Jan 2006 "))
+
+	if m := missingYearRegexp.FindStringSubmatch(out); len(m) > 0 {
+		out = missingYearRegexp.ReplaceAllLiteralString(src, m[0]+now.Format("-2006"))
+	}
+
+	dt, _, err := fuzzytime.USContext.Extract(out)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("error extracting date from %q: %v", out, err)
+	}
+
+	if dt.Time.Empty() {
+		dt.Time.SetHour(0)
+		dt.Time.SetMinute(0)
+	}
+
+	if !dt.HasFullDate() {
+		return time.Time{}, fmt.Errorf("found only partial date %v", dt.ISOFormat())
+	}
+
+	if !dt.Time.HasSecond() {
+		dt.Time.SetSecond(0)
+	}
+
+	if !dt.HasTZOffset() {
+		dt.Time.SetTZOffset(0)
+	}
+
+	return time.Parse("2006-01-02T15:04:05Z07:00", dt.ISOFormat())
+}
+
+func filterFuzzyTime(src string, now time.Time) (string, error) {
+	t, err := parseFuzzyTime(src, now)
+	if err != nil {
+		return "", fmt.Errorf("error parsing fuzzy time %q: %v", src, err)
+	}
+	return t.Format(filterTimeFormat), nil
 }

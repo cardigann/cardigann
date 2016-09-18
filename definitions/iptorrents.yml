@@ -110,7 +110,6 @@
             args: [ "|", -1 ]
           - name: split
             args: [ " by ", 0 ]
-          - name: timeago
       seeders:
         selector: td:nth-child(8)
       leechers:

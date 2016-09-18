@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
@@ -65,6 +66,16 @@ func (t *Tester) Test() error {
 		}
 
 		if t.Opts.Download {
+			u, err := url.Parse(results[0].Link)
+			if err != nil {
+				return err
+			}
+
+			if u.Scheme == "magnet" {
+				log.WithField("url", results[0].Link).Infof("Skipping downloading magnet torrent")
+				return nil
+			}
+
 			log.WithField("url", results[0].Link).Infof("Testing downloading torrent")
 			rc, _, err := t.Runner.Download(results[0].Link)
 			if err != nil {

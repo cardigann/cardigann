@@ -211,8 +211,14 @@ func (r *rowsBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+const (
+	searchMethodPost = "post"
+	searchMethodGet  = "get"
+)
+
 type searchBlock struct {
 	Path   string          `yaml:"path"`
+	Method string          `yaml:"method"`
 	Inputs inputsBlock     `yaml:"inputs,omitempty"`
 	Rows   rowsBlock       `yaml:"rows"`
 	Fields fieldsListBlock `yaml:"fields"`

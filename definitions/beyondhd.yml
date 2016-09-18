@@ -81,7 +81,6 @@
             args: [ "|", 1 ]
           - name: trim
             args: "."
-          - name: timeago
       seeders:
         selector: td:nth-child(10)
       leechers:

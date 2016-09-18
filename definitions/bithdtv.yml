@@ -65,9 +65,6 @@
         remove: br
       date:
         selector: td:nth-child(6)
-        filters:
-          - name: dateparse
-            args: 2006-01-02 15:04:05
       seeders:
         selector: td:nth-child(9)
       leechers:

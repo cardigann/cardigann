@@ -97,6 +97,10 @@ func (query Query) Encode() string {
 	return v.Encode()
 }
 
+func (query Query) String() string {
+	return query.Encode()
+}
+
 // ParseQuery takes the query string parameters for a torznab query and parses them
 func ParseQuery(v url.Values) (Query, error) {
 	query := Query{}

@@ -75,9 +75,6 @@
       date:
         selector: .box_feltoltve2
         remove: i, br
-        filters:
-          - name: dateparse
-            args: 2006-01-0215:04:05
       seeders:
         selector: .box_s2 a
       leechers:
