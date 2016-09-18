@@ -776,11 +776,15 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 		return nil, http.Header{}, err
 	}
 
-	b := &bytes.Buffer{}
+	pipeR, pipeW := io.Pipe()
+	go func() {
+		defer pipeW.Close()
+		n, err := r.Browser.Download(pipeW)
+		if err != nil {
+			r.Logger.Error(err)
+		}
+		r.Logger.WithFields(logrus.Fields{"url": fullUrl}).Debugf("Downloaded %d bytes", n)
+	}()
 
-	if _, err := r.Browser.Download(b); err != nil {
-		return nil, http.Header{}, err
-	}
-
-	return ioutil.NopCloser(bytes.NewReader(b.Bytes())), r.Browser.ResponseHeaders(), nil
+	return pipeR, r.Browser.ResponseHeaders(), nil
 }

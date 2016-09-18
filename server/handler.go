@@ -42,12 +42,14 @@ type handler struct {
 	http.Handler
 	Params      Params
 	FileHandler http.Handler
+	indexers    map[string]torznab.Indexer
 }
 
 func NewHandler(p Params) (http.Handler, error) {
 	h := &handler{
 		Params:      p,
 		FileHandler: http.FileServer(FS(false)),
+		indexers:    map[string]torznab.Indexer{},
 	}
 
 	router := mux.NewRouter()
@@ -104,7 +106,7 @@ func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("%s://%s%s", proto, r.Host, path))
 }
 
-func (h *handler) lookupIndexer(key string) (*indexer.Runner, error) {
+func (h *handler) createIndexer(key string) (torznab.Indexer, error) {
 	def, err := indexer.LoadDefinition(key)
 	if err != nil {
 		log.WithError(err).Warnf("Failed to load definition for %q", key)
@@ -112,7 +114,28 @@ func (h *handler) lookupIndexer(key string) (*indexer.Runner, error) {
 	}
 
 	log.WithFields(logrus.Fields{"indexer": key}).Debugf("Loaded indexer")
-	return indexer.NewRunner(def, h.Params.Config), nil
+	indexer, err := indexer.NewRunner(def, h.Params.Config), nil
+	if err != nil {
+		return nil, err
+	}
+
+	return indexer, nil
+}
+
+func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
+	if key == "aggregate" {
+		return h.lookupAggregate()
+	}
+
+	if _, ok := h.indexers[key]; !ok {
+		indexer, err := h.createIndexer(key)
+		if err != nil {
+			return nil, err
+		}
+		h.indexers[key] = indexer
+	}
+
+	return h.indexers[key], nil
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -194,6 +217,8 @@ func (h *handler) downloadHandler(w http.ResponseWriter, r *http.Request) {
 	token := params["token"]
 	filename := params["filename"]
 
+	log.WithFields(logrus.Fields{"filename": filename}).Debugf("Processing download via handler")
+
 	k, err := h.sharedKey()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -212,19 +237,18 @@ func (h *handler) downloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rc, headers, err := indexer.Download(t.Link)
+	rc, _, err := indexer.Download(t.Link)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
 
-	w.Header().Set("Content-Length", headers.Get("Content-Length"))
-	w.Header().Set("Content-Type", "application/x-download")
+	w.Header().Set("Content-Type", "application/x-bittorrent")
 	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 	w.Header().Set("Content-Transfer-Encoding", "binary")
 
 	defer rc.Close()
-	go io.Copy(w, rc)
+	io.Copy(w, rc)
 }
 
 func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey string) (*torznab.ResultFeed, error) {
