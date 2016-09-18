@@ -62,6 +62,7 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		PublishDate: ri.PublishDate.Format(rfc822),
 		Enclosure:   enclosure,
 		Attrs: []torznabAttrView{
+			{Name: "site", Value: ri.Site},
 			{Name: "seeders", Value: strconv.Itoa(ri.Seeders)},
 			{Name: "peers", Value: strconv.Itoa(ri.Peers)},
 			{Name: "minimumratio", Value: fmt.Sprintf("%.f", ri.MinimumRatio)},

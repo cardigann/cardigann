@@ -134,6 +134,25 @@ func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
 	return h.indexers[key], nil
 }
 
+func (h *handler) lookupAggregate() (torznab.Indexer, error) {
+	keys, err := indexer.ListDefinitions()
+	if err != nil {
+		return nil, err
+	}
+
+	agg := indexer.Aggregate{}
+	for _, key := range keys {
+		def, err := indexer.LoadDefinition(key)
+		if err != nil {
+			return nil, err
+		}
+
+		agg = append(agg, indexer.NewRunner(def, h.Params.Config))
+	}
+
+	return agg, nil
+}
+
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
