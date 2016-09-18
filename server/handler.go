@@ -123,10 +123,6 @@ func (h *handler) createIndexer(key string) (torznab.Indexer, error) {
 }
 
 func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
-	if key == "aggregate" {
-		return h.lookupAggregate()
-	}
-
 	if _, ok := h.indexers[key]; !ok {
 		indexer, err := h.createIndexer(key)
 		if err != nil {

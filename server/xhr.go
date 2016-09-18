@@ -199,7 +199,7 @@ func (h *handler) getIndexerTestHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err == nil {
-		tester := indexer.Tester{Runner: i}
+		tester := indexer.Tester{Runner: i.(*indexer.Runner)}
 		if err = tester.Test(); err != nil {
 			log.WithError(err).Error("Test failed")
 		}
