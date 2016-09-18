@@ -10,18 +10,20 @@ services:
     ports:
     - 5060:5060
 
-  couchpotato:
-    image: linuxserver/couchpotato
-    environment:
-      - PUID=0
-      - PGID=0
-    ports:
-      - 5050:5050
+  # couchpotato:
+  #   image: linuxserver/couchpotato
+  #   environment:
+  #     - PUID=0
+  #     - PGID=0
+  #   ports:
+  #     - 5050:5050
 
   sonarr:
     image: linuxserver/sonarr
     environment:
       - PUID=0
       - PGID=0
+    links:
+      - cardigann
     ports:
       - 8989:8989
