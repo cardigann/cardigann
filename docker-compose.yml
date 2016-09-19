@@ -20,6 +20,7 @@ services:
   sonarr:
     image: linuxserver/sonarr
     environment:
+      - ADVANCED_DISABLEUPDATES=1
       - PUID=0
       - PGID=0
     links:
