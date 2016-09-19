@@ -22,6 +22,7 @@ script:
 before_deploy:
   - make build-without-static
   - ./cardigann version
+  - wget -N https://curl.haxx.se/ca/cacert.pem
   - docker build --build-arg BIN=./cardigann -t ${IMAGE}:${COMMIT} .
   - docker tag ${IMAGE}:${COMMIT} ${IMAGE}:latest
   - docker tag ${IMAGE}:${COMMIT} ${IMAGE}:travis-${TRAVIS_BUILD_NUMBER}
