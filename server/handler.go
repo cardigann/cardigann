@@ -57,8 +57,8 @@ func NewHandler(p Params) (http.Handler, error) {
 	// torznab routes
 	router.HandleFunc("/torznab/{indexer}", h.torznabHandler).Methods("GET")
 	router.HandleFunc("/torznab/{indexer}/api", h.torznabHandler).Methods("GET")
-	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("HEAD")
-	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("GET")
+	router.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("HEAD")
+	router.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("GET")
 
 	// xhr routes for the webapp
 	router.HandleFunc("/xhr/indexers/{indexer}/test", h.getIndexerTestHandler).Methods("GET")
@@ -125,7 +125,7 @@ func (h *handler) createIndexer(key string) (torznab.Indexer, error) {
 
 func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
 	if key == "aggregate" {
-		return h.lookupAggregate()
+		return h.createAggregate()
 	}
 	if _, ok := h.indexers[key]; !ok {
 		indexer, err := h.createIndexer(key)
@@ -138,7 +138,7 @@ func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
 	return h.indexers[key], nil
 }
 
-func (h *handler) lookupAggregate() (torznab.Indexer, error) {
+func (h *handler) createAggregate() (torznab.Indexer, error) {
 	keys, err := indexer.ListDefinitions()
 	if err != nil {
 		return nil, err
@@ -146,12 +146,11 @@ func (h *handler) lookupAggregate() (torznab.Indexer, error) {
 
 	agg := indexer.Aggregate{}
 	for _, key := range keys {
-		def, err := indexer.LoadDefinition(key)
+		indexer, err := h.lookupIndexer(key)
 		if err != nil {
 			return nil, err
 		}
-
-		agg = append(agg, indexer.NewRunner(def, h.Params.Config))
+		agg = append(agg, indexer)
 	}
 
 	return agg, nil
@@ -307,7 +306,7 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 		if err != nil {
 			return nil, err
 		}
-		baseURL.Path += fmt.Sprintf("/%s/%s.torrent", te, item.Title)
+		baseURL.Path += fmt.Sprintf("/%s/%s/%s.torrent", item.Site, te, item.Title)
 		feed.Items[idx].Link = baseURL.String()
 	}
 

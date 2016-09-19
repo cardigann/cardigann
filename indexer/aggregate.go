@@ -75,5 +75,5 @@ func (ag Aggregate) Capabilities() torznab.Capabilities {
 }
 
 func (ag Aggregate) Download(u string) (io.ReadCloser, http.Header, error) {
-	return nil, http.Header{}, errors.New("Blah")
+	return nil, http.Header{}, errors.New("Not implemented")
 }
