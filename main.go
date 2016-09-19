@@ -66,7 +66,11 @@ func run(args ...string) (exitCode int) {
 	return
 }
 
-func lookupIndexer(key string) (*indexer.Runner, error) {
+func lookupIndexer(key string) (torznab.Indexer, error) {
+	if key == "aggregate" {
+		return lookupAggregate()
+	}
+
 	conf, err := config.NewJSONConfig()
 	if err != nil {
 		return nil, err
@@ -78,6 +82,30 @@ func lookupIndexer(key string) (*indexer.Runner, error) {
 	}
 
 	return indexer.NewRunner(def, conf), nil
+}
+
+func lookupAggregate() (torznab.Indexer, error) {
+	keys, err := indexer.ListDefinitions()
+	if err != nil {
+		return nil, err
+	}
+
+	conf, err := config.NewJSONConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	agg := indexer.Aggregate{}
+	for _, key := range keys {
+		def, err := indexer.LoadDefinition(key)
+		if err != nil {
+			return nil, err
+		}
+
+		agg = append(agg, indexer.NewRunner(def, conf))
+	}
+
+	return agg, nil
 }
 
 func configureQueryCommand(app *kingpin.Application) {

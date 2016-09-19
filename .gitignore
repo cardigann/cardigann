@@ -4,3 +4,4 @@ web/build
 web/node_modules
 cardigann
 release/
+cacert.pem

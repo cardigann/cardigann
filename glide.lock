@@ -1,5 +1,5 @@
-hash: 81953eea23782222a17d567f27364295c586e1366dd37f68b5ff52504967e9af
-updated: 2016-09-18T13:45:31.474011833+10:00
+hash: 9052c3bf03d32d71019104d30ef437766442e14b1e89cc0c58445df1a7019046
+updated: 2016-09-18T19:32:28.848858844+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -60,15 +60,20 @@ imports:
   version: 71a035914f99bb58fe82eac0f1289f10963d876c
   subpackages:
   - html
+  - context
   - html/atom
+- name: golang.org/x/sync
+  version: 316e794f7b5e3df4e95175a45a5fb8b12f85cb4f
+  subpackages:
+  - errgroup
 - name: golang.org/x/sys
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
-  - unix
   - windows/registry
   - windows/svc
   - windows/svc/eventlog
   - windows/svc/mgr
+  - unix
   - windows
 - name: gopkg.in/alecthomas/kingpin.v2
   version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
