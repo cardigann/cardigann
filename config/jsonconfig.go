@@ -55,6 +55,7 @@ func NewJSONConfig() (Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &jsonConfig{dirs, defaultDir}, nil
 }
 

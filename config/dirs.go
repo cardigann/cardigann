@@ -40,7 +40,7 @@ func DefaultDir() (string, error) {
 		return "", err
 	}
 
-	folder := cd.QueryFolders(configdir.Local)
+	folder := cd.QueryFolders(configdir.Global)
 	return folder[0].Path, nil
 }
 
