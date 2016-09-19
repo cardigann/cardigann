@@ -4,8 +4,7 @@ services:
   cardigann:
     build: .
     volumes:
-    - ./definitions:/definitions
-    - ./config.json:/config.json
+    - .:/.config/cardigann/cardigann
     command: ["--debug", "server"]
     ports:
     - 5060:5060

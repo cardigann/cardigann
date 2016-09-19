@@ -1,9 +1,8 @@
 FROM scratch
-ARG BIN=release/cardigann-linux-amd64
-ADD ./cacert.pem /etc/ssl/certs/ca-certificates.crt
-COPY ${BIN} /cardigann
+COPY ./cacert.pem /etc/ssl/certs/ca-certificates.crt
 COPY definitions/ /definitions
+COPY cardigann-linux-amd64 /cardigann
 EXPOSE 5060
-VOLUME [ "/config.json" ]
+VOLUME [ "/.config/cardigann/cardigann" ]
 ENTRYPOINT [ "/cardigann" ]
 CMD [ "server" ]

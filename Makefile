@@ -5,6 +5,7 @@ GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
 FLAGS=-X main.Version=$(VERSION) -s -w
 OS=$(shell uname -s | tr A-Z a-z)
+SRC=$(shell find ./indexer ./server ./config ./torznab)
 
 ifeq ($(shell getconf LONG_BIT),64)
    ARCH=amd64
@@ -15,14 +16,25 @@ endif
 test:
 	go test -v ./indexer ./server ./config ./torznab
 
+$(BIN)-linux-armv5: $(SRC)
+	GOOS=linux   GOARCH=arm    GOARM=5    go build -o $@ -ldflags="$(FLAGS)" *.go
+
+$(BIN)-linux-386: $(SRC)
+	GOOS=linux   GOARCH=386               go build -o $@ -ldflags="$(FLAGS)" *.go
+
+$(BIN)-linux-amd64: $(SRC)
+	GOOS=linux   GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
+
+$(BIN)-darwin-amd64: $(SRC)
+	GOOS=darwin  GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
+
+$(BIN)-windows-386: $(SRC)
+	GOOS=windows GOARCH=386               go build -o $@ -ldflags="$(FLAGS)" *.go
+
 test-defs:
 	find definitions -name '*.yml' -print -exec go run *.go test {} \;
 
-build: server/static.go
-	go build -o $(BIN) -ldflags="$(FLAGS)" $(PREFIX)
-
-build-without-static:
-	go build -o $(BIN) -ldflags="$(FLAGS)" $(PREFIX)
+build: server/static.go $(BIN)-$(OS)-$(ARCH)
 
 server/static.go: $(shell find web/src)
 	cd web; npm run build
@@ -32,23 +44,20 @@ install:
 	go install -ldflags="$(FLAGS)" $(PREFIX)
 
 clean:
-	-rm cardigann
 	-rm -rf web/build server/static.go
-	-rm -rf release/
+	-rm -rf $(BIN)-*
 
 run-dev:
 	cd web/; npm start &
 	rerun $(PREFIX) --debug server --passphrase "llamasrock"
 
-release/defs.zip: $(shell find definitions/)
-	-mkdir -p release/
-	zip release/defs.zip definitions/*
+release: defs.zip $(BIN)-linux-armv5 $(BIN)-linux-386 $(BIN)-linux-amd64 $(BIN)-darwin-amd64 $(BIN)-windows-386
 
-.PHONY: release
-release: release/defs.zip
-	-mkdir -p release/
-	GOOS=linux   GOARCH=arm    GOARM=5    go build -o release/$(BIN)-linux-armv5 -ldflags="$(FLAGS)" $(PREFIX)
-	GOOS=linux   GOARCH=386               go build -o release/$(BIN)-linux-386 -ldflags="$(FLAGS)" $(PREFIX)
-	GOOS=linux   GOARCH=amd64             go build -o release/$(BIN)-linux-amd64 -ldflags="$(FLAGS)" $(PREFIX)
-	GOOS=darwin  GOARCH=amd64             go build -o release/$(BIN)-darwin-amd64 -ldflags="$(FLAGS)" $(PREFIX)
-	GOOS=windows GOARCH=386               go build -o release/$(BIN)-windows-386 -ldflags="$(FLAGS)" $(PREFIX)
+cacert.pem:
+	wget -N https://curl.haxx.se/ca/cacert.pem
+
+DOCKER_TAG ?= $(VERSION)
+
+docker: $(BIN)-linux-amd64 cacert.pem
+	docker build -t cardigann:$(DOCKER_TAG) .
+	docker run --rm -it cardigann:$(DOCKER_TAG) version

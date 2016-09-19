@@ -55,7 +55,7 @@ If you want to run this service non-interactively, you can install it as a servi
 ./cardigann service start
 ```
 
-Install your definitions in `/etc/xdg/cardigann/definitions` for them to be found.
+Install your definitions in `$HOME/.config/cardigann/cardigann/definitions` for them to be found. `$HOME` is the home directory of the user. Config files are looked for in a variety of locations on different platform, see [configdir](https://github.com/shibukawa/configdir) for more details.
 
 ## Supported Indexers
 
