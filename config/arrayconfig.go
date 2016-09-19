@@ -8,6 +8,9 @@ func (a ArrayConfig) Get(section, key string) (string, bool, error) {
 }
 
 func (a ArrayConfig) Set(section, key, value string) error {
+	if _, ok := a[section]; !ok {
+		a[section] = map[string]string{}
+	}
 	a[section][key] = value
 	return nil
 }
