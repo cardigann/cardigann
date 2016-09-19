@@ -32,7 +32,5 @@ deploy:
   provider: script
   script: docker push ${IMAGE}
   on:
-    branch:
-      - master
-      - travis-docker-builds
+    branch: master
     condition: $TRAVIS_OS_NAME = linux
