@@ -57,6 +57,7 @@ func NewHandler(p Params) (http.Handler, error) {
 	// torznab routes
 	router.HandleFunc("/torznab/{indexer}", h.torznabHandler).Methods("GET")
 	router.HandleFunc("/torznab/{indexer}/api", h.torznabHandler).Methods("GET")
+	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("HEAD")
 	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("GET")
 
 	// xhr routes for the webapp
