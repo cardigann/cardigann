@@ -3,7 +3,7 @@ PREFIX=github.com/cardigann/cardigann
 GOVERSION=$(shell go version)
 GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
-FLAGS=-X main.Version=$(VERSION) -s -w
+FLAGS=-X main.Version=$(VERSION) -s -w -extldflags '-static'
 OS=$(shell uname -s | tr A-Z a-z)
 SRC=$(shell find ./indexer ./server ./config ./torznab)
 
