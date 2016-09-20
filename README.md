@@ -61,6 +61,7 @@ Install your definitions in `$HOME/.config/cardigann/cardigann/definitions` for 
 
 Cardigann simply provides a format for describing how to log into and scrape the search results of various forums and sites. It is not endorsed by the various sites, nor is it intended for piracy. You are using Cardigann at your own risk.
 
+* AlphaRatio
 * BIT-HDTV
 * IPTorrents
 * Freshon
