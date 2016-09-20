@@ -24,7 +24,6 @@ $(BIN)-linux-386: $(SRC)
 
 $(BIN)-linux-amd64: $(SRC)
 	CGO_ENABLED=0  GOOS=linux   GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
-	file $(BIN)-linux-amd64
 
 $(BIN)-darwin-amd64: $(SRC)
 	CGO_ENABLED=0  GOOS=darwin  GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
