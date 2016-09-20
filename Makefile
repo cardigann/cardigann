@@ -56,8 +56,8 @@ release: defs.zip $(BIN)-linux-armv5 $(BIN)-linux-386 $(BIN)-linux-amd64 $(BIN)-
 cacert.pem:
 	wget -N https://curl.haxx.se/ca/cacert.pem
 
-DOCKER_TAG ?= $(VERSION)
+DOCKER_TAG ?= cardigann:$(VERSION)
 
 docker: $(BIN)-linux-amd64 cacert.pem
-	docker build -t cardigann:$(DOCKER_TAG) .
-	docker run --rm -it cardigann:$(DOCKER_TAG) version
+	docker build -t $(DOCKER_TAG) .
+	docker run --rm -it $(DOCKER_TAG) version
