@@ -3,7 +3,7 @@ PREFIX=github.com/cardigann/cardigann
 GOVERSION=$(shell go version)
 GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
-FLAGS=-X main.Version=$(VERSION) -s -w -extldflags '-static'
+FLAGS=-X main.Version=$(VERSION) -s -w
 OS=$(shell uname -s | tr A-Z a-z)
 SRC=$(shell find ./indexer ./server ./config ./torznab)
 
@@ -17,19 +17,20 @@ test:
 	go test -v ./indexer ./server ./config ./torznab
 
 $(BIN)-linux-armv5: $(SRC)
-	GOOS=linux   GOARCH=arm    GOARM=5    go build -o $@ -ldflags="$(FLAGS)" *.go
+	CGO_ENABLED=0  GOOS=linux   GOARCH=arm    GOARM=5    go build -o $@ -ldflags="$(FLAGS)" *.go
 
 $(BIN)-linux-386: $(SRC)
-	GOOS=linux   GOARCH=386               go build -o $@ -ldflags="$(FLAGS)" *.go
+	CGO_ENABLED=0  GOOS=linux   GOARCH=386               go build -o $@ -ldflags="$(FLAGS)" *.go
 
 $(BIN)-linux-amd64: $(SRC)
-	GOOS=linux   GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
+	CGO_ENABLED=0  GOOS=linux   GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
+	file $(BIN)-linux-amd64
 
 $(BIN)-darwin-amd64: $(SRC)
-	GOOS=darwin  GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
+	CGO_ENABLED=0  GOOS=darwin  GOARCH=amd64             go build -o $@ -ldflags="$(FLAGS)" *.go
 
 $(BIN)-windows-386: $(SRC)
-	GOOS=windows GOARCH=386               go build -o $@ -ldflags="$(FLAGS)" *.go
+	CGO_ENABLED=0  GOOS=windows GOARCH=386               go build -o $@ -ldflags="$(FLAGS)" *.go
 
 test-defs:
 	find definitions -name '*.yml' -print -exec go run *.go test {} \;
