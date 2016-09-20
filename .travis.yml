@@ -21,6 +21,8 @@ script:
 
 before_deploy:
   - touch server/static.go
+  - make cardigann-linux-amd64
+  - ldd cardigann-linux-amd64
   - make docker DOCKER_TAG=${IMAGE}:${COMMIT}
   - docker tag ${IMAGE}:${COMMIT} ${IMAGE}:latest
   - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
