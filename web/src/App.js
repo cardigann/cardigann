@@ -24,7 +24,8 @@ class App extends Component {
     authChecked: false,
     apiKey: this.props.apiKey,
     apiKeyCopied: false,
-    errorMessage: false
+    errorMessage: false,
+    version: "unknown",
   }
   isEnabled = (indexer) => {
     return this.state.enabledIndexers.filter((x) => x === indexer.id).length > 0;
@@ -190,9 +191,19 @@ class App extends Component {
       />
     });
   }
+  checkVersion = () => {
+    fetch(xhrUrl("/xhr/version")).then((response) => {
+      response.json().then((json) => {
+        this.setState({version: json});
+      });
+    });
+  }
   componentWillMount() {
     if (!this.state.authChecked) {
       this.checkAuth();
+    }
+    if (this.state.version === "unknown") {
+      this.checkVersion();
     }
   }
   render() {
@@ -215,6 +226,8 @@ class App extends Component {
         <p>{this.state.errorMessage}</p>
       </AlertDismissable>;
     }
+
+    var issueLink = "https://github.com/cardigann/cardigann/issues/new?title=Bug+in+version+" + this.state.version;
 
     return (
       <div className="App container-fluid">
@@ -240,6 +253,11 @@ class App extends Component {
             onDisable={this.handleDisableIndexer} />
           {this.state.configure}
         </div>
+        <footer className="footer">
+          <p className="text-muted">
+            <a href={issueLink}>Report a bug</a> in <code>{this.state.version}</code>.
+          </p>
+        </footer>
       </div>
     );
   }

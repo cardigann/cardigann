@@ -36,6 +36,7 @@ type Params struct {
 	APIKey     []byte
 	Passphrase string
 	Config     config.Config
+	Version    string
 }
 
 type handler struct {
@@ -68,6 +69,7 @@ func NewHandler(p Params) (http.Handler, error) {
 	router.HandleFunc("/xhr/indexers", h.patchIndexersHandler).Methods("PATCH")
 	router.HandleFunc("/xhr/auth", h.getAuthHandler).Methods("GET")
 	router.HandleFunc("/xhr/auth", h.postAuthHandler).Methods("POST")
+	router.HandleFunc("/xhr/version", h.getVersionHandler).Methods("GET")
 
 	h.Handler = router
 	return h, h.initialize()

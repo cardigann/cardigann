@@ -183,6 +183,18 @@ func (h *handler) patchIndexersConfigHandler(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 }
 
+func (h *handler) getVersionHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+
+	version := h.Params.Version
+	if version == "" {
+		version = "dev"
+	}
+
+	fmt.Fprintf(w, "%q", version)
+}
+
 func (h *handler) getIndexerTestHandler(w http.ResponseWriter, r *http.Request) {
 	if !h.checkRequestAuthorized(r) {
 		jsonError(w, "Not Authorized", http.StatusUnauthorized)

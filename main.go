@@ -270,12 +270,13 @@ func serverCommand(addr, port string, password string) error {
 	}
 
 	listenOn := fmt.Sprintf("%s:%s", addr, port)
-	log.Infof("Cardigann v%s", Version)
+	log.Infof("Cardigann %s", Version)
 	log.Infof("Listening on %s", listenOn)
 
 	h, err := server.NewHandler(server.Params{
 		Passphrase: password,
 		Config:     conf,
+		Version:    Version,
 	})
 	if err != nil {
 		return err
