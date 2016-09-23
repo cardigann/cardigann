@@ -18,3 +18,4 @@ import:
 - package: golang.org/x/sync
   subpackages:
   - errgroup
+- package: github.com/dgrijalva/jwt-go

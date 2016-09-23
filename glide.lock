@@ -1,5 +1,5 @@
-hash: 9052c3bf03d32d71019104d30ef437766442e14b1e89cc0c58445df1a7019046
-updated: 2016-09-18T19:32:28.848858844+10:00
+hash: 908986cd5d00e047fe9cbaddea2678cd12b3700f022433680d9f6f833710809c
+updated: 2016-09-23T10:46:57.494973808+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -11,6 +11,8 @@ imports:
   version: 1c31af6f6c1a7b101ed05aacc7d8a738b43ae86e
 - name: github.com/bcampbell/fuzzytime
   version: 39f1cd4b72489d771d9407a46ec1c6a5cf3d1c73
+- name: github.com/dgrijalva/jwt-go
+  version: 24c63f56522a87ec5339cc3567883f1039378fdb
 - name: github.com/dustin/go-humanize
   version: 2fcb5204cdc65b4bec9fd0a87606bb0d0e3c54e8
 - name: github.com/dvsekhvalnov/jose2go
@@ -30,7 +32,7 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: 0a192a193177452756c362c20087ddafcf6829c4
+  version: 757bef944d0f21880861c2dd9c871ca543023cba
 - name: github.com/headzoo/surf
   version: 1cb8c19456546da4be54c897a35e174117e21441
   repo: git@github.com:cardigann/surf.git
@@ -57,7 +59,7 @@ imports:
 - name: github.com/yosssi/gohtml
   version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: 71a035914f99bb58fe82eac0f1289f10963d876c
+  version: 6d3beaea10370160dea67f5c9327ed791afd5389
   subpackages:
   - html
   - context
@@ -69,11 +71,11 @@ imports:
 - name: golang.org/x/sys
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
+  - unix
   - windows/registry
   - windows/svc
   - windows/svc/eventlog
   - windows/svc/mgr
-  - unix
   - windows
 - name: gopkg.in/alecthomas/kingpin.v2
   version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70

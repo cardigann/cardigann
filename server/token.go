@@ -1,10 +1,11 @@
 package server
 
 import (
-	"encoding/json"
+	"errors"
+	"fmt"
 	"time"
 
-	"github.com/dvsekhvalnov/jose2go"
+	"github.com/dgrijalva/jwt-go"
 )
 
 type token struct {
@@ -13,23 +14,30 @@ type token struct {
 }
 
 func (t *token) Encode(sharedKey []byte) (string, error) {
-	b, err := json.Marshal(t)
-	if err != nil {
-		return "", err
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"s":   t.Site,
+		"l":   t.Link,
+		"nbf": time.Now().Unix(),
+	})
 
-	return jose.Encrypt(string(b), jose.A128GCMKW, jose.A128GCM, sharedKey,
-		jose.Headers(map[string]interface{}{
-			"c": time.Now().String(),
-		}))
+	return token.SignedString(sharedKey)
 }
 
 func decodeToken(ts string, sharedKey []byte) (*token, error) {
-	payload, _, err := jose.Decode(ts, sharedKey)
+	token, err := jwt.Parse(ts, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return sharedKey, nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	var t token
-	return &t, json.Unmarshal([]byte(payload), &t)
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		log.Println(claims["foo"], claims["nbf"])
+	}
+
+	return nil, errors.New("not implemented")
 }

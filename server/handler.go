@@ -306,10 +306,12 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 
 		te, err := t.Encode(k)
 		if err != nil {
+			log.Debugf("Error encoding token: %v", err)
 			return nil, err
 		}
-		baseURL.Path += fmt.Sprintf("/%s/%s/%s.torrent", item.Site, te, item.Title)
-		feed.Items[idx].Link = baseURL.String()
+
+		log.Debugf("Generated signed token %q", te)
+		feed.Items[idx].Link = fmt.Sprintf("%s/%s/%s.torrent", baseURL.String(), te, item.Title)
 	}
 
 	return feed, err
