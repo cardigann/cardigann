@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/pprof"
 	"net/url"
 	"strings"
 
@@ -29,6 +28,7 @@ var (
 		"/torznab/",
 		"/download/",
 		"/xhr/",
+		"/debug/",
 	}
 )
 
@@ -38,7 +38,6 @@ type Params struct {
 	Passphrase string
 	Config     config.Config
 	Version    string
-	Debug      bool
 }
 
 type handler struct {
@@ -74,12 +73,6 @@ func NewHandler(p Params) (http.Handler, error) {
 	router.HandleFunc("/xhr/auth", h.getAuthHandler).Methods("GET")
 	router.HandleFunc("/xhr/auth", h.postAuthHandler).Methods("POST")
 	router.HandleFunc("/xhr/version", h.getVersionHandler).Methods("GET")
-
-	// profiling endpoints
-	if p.Debug {
-		router.HandleFunc("/debug/pprof/profile", pprof.Profile)
-		router.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	}
 
 	h.Handler = router
 	return h, h.initialize()

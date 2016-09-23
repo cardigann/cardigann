@@ -19,6 +19,7 @@ import (
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/kardianos/service"
 	"gopkg.in/alecthomas/kingpin.v2"
+	_ "net/http/pprof"
 )
 
 var (
@@ -107,11 +108,14 @@ var globals struct {
 }
 
 func configureGlobalFlags(cmd *kingpin.CmdClause) {
-	cmd.Flag("debug", "Print out debug logging").Action(func(c *kingpin.ParseContext) error {
+	cmd.Flag("debug", "Print out debug logging").BoolVar(&globals.Debug)
+}
+
+func applyGlobalFlags() {
+	if globals.Debug {
 		logger.SetLevel(logrus.DebugLevel)
 		indexer.WriteCache = true
-		return nil
-	}).BoolVar(&globals.Debug)
+	}
 }
 
 func configureQueryCommand(app *kingpin.Application) {
@@ -135,6 +139,7 @@ func configureQueryCommand(app *kingpin.Application) {
 	configureGlobalFlags(cmd)
 
 	cmd.Action(func(c *kingpin.ParseContext) error {
+		applyGlobalFlags()
 		return queryCommand(key, format, args)
 	})
 }
@@ -203,6 +208,7 @@ func configureDownloadCommand(app *kingpin.Application) {
 	configureGlobalFlags(cmd)
 
 	cmd.Action(func(c *kingpin.ParseContext) error {
+		applyGlobalFlags()
 		return downloadCommand(key, url, file)
 	})
 }
@@ -268,6 +274,7 @@ func configureServerCommand(app *kingpin.Application) error {
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
+		applyGlobalFlags()
 		return serverCommand(bindAddr, bindPort, password)
 	})
 
@@ -275,20 +282,30 @@ func configureServerCommand(app *kingpin.Application) error {
 }
 
 func serverCommand(addr, port string, password string) error {
+	if globals.Debug {
+		go func() {
+			log.Println(http.ListenAndServe("localhost:6060", nil))
+		}()
+	}
+
 	conf, err := config.NewJSONConfig()
 	if err != nil {
 		return err
 	}
 
+	v := Version
+	if v == "" {
+		v = "dev"
+	}
+
 	listenOn := fmt.Sprintf("%s:%s", addr, port)
-	log.Infof("Cardigann %s", Version)
+	log.Infof("Cardigann %s", v)
 	log.Infof("Listening on %s", listenOn)
 
 	h, err := server.NewHandler(server.Params{
 		Passphrase: password,
 		Config:     conf,
 		Version:    Version,
-		Debug:      globals.Debug,
 	})
 	if err != nil {
 		return err
@@ -309,6 +326,7 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
+		applyGlobalFlags()
 		return testDefinitionCommand(f)
 	})
 }
