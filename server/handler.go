@@ -221,13 +221,18 @@ func (h *handler) torznabHandler(w http.ResponseWriter, r *http.Request) {
 			torznab.Error(w, err.Error(), torznab.ErrUnknownError)
 			return
 		}
-		x, err := xml.MarshalIndent(feed, "", "  ")
-		if err != nil {
-			torznab.Error(w, err.Error(), torznab.ErrUnknownError)
-			return
+		switch r.URL.Query().Get("format") {
+		case "", "xml":
+			x, err := xml.MarshalIndent(feed, "", "  ")
+			if err != nil {
+				torznab.Error(w, err.Error(), torznab.ErrUnknownError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/rss+xml")
+			w.Write(x)
+		case "json":
+			jsonOutput(w, feed)
 		}
-		w.Header().Set("Content-Type", "application/rss+xml")
-		w.Write(x)
 
 	default:
 		torznab.Error(w, "Unknown type parameter", torznab.ErrIncorrectParameter)

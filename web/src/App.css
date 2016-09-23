@@ -37,3 +37,7 @@
     margin-left: -50px;
     margin-top: -50px;
 }
+
+.App__SearchModal {
+  width: 90% !important;
+}

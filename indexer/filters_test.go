@@ -78,6 +78,7 @@ func TestParseTimeAgo(t *testing.T) {
 		{"1 day ago", now.AddDate(0, 0, -1)},
 		{"10.5 years", now.AddDate(-10, 0, -182).Add(time.Hour * -12)},
 		{"3 mins ago", now.Add(time.Minute * -3)},
+		{"57m 7s ago", now.Add(time.Minute * -57).Add(time.Second * -7)},
 	} {
 		result, err := parseTimeAgo(example.timeAgo, now)
 		if err != nil {

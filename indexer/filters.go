@@ -201,7 +201,12 @@ func parseTimeAgo(src string, now time.Time) (time.Time, error) {
 				"expected a time unit at %s", s.TokenText(), s.Pos())
 		}
 
-		switch strings.TrimSuffix(s.TokenText(), "s") {
+		unit := s.TokenText()
+		if unit != "s" {
+			unit = strings.TrimSuffix(s.TokenText(), "s")
+		}
+
+		switch unit {
 		case "year", "yr", "y":
 			now = now.AddDate(-v, 0, 0)
 			if fraction > 0 {
@@ -235,7 +240,7 @@ func parseTimeAgo(src string, now time.Time) (time.Time, error) {
 		case "second", "sec", "s":
 			now = now.Add(time.Second * -time.Duration(v))
 		default:
-			return now, fmt.Errorf("Unsupporting unit of time %q", s.TokenText())
+			return now, fmt.Errorf("Unsupporting unit of time %q", unit)
 		}
 	}
 

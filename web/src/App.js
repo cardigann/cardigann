@@ -6,6 +6,7 @@ import './App.css';
 import AddIndexer from "./AddIndexer";
 import IndexerList from "./IndexerList";
 import ConfigModal from "./ConfigModal";
+import SearchModal from "./SearchModal";
 import AlertDismissable from "./AlertDismissable";
 import Login from './Login';
 import Logo from './cardigann.gif';
@@ -21,6 +22,7 @@ class App extends Component {
     indexers: this.props.indexers,
     enabledIndexers: this.props.enabledIndexers,
     configure: null,
+    search: null,
     authChecked: false,
     apiKey: this.props.apiKey,
     apiKeyCopied: false,
@@ -92,6 +94,9 @@ class App extends Component {
       console.warn(err);
       this.setState({errorMessage: err.message}, () => afterFunc(false, err.message))
     });
+  }
+  handleSearchIndexer = (indexer, afterFunc) => {
+    this.showSearchModal(indexer, afterFunc);
   }
   handleAuthenticate = (apiKey) => {
     apiKey = (apiKey === "") ? null : apiKey;
@@ -191,6 +196,11 @@ class App extends Component {
       />
     });
   }
+  showSearchModal = (indexer, afterFunc) => {
+    this.setState({
+      search: <SearchModal indexer={indexer} show={true} onClose={afterFunc} apiKey={this.state.apiKey} />
+    });
+  }
   checkVersion = () => {
     fetch(xhrUrl("/xhr/version")).then((response) => {
       response.json().then((json) => {
@@ -250,8 +260,10 @@ class App extends Component {
             onEdit={this.handleEditIndexer}
             onSave={this.handleSaveIndexer}
             onTest={this.handleTestIndexer}
-            onDisable={this.handleDisableIndexer} />
+            onDisable={this.handleDisableIndexer}
+            onSearch={this.handleSearchIndexer} />
           {this.state.configure}
+          {this.state.search}
         </div>
         <footer className="footer">
           <p className="text-muted">
