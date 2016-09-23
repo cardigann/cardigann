@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -39,19 +40,35 @@ var (
 )
 
 type Runner struct {
-	Definition *IndexerDefinition
-	Browser    browser.Browsable
-	Config     config.Config
-	Logger     logrus.FieldLogger
-
-	caps torznab.Capabilities
+	Definition  *IndexerDefinition
+	Browser     browser.Browsable
+	Cookies     http.CookieJar
+	Config      config.Config
+	Logger      logrus.FieldLogger
+	caps        torznab.Capabilities
+	browserLock sync.Mutex
 }
 
 func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
+	return &Runner{
+		Definition: def,
+		Config:     conf,
+		Logger:     logger.Logger.WithFields(logrus.Fields{"site": def.Site}),
+	}
+}
+
+func (r *Runner) createBrowser() {
+	r.browserLock.Lock()
+
+	if r.Cookies == nil {
+		r.Cookies = jar.NewMemoryCookies()
+	}
+
 	bow := surf.NewBrowser()
 	bow.SetUserAgent(agent.Chrome())
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
+	bow.SetCookieJar(r.Cookies)
 
 	switch os.Getenv("DEBUG_HTTP") {
 	case "1", "true", "basic":
@@ -60,12 +77,12 @@ func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
 		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Body)))
 	}
 
-	return &Runner{
-		Definition: def,
-		Browser:    bow,
-		Config:     conf,
-		Logger:     logger.Logger.WithFields(logrus.Fields{"site": def.Site}),
-	}
+	r.Browser = bow
+}
+
+func (r *Runner) releaseBrowser() {
+	r.Browser = nil
+	r.browserLock.Unlock()
 }
 
 func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error) {
@@ -360,6 +377,11 @@ func (r *Runner) isLoginRequired() (bool, error) {
 }
 
 func (r *Runner) login() error {
+	if r.Browser == nil {
+		r.createBrowser()
+		defer r.releaseBrowser()
+	}
+
 	filterLogger = r.Logger
 
 	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
@@ -451,6 +473,9 @@ func (r *Runner) localCategories(query torznab.Query) []string {
 }
 
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
+	r.createBrowser()
+	defer r.releaseBrowser()
+
 	// TODO: make this concurrency safe
 	filterLogger = r.Logger
 
@@ -758,6 +783,9 @@ func (r *Runner) extractDateHeader(selection *goquery.Selection) (time.Time, err
 }
 
 func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
+	r.createBrowser()
+	defer r.releaseBrowser()
+
 	if required, err := r.isLoginRequired(); required {
 		if err := r.login(); err != nil {
 			r.Logger.WithError(err).Error("Login failed")

@@ -51,6 +51,9 @@ run-dev:
 	cd web/; npm start &
 	rerun $(PREFIX) server --debug --passphrase "llamasrock"
 
+defs.zip: $(shell find definitions/)
+	zip defs.zip definitions/*
+
 release: defs.zip $(BIN)-linux-armv5 $(BIN)-linux-386 $(BIN)-linux-amd64 $(BIN)-darwin-amd64 $(BIN)-windows-386
 
 cacert.pem:
