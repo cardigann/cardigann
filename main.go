@@ -41,12 +41,6 @@ func run(args ...string) (exitCode int) {
 		exitCode = code
 	})
 
-	app.Flag("debug", "Print out debug logging and caches responses for debug").Action(func(c *kingpin.ParseContext) error {
-		logger.SetLevel(logrus.DebugLevel)
-		indexer.WriteCache = true
-		return nil
-	}).Bool()
-
 	if err := configureServerCommand(app); err != nil {
 		log.Error(err)
 		return 1
@@ -108,6 +102,18 @@ func lookupAggregate() (torznab.Indexer, error) {
 	return agg, nil
 }
 
+var globals struct {
+	Debug bool
+}
+
+func configureGlobalFlags(cmd *kingpin.CmdClause) {
+	cmd.Flag("debug", "Print out debug logging").Action(func(c *kingpin.ParseContext) error {
+		logger.SetLevel(logrus.DebugLevel)
+		indexer.WriteCache = true
+		return nil
+	}).BoolVar(&globals.Debug)
+}
+
 func configureQueryCommand(app *kingpin.Application) {
 	var key, format string
 	var args []string
@@ -125,6 +131,8 @@ func configureQueryCommand(app *kingpin.Application) {
 
 	cmd.Arg("args", "Arguments to use to query").
 		StringsVar(&args)
+
+	configureGlobalFlags(cmd)
 
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		return queryCommand(key, format, args)
@@ -192,6 +200,8 @@ func configureDownloadCommand(app *kingpin.Application) {
 		Required().
 		StringVar(&file)
 
+	configureGlobalFlags(cmd)
+
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		return downloadCommand(key, url, file)
 	})
@@ -256,6 +266,7 @@ func configureServerCommand(app *kingpin.Application) error {
 		Short('p').
 		StringVar(&password)
 
+	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		return serverCommand(bindAddr, bindPort, password)
 	})
@@ -277,6 +288,7 @@ func serverCommand(addr, port string, password string) error {
 		Passphrase: password,
 		Config:     conf,
 		Version:    Version,
+		Debug:      globals.Debug,
 	})
 	if err != nil {
 		return err
@@ -295,6 +307,7 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 		Required().
 		FileVar(&f)
 
+	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		return testDefinitionCommand(f)
 	})
@@ -341,6 +354,7 @@ func configureServiceCommand(app *kingpin.Application) {
 		Required().
 		EnumVar(&action, possibleActions...)
 
+	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
 

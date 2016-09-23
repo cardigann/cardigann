@@ -1,5 +1,5 @@
-hash: 908986cd5d00e047fe9cbaddea2678cd12b3700f022433680d9f6f833710809c
-updated: 2016-09-23T10:46:57.494973808+10:00
+hash: 9106ff14377681ffcd6a6d2c53f083bfea38fd83e1cb457bc88356b4be7e70a3
+updated: 2016-09-23T11:18:10.276270844+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -15,16 +15,6 @@ imports:
   version: 24c63f56522a87ec5339cc3567883f1039378fdb
 - name: github.com/dustin/go-humanize
   version: 2fcb5204cdc65b4bec9fd0a87606bb0d0e3c54e8
-- name: github.com/dvsekhvalnov/jose2go
-  version: 2a04a552f4a8adf7d51731877b7a2021bab968bb
-  subpackages:
-  - aes
-  - arrays
-  - base64url
-  - compact
-  - kdf
-  - keys/ecc
-  - padding
 - name: github.com/f2prateek/train
   version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
   subpackages:

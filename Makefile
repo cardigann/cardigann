@@ -49,7 +49,7 @@ clean:
 
 run-dev:
 	cd web/; npm start &
-	rerun $(PREFIX) --debug server --passphrase "llamasrock"
+	rerun $(PREFIX) server --debug --passphrase "llamasrock"
 
 release: defs.zip $(BIN)-linux-armv5 $(BIN)-linux-386 $(BIN)-linux-amd64 $(BIN)-darwin-amd64 $(BIN)-windows-386
 
