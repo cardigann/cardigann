@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { Table, ButtonToolbar, Button, Panel } from 'react-bootstrap';
+import xhrUrl from './xhr';
 
 class StatefulButton extends Component {
   static defaultProps = {
-    bsStyle: "primary",
+    bsStyle: "default",
     bsSize: "xsmall",
     activeLabel: "Saving...",
     onClick: (e) => {},
@@ -48,6 +49,10 @@ class IndexerListRow extends Component {
     editing: false,
     testing: false,
     disabling: false,
+    allowEdit: true,
+    allowDisable: true,
+    allowTest: true,
+    allowSearch: true,
   }
   static propTypes = {
    indexer: React.PropTypes.object.isRequired,
@@ -83,36 +88,74 @@ class IndexerListRow extends Component {
       });
     })
   }
+  handleSearchClick = () => {
+    this.setState({
+      searching: true,
+    });
+    this.props.onSearch(this.props.indexer, () => {
+      this.setState({searching: false});
+    });
+  }
   render() {
+    var buttons = [];
+
+    if (this.props.allowEdit) {
+      buttons.push(
+        <StatefulButton
+        key="edit"
+        onClick={this.handleEditClick}
+        active={this.state.editing}
+        activeLabel="Editing..."
+        disabled={this.state.testing}>Edit</StatefulButton>
+      );
+    }
+
+    if (this.props.allowTest) {
+      buttons.push(
+        <StatefulButton
+          key="test"
+          onClick={this.handleTestClick}
+          active={this.state.testing}
+          activeLabel="Testing..."
+          disabled={this.state.editing}>Test</StatefulButton>
+      );
+    }
+
+    if (this.props.allowSearch) {
+      buttons.push(
+        <StatefulButton
+          key="search"
+          onClick={this.handleSearchClick}
+          active={this.state.searching}
+          activeLabel="Searching..."
+          disabled={this.state.testing || this.state.editing}>Search</StatefulButton>
+      );
+    }
+
+    if (this.props.allowDisable) {
+      buttons.push(
+        <StatefulButton
+          key="disable"
+          onClick={this.handleDisableClick}
+          bsSize="xsmall"
+          bsStyle="danger"
+          active={this.state.disabling}
+          activeLabel="Disabling..."
+          disabled={this.state.testing || this.state.editing}>Disable</StatefulButton>
+      );
+    }
+
     return (
-      <tr>
+      <tr className={this.props.className}>
         <td className="col-md-2">{this.props.indexer.name}</td>
         <td className="col-md-6">
           <FeedLink
             feedHref={this.props.indexer.feeds.torznab}
             label="torznab" />
         </td>
-        <td className="col-md-2">{this.state.status}</td>
-        <td className="col-md-2">
-          <ButtonToolbar>
-            <StatefulButton
-              onClick={this.handleEditClick}
-              active={this.state.editing}
-              activeLabel="Editing..."
-              disabled={this.state.testing}>Edit</StatefulButton>
-            <StatefulButton
-              onClick={this.handleTestClick}
-              active={this.state.testing}
-              activeLabel="Testing..."
-              disabled={this.state.editing}>Test</StatefulButton>
-            <StatefulButton
-              onClick={this.handleDisableClick}
-              bsSize="xsmall"
-              bsStyle="danger"
-              active={this.state.disabling}
-              activeLabel="Disabling..."
-              disabled={this.state.testing || this.state.editing}>Disable</StatefulButton>
-          </ButtonToolbar>
+        <td className="col-md-1">{this.state.status}</td>
+        <td className="col-md-3">
+          <ButtonToolbar>{buttons}</ButtonToolbar>
         </td>
       </tr>
     );
@@ -129,6 +172,7 @@ class IndexerList extends Component {
           onSave={this.props.onSave}
           onEdit={this.props.onEdit}
           onTest={this.props.onTest}
+          onSearch={this.props.onSearch}
           onDisable={this.props.onDisable}
         />
       );
@@ -138,6 +182,15 @@ class IndexerList extends Component {
       return <Panel>No indexers</Panel>;
     }
 
+    var aggregate = {
+      "id": "aggregate",
+      "name": "All Indexers",
+      "enabled": true,
+      "feeds": {
+        "torznab": xhrUrl("/torznab/aggregate")
+      }
+    };
+
     return (
       <div>
         <Table striped bordered condensed hover>
@@ -145,12 +198,21 @@ class IndexerList extends Component {
             <tr>
               <th className="col-md-2">Indexer</th>
               <th className="col-md-6">Feeds</th>
-              <th className="col-md-2">State</th>
-              <th className="col-md-2">Actions</th>
+              <th className="col-md-1">State</th>
+              <th className="col-md-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {indexerNodes}
+            <IndexerListRow
+              className="all-indexers"
+              indexer={aggregate}
+              key="aggregate"
+              allowEdit={false}
+              allowDisable={false}
+              allowTest={false}
+              onSearch={this.props.onSearch}
+            />
           </tbody>
         </Table>
       </div>
