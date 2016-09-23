@@ -14,30 +14,30 @@ type token struct {
 }
 
 func (t *token) Encode(sharedKey []byte) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	j := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"s":   t.Site,
 		"l":   t.Link,
 		"nbf": time.Now().Unix(),
 	})
 
-	return token.SignedString(sharedKey)
+	return j.SignedString(sharedKey)
 }
 
 func decodeToken(ts string, sharedKey []byte) (*token, error) {
-	token, err := jwt.Parse(ts, func(token *jwt.Token) (interface{}, error) {
+	j, err := jwt.Parse(ts, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 		return sharedKey, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		log.Println(claims["foo"], claims["nbf"])
+	claims, ok := j.Claims.(jwt.MapClaims)
+	if !ok || !j.Valid {
+		return nil, errors.New("Invalid token")
 	}
 
-	return nil, errors.New("not implemented")
+	return &token{claims["s"].(string), claims["l"].(string)}, nil
 }

@@ -712,11 +712,12 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		case "category":
 			item.LocalCategoryID = val
 		case "size":
-			bytes, err := humanize.ParseBytes(val)
+			bytes, err := humanize.ParseBytes(strings.Replace(val, ",", "", -1))
 			if err != nil {
 				r.Logger.Warnf("Row #%d has unparseable size %q: %v", rowIdx, val, err.Error())
 				continue
 			}
+			r.Logger.Debugf("After parsing, size is %v", bytes)
 			item.Size = bytes
 		case "leechers":
 			leechers, err := strconv.Atoi(val)
@@ -784,7 +785,6 @@ func (r *Runner) extractDateHeader(selection *goquery.Selection) (time.Time, err
 
 func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 	r.createBrowser()
-	defer r.releaseBrowser()
 
 	if required, err := r.isLoginRequired(); required {
 		if err := r.login(); err != nil {
@@ -807,6 +807,7 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 	pipeR, pipeW := io.Pipe()
 	go func() {
 		defer pipeW.Close()
+		defer r.releaseBrowser()
 		n, err := r.Browser.Download(pipeW)
 		if err != nil {
 			r.Logger.Error(err)
