@@ -3,10 +3,11 @@ package torznab
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/cardigann/cardigann/logger"
 )
 
 // Query represents a torznab query
@@ -174,8 +175,10 @@ func ParseQuery(v url.Values) (Query, error) {
 				query.Categories = append(query.Categories, ints...)
 			}
 
+		case "format":
+
 		default:
-			log.Printf("Unknown torznab request key %q", k)
+			logger.Logger.Warnf("Unknown torznab request key %q", k)
 		}
 	}
 
