@@ -11,6 +11,8 @@ import (
 	"os"
 	"strings"
 
+	_ "net/http/pprof"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
@@ -19,7 +21,6 @@ import (
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/kardianos/service"
 	"gopkg.in/alecthomas/kingpin.v2"
-	_ "net/http/pprof"
 )
 
 var (
@@ -61,14 +62,29 @@ func run(args ...string) (exitCode int) {
 	return
 }
 
-func lookupIndexer(key string) (torznab.Indexer, error) {
-	if key == "aggregate" {
-		return lookupAggregate()
-	}
-
-	conf, err := config.NewJSONConfig()
+func newConfig() (config.Config, error) {
+	f, err := config.GetConfigPath()
 	if err != nil {
 		return nil, err
+	}
+
+	log.WithField("path", f).Debug("Reading config")
+
+	dirs, err := config.GetDefinitionDirs()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, dir := range dirs {
+		log.WithField("dir", dir).Debug("Scanning for definitions")
+	}
+
+	return config.NewJSONConfig(f)
+}
+
+func lookupIndexer(cfg config.Config, key string) (torznab.Indexer, error) {
+	if key == "aggregate" {
+		return lookupAggregate(cfg)
 	}
 
 	def, err := indexer.LoadDefinition(key)
@@ -76,16 +92,11 @@ func lookupIndexer(key string) (torznab.Indexer, error) {
 		return nil, err
 	}
 
-	return indexer.NewRunner(def, conf), nil
+	return indexer.NewRunner(def, cfg), nil
 }
 
-func lookupAggregate() (torznab.Indexer, error) {
+func lookupAggregate(cfg config.Config) (torznab.Indexer, error) {
 	keys, err := indexer.ListDefinitions()
-	if err != nil {
-		return nil, err
-	}
-
-	conf, err := config.NewJSONConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +108,7 @@ func lookupAggregate() (torznab.Indexer, error) {
 			return nil, err
 		}
 
-		agg = append(agg, indexer.NewRunner(def, conf))
+		agg = append(agg, indexer.NewRunner(def, cfg))
 	}
 
 	return agg, nil
@@ -145,7 +156,12 @@ func configureQueryCommand(app *kingpin.Application) {
 }
 
 func queryCommand(key, format string, args []string) error {
-	indexer, err := lookupIndexer(key)
+	conf, err := newConfig()
+	if err != nil {
+		return err
+	}
+
+	indexer, err := lookupIndexer(conf, key)
 	if err != nil {
 		return err
 	}
@@ -214,7 +230,12 @@ func configureDownloadCommand(app *kingpin.Application) {
 }
 
 func downloadCommand(key, url, file string) error {
-	indexer, err := lookupIndexer(key)
+	conf, err := newConfig()
+	if err != nil {
+		return err
+	}
+
+	indexer, err := lookupIndexer(conf, key)
 	if err != nil {
 		return err
 	}
@@ -243,7 +264,7 @@ func downloadCommand(key, url, file string) error {
 func configureServerCommand(app *kingpin.Application) error {
 	var bindPort, bindAddr, password string
 
-	conf, err := config.NewJSONConfig()
+	conf, err := newConfig()
 	if err != nil {
 		return err
 	}
@@ -288,18 +309,19 @@ func serverCommand(addr, port string, password string) error {
 		}()
 	}
 
-	conf, err := config.NewJSONConfig()
-	if err != nil {
-		return err
-	}
-
 	v := Version
 	if v == "" {
 		v = "dev"
 	}
 
-	listenOn := fmt.Sprintf("%s:%s", addr, port)
 	log.Infof("Cardigann %s", v)
+
+	conf, err := newConfig()
+	if err != nil {
+		return err
+	}
+
+	listenOn := fmt.Sprintf("%s:%s", addr, port)
 	log.Infof("Listening on %s", listenOn)
 
 	h, err := server.NewHandler(server.Params{
@@ -332,7 +354,7 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 }
 
 func testDefinitionCommand(f *os.File) error {
-	conf, err := config.NewJSONConfig()
+	conf, err := newConfig()
 	if err != nil {
 		return err
 	}
@@ -376,8 +398,14 @@ func configureServiceCommand(app *kingpin.Application) {
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
 
+		conf, err := newConfig()
+		if err != nil {
+			return err
+		}
+
 		prg, err := newProgram(programOpts{
 			UserService: userService,
+			Config:      conf,
 		})
 		if err != nil {
 			return err

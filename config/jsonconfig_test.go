@@ -3,6 +3,7 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -13,10 +14,7 @@ func TestJSONConfig(t *testing.T) {
 	}
 	defer os.RemoveAll(dir) // clean up
 
-	j := jsonConfig{
-		dirs:       []string{dir},
-		defaultDir: dir,
-	}
+	j := jsonConfig{filepath.Join(dir, "config.json")}
 
 	j.Set("section1", "my_key", "true")
 	j.Set("section1", "another_key", "llamas1")

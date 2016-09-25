@@ -1,55 +1,55 @@
 package config
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 
-	"github.com/shibukawa/configdir"
+	xdg "github.com/casimir/xdg-go"
 )
 
-func configDir() (*configdir.ConfigDir, error) {
+const (
+	configFileName = "config.json"
+)
+
+var (
+	app = xdg.App{Name: "cardigann"}
+)
+
+func GetConfigPath() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	if f, exists := fileExists(cwd, configFileName); exists {
+		return f, nil
+	}
+
+	if configDir := os.Getenv("CONFIG_DIR"); configDir != "" {
+		return filepath.Join(configDir, configFileName), nil
+	}
+
+	return app.ConfigPath(configFileName), nil
+}
+
+func GetDefinitionDirs() ([]string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 
-	cd := configdir.New("cardigann", "cardigann")
-	cd.LocalPath = cwd
+	dirs := []string{
+		filepath.Join(cwd, "definitions"),
+		app.ConfigPath("definitions"),
+	}
 
-	return &cd, nil
+	return append(dirs, app.SystemConfigPaths("definitions")...), nil
 }
 
-func Dirs() ([]string, error) {
-	cd, err := configDir()
-	if err != nil {
-		return nil, err
+func fileExists(f ...string) (string, bool) {
+	full := filepath.Join(f...)
+	if _, err := os.Stat(full); os.IsNotExist(err) {
+		return full, false
 	}
-
-	configDirs := []string{}
-	for _, folder := range cd.QueryFolders(configdir.All) {
-		configDirs = append(configDirs, folder.Path)
-	}
-
-	return configDirs, nil
-}
-
-func DefaultDir() (string, error) {
-	cd, err := configDir()
-	if err != nil {
-		return "", err
-	}
-
-	folder := cd.QueryFolders(configdir.Global)
-	return folder[0].Path, nil
-}
-
-func Find(filename string, dirs []string) (string, error) {
-	for _, dir := range dirs {
-		path := filepath.Join(dir, filename)
-		if _, err := os.Stat(path); err == nil {
-			return path, nil
-		}
-	}
-	return "", errors.New("File doesn't exist")
+	return full, true
 }

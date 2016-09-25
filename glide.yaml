@@ -18,3 +18,5 @@ import:
   subpackages:
   - errgroup
 - package: github.com/dgrijalva/jwt-go
+- package: github.com/casimir/xdg-go
+  repo: git@github.com:cardigann/xdg-go.git
