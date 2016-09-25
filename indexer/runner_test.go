@@ -270,7 +270,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 		return httpmock.NewStringResponse(http.StatusOK, exampleLoginErrorPage), nil
 	})
 
-	r := NewRunner(def, conf)
+	r := NewRunner(def, RunnerOpts{Config: conf})
 	err = r.login()
 
 	if err == nil || err.Error() != "Login failed" {
@@ -312,7 +312,7 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 		},
 	}
 
-	r := NewRunner(def, conf)
+	r := NewRunner(def, RunnerOpts{Config: conf})
 
 	var loggedIn bool
 
@@ -381,7 +381,7 @@ func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
 		},
 	}
 
-	r := NewRunner(def, conf)
+	r := NewRunner(def, RunnerOpts{Config: conf})
 
 	var loggedIn bool
 

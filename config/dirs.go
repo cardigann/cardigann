@@ -43,7 +43,15 @@ func GetDefinitionDirs() ([]string, error) {
 		app.ConfigPath("definitions"),
 	}
 
+	if configDir := os.Getenv("CONFIG_DIR"); configDir != "" {
+		dirs = append(dirs, filepath.Join(configDir, "definitions"))
+	}
+
 	return append(dirs, app.SystemConfigPaths("definitions")...), nil
+}
+
+func GetCachePath(file string) string {
+	return app.CachePath(file)
 }
 
 func fileExists(f ...string) (string, bool) {

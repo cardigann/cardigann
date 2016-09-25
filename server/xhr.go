@@ -62,7 +62,9 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 			return nil, err
 		}
 
-		runner := indexer.NewRunner(def, h.Params.Config)
+		runner := indexer.NewRunner(def, indexer.RunnerOpts{
+			Config: h.Params.Config,
+		})
 		settings := []indexerSettingsView{}
 
 		for _, setting := range def.Settings {

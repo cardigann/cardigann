@@ -69,22 +69,12 @@ func newConfig() (config.Config, error) {
 	}
 
 	log.WithField("path", f).Debug("Reading config")
-
-	dirs, err := config.GetDefinitionDirs()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, dir := range dirs {
-		log.WithField("dir", dir).Debug("Scanning for definitions")
-	}
-
 	return config.NewJSONConfig(f)
 }
 
-func lookupIndexer(cfg config.Config, key string) (torznab.Indexer, error) {
+func lookupRunner(key string, opts indexer.RunnerOpts) (torznab.Indexer, error) {
 	if key == "aggregate" {
-		return lookupAggregate(cfg)
+		return lookupAggregate(opts)
 	}
 
 	def, err := indexer.LoadDefinition(key)
@@ -92,10 +82,10 @@ func lookupIndexer(cfg config.Config, key string) (torznab.Indexer, error) {
 		return nil, err
 	}
 
-	return indexer.NewRunner(def, cfg), nil
+	return indexer.NewRunner(def, opts), nil
 }
 
-func lookupAggregate(cfg config.Config) (torznab.Indexer, error) {
+func lookupAggregate(opts indexer.RunnerOpts) (torznab.Indexer, error) {
 	keys, err := indexer.ListDefinitions()
 	if err != nil {
 		return nil, err
@@ -108,7 +98,7 @@ func lookupAggregate(cfg config.Config) (torznab.Indexer, error) {
 			return nil, err
 		}
 
-		agg = append(agg, indexer.NewRunner(def, cfg))
+		agg = append(agg, indexer.NewRunner(def, opts))
 	}
 
 	return agg, nil
@@ -125,7 +115,6 @@ func configureGlobalFlags(cmd *kingpin.CmdClause) {
 func applyGlobalFlags() {
 	if globals.Debug {
 		logger.SetLevel(logrus.DebugLevel)
-		indexer.WriteCache = true
 	}
 }
 
@@ -161,7 +150,9 @@ func queryCommand(key, format string, args []string) error {
 		return err
 	}
 
-	indexer, err := lookupIndexer(conf, key)
+	indexer, err := lookupRunner(key, indexer.RunnerOpts{
+		Config: conf,
+	})
 	if err != nil {
 		return err
 	}
@@ -235,7 +226,9 @@ func downloadCommand(key, url, file string) error {
 		return err
 	}
 
-	indexer, err := lookupIndexer(conf, key)
+	indexer, err := lookupRunner(key, indexer.RunnerOpts{
+		Config: conf,
+	})
 	if err != nil {
 		return err
 	}
@@ -321,6 +314,15 @@ func serverCommand(addr, port string, password string) error {
 		return err
 	}
 
+	defDirs, err := config.GetDefinitionDirs()
+	if err != nil {
+		return err
+	}
+
+	for _, dir := range defDirs {
+		log.WithField("dir", dir).Debug("Reading definitions")
+	}
+
 	listenOn := fmt.Sprintf("%s:%s", addr, port)
 	log.Infof("Listening on %s", listenOn)
 
@@ -338,9 +340,13 @@ func serverCommand(addr, port string, password string) error {
 
 func configureTestDefinitionCommand(app *kingpin.Application) {
 	var f *os.File
+	var cachePages bool
 
 	cmd := app.Command("test-definition", "Test a yaml indexer definition file")
 	cmd.Alias("test")
+
+	cmd.Flag("cachepages", "Whether to store the output of browser actions for debugging").
+		BoolVar(&cachePages)
 
 	cmd.Arg("file", "The definition yaml file").
 		Required().
@@ -349,11 +355,11 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		applyGlobalFlags()
-		return testDefinitionCommand(f)
+		return testDefinitionCommand(f, cachePages)
 	})
 }
 
-func testDefinitionCommand(f *os.File) error {
+func testDefinitionCommand(f *os.File, cachePages bool) error {
 	conf, err := newConfig()
 	if err != nil {
 		return err
@@ -366,7 +372,10 @@ func testDefinitionCommand(f *os.File) error {
 
 	fmt.Println("Definition file parsing OK")
 
-	runner := indexer.NewRunner(def, conf)
+	runner := indexer.NewRunner(def, indexer.RunnerOpts{
+		Config:     conf,
+		CachePages: cachePages,
+	})
 	tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
 		Download: true,
 	}}

@@ -35,40 +35,41 @@ var (
 	_ torznab.Indexer = &Runner{}
 )
 
-var (
-	WriteCache = false
-)
+type RunnerOpts struct {
+	Config     config.Config
+	CachePages bool
+}
 
 type Runner struct {
-	Definition  *IndexerDefinition
-	Browser     browser.Browsable
-	Cookies     http.CookieJar
-	Config      config.Config
-	Logger      logrus.FieldLogger
+	definition  *IndexerDefinition
+	browser     browser.Browsable
+	cookies     http.CookieJar
+	opts        RunnerOpts
+	logger      logrus.FieldLogger
 	caps        torznab.Capabilities
 	browserLock sync.Mutex
 }
 
-func NewRunner(def *IndexerDefinition, conf config.Config) *Runner {
+func NewRunner(def *IndexerDefinition, opts RunnerOpts) *Runner {
 	return &Runner{
-		Definition: def,
-		Config:     conf,
-		Logger:     logger.Logger.WithFields(logrus.Fields{"site": def.Site}),
+		opts:       opts,
+		definition: def,
+		logger:     logger.Logger.WithFields(logrus.Fields{"site": def.Site}),
 	}
 }
 
 func (r *Runner) createBrowser() {
 	r.browserLock.Lock()
 
-	if r.Cookies == nil {
-		r.Cookies = jar.NewMemoryCookies()
+	if r.cookies == nil {
+		r.cookies = jar.NewMemoryCookies()
 	}
 
 	bow := surf.NewBrowser()
 	bow.SetUserAgent(agent.Chrome())
 	bow.SetAttribute(browser.SendReferer, false)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
-	bow.SetCookieJar(r.Cookies)
+	bow.SetCookieJar(r.cookies)
 
 	switch os.Getenv("DEBUG_HTTP") {
 	case "1", "true", "basic":
@@ -77,11 +78,11 @@ func (r *Runner) createBrowser() {
 		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Body)))
 	}
 
-	r.Browser = bow
+	r.browser = bow
 }
 
 func (r *Runner) releaseBrowser() {
-	r.Browser = nil
+	r.browser = nil
 	r.browserLock.Unlock()
 }
 
@@ -96,7 +97,7 @@ func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error
 		return "", err
 	}
 	if strings.Contains(tpl, "{{") {
-		r.Logger.
+		r.logger.
 			WithFields(logrus.Fields{"src": tpl, "result": b.String(), "ctx": ctx}).
 			Debugf("Processed template")
 	}
@@ -104,16 +105,16 @@ func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error
 }
 
 func (r *Runner) currentURL() (*url.URL, error) {
-	if u := r.Browser.Url(); u != nil {
+	if u := r.browser.Url(); u != nil {
 		return u, nil
 	}
 
-	configURL, ok, _ := r.Config.Get(r.Definition.Site, "url")
+	configURL, ok, _ := r.opts.Config.Get(r.definition.Site, "url")
 	if ok && r.testURLWorks(configURL) {
 		return url.Parse(configURL)
 	}
 
-	for _, u := range r.Definition.Links {
+	for _, u := range r.definition.Links {
 		if u != configURL && r.testURLWorks(u) {
 			return url.Parse(u)
 		}
@@ -123,14 +124,14 @@ func (r *Runner) currentURL() (*url.URL, error) {
 }
 
 func (r *Runner) testURLWorks(u string) bool {
-	r.Logger.WithField("url", u).Debugf("Checking connectivity to url")
+	r.logger.WithField("url", u).Debugf("Checking connectivity to url")
 
-	err := r.Browser.Open(u)
+	err := r.browser.Open(u)
 	if err != nil {
-		r.Logger.WithError(err).Warn("URL check failed")
+		r.logger.WithError(err).Warn("URL check failed")
 		return false
-	} else if r.Browser.StatusCode() != http.StatusOK {
-		r.Logger.Warn("URL returned non-ok status")
+	} else if r.browser.StatusCode() != http.StatusOK {
+		r.logger.Warn("URL returned non-ok status")
 		return false
 	}
 
@@ -149,7 +150,7 @@ func (r *Runner) resolvePath(urlPath string) (string, error) {
 	}
 
 	resolved := base.ResolveReference(u)
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"base": base.String(), "u": resolved.String()}).
 		Debugf("Resolving url")
 
@@ -158,11 +159,11 @@ func (r *Runner) resolvePath(urlPath string) (string, error) {
 
 // this should eventually upstream into surf browser
 func (r *Runner) handleMetaRefreshHeader() error {
-	h := r.Browser.ResponseHeaders()
+	h := r.browser.ResponseHeaders()
 
 	if refresh := h.Get("Refresh"); refresh != "" {
 		if s := regexp.MustCompile(`\s*;\s*`).Split(refresh, 2); len(s) == 2 {
-			r.Logger.
+			r.logger.
 				WithField("fields", s).
 				Debug("Found refresh header")
 
@@ -178,17 +179,17 @@ func (r *Runner) handleMetaRefreshHeader() error {
 }
 
 func (r *Runner) openPage(u string) error {
-	r.Logger.WithField("url", u).Debug("Opening page")
+	r.logger.WithField("url", u).Debug("Opening page")
 
-	err := r.Browser.Open(u)
+	err := r.browser.Open(u)
 	if err != nil {
 		return err
 	}
 
-	defer r.cachePage()
+	r.cachePage()
 
-	r.Logger.
-		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+	r.logger.
+		WithFields(logrus.Fields{"code": r.browser.StatusCode(), "page": r.browser.Url()}).
 		Debugf("Finished request")
 
 	if err = r.handleMetaRefreshHeader(); err != nil {
@@ -199,18 +200,18 @@ func (r *Runner) openPage(u string) error {
 }
 
 func (r *Runner) postToPage(u string, vals url.Values) error {
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"url": u, "vals": vals}).
 		Debugf("Posting to page")
 
-	if err := r.Browser.PostForm(u, vals); err != nil {
+	if err := r.browser.PostForm(u, vals); err != nil {
 		return err
 	}
 
-	defer r.cachePage()
+	r.cachePage()
 
-	r.Logger.
-		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+	r.logger.
+		WithFields(logrus.Fields{"code": r.browser.StatusCode(), "page": r.browser.Url()}).
 		Debugf("Finished request")
 
 	if err := r.handleMetaRefreshHeader(); err != nil {
@@ -221,20 +222,27 @@ func (r *Runner) postToPage(u string, vals url.Values) error {
 }
 
 func (r *Runner) cachePage() error {
-	if !WriteCache {
+	if !r.opts.CachePages {
 		return nil
 	}
 
-	tmpfile, err := ioutil.TempFile("", r.Definition.Site)
-	if err != nil {
+	dir := config.GetCachePath(r.definition.Site)
+
+	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
 
-	body := strings.NewReader(r.Browser.Body())
+	tmpfile, err := ioutil.TempFile(dir, "pagecache")
+	if err != nil {
+		r.logger.Warn(err)
+		return err
+	}
+
+	body := strings.NewReader(r.browser.Body())
 	io.Copy(tmpfile, body)
 	defer tmpfile.Close()
 
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"file": "file://" + tmpfile.Name()}).
 		Debugf("Wrote page output to cache")
 
@@ -242,7 +250,7 @@ func (r *Runner) cachePage() error {
 }
 
 func (r *Runner) loginViaForm(loginURL, formSelector string, vals map[string]string) error {
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"url": loginURL, "form": formSelector, "vals": vals}).
 		Debugf("Filling and submitting login form")
 
@@ -250,32 +258,32 @@ func (r *Runner) loginViaForm(loginURL, formSelector string, vals map[string]str
 		return err
 	}
 
-	fm, err := r.Browser.Form(formSelector)
+	fm, err := r.browser.Form(formSelector)
 	if err != nil {
 		return err
 	}
 
 	for name, value := range vals {
-		r.Logger.
+		r.logger.
 			WithFields(logrus.Fields{"key": name, "form": formSelector, "val": value}).
 			Debugf("Filling input of form")
 
 		if err = fm.Input(name, value); err != nil {
-			r.Logger.WithError(err).Error("Filling input failed")
+			r.logger.WithError(err).Error("Filling input failed")
 			return err
 		}
 	}
 
-	r.Logger.Debug("Submitting login form")
+	r.logger.Debug("Submitting login form")
 	defer r.cachePage()
 
 	if err = fm.Submit(); err != nil {
-		r.Logger.WithError(err).Error("Login failed")
+		r.logger.WithError(err).Error("Login failed")
 		return err
 	}
 
-	r.Logger.
-		WithFields(logrus.Fields{"code": r.Browser.StatusCode(), "page": r.Browser.Url()}).
+	r.logger.
+		WithFields(logrus.Fields{"code": r.browser.StatusCode(), "page": r.browser.Url()}).
 		Debugf("Submitted login form")
 
 	return nil
@@ -304,21 +312,21 @@ func (r *Runner) loginViaCookie(loginURL string, cookie string) error {
 
 	cookies := parseCookieString(cookie)
 
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"url": loginURL, "cookies": cookies}).
 		Debugf("Setting cookies for login")
 
 	cj := jar.NewMemoryCookies()
 	cj.SetCookies(u, cookies)
 
-	r.Browser.SetCookieJar(cj)
+	r.browser.SetCookieJar(cj)
 	return nil
 }
 
 func (r *Runner) extractInputLogins() (map[string]string, error) {
 	result := map[string]string{}
 
-	cfg, err := r.Config.Section(r.Definition.Site)
+	cfg, err := r.opts.Config.Section(r.definition.Site)
 	if err != nil {
 		return nil, err
 	}
@@ -329,13 +337,13 @@ func (r *Runner) extractInputLogins() (map[string]string, error) {
 		cfg,
 	}
 
-	for name, val := range r.Definition.Login.Inputs {
+	for name, val := range r.definition.Login.Inputs {
 		resolved, err := r.applyTemplate("login_inputs", val, ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		r.Logger.
+		r.logger.
 			WithFields(logrus.Fields{"key": name, "val": resolved}).
 			Debugf("Resolved login input template")
 
@@ -346,45 +354,45 @@ func (r *Runner) extractInputLogins() (map[string]string, error) {
 }
 
 func (r *Runner) isLoginRequired() (bool, error) {
-	if r.Definition.Login.Path == "" && r.Definition.Login.Method == "" {
+	if r.definition.Login.Path == "" && r.definition.Login.Method == "" {
 		return false, nil
-	} else if r.Definition.Login.Test.Path == "" {
+	} else if r.definition.Login.Test.Path == "" {
 		return true, nil
 	}
 
-	r.Logger.
-		WithField("path", r.Definition.Login.Test).
+	r.logger.
+		WithField("path", r.definition.Login.Test).
 		Debug("Testing if login is needed")
 
-	testUrl, err := r.resolvePath(r.Definition.Login.Test.Path)
+	testUrl, err := r.resolvePath(r.definition.Login.Test.Path)
 	if err != nil {
 		return true, err
 	}
 
 	err = r.openPage(testUrl)
 	if err != nil {
-		r.Logger.WithError(err).Warn("Failed to open page")
+		r.logger.WithError(err).Warn("Failed to open page")
 		return true, nil
 	}
 
-	if testUrl == r.Browser.Url().String() {
-		r.Logger.Debug("No login needed, already logged in")
+	if testUrl == r.browser.Url().String() {
+		r.logger.Debug("No login needed, already logged in")
 		return false, nil
 	}
 
-	r.Logger.Debug("Login is required")
+	r.logger.Debug("Login is required")
 	return true, nil
 }
 
 func (r *Runner) login() error {
-	if r.Browser == nil {
+	if r.browser == nil {
 		r.createBrowser()
 		defer r.releaseBrowser()
 	}
 
-	filterLogger = r.Logger
+	filterLogger = r.logger
 
-	loginUrl, err := r.resolvePath(r.Definition.Login.Path)
+	loginUrl, err := r.resolvePath(r.definition.Login.Path)
 	if err != nil {
 		return err
 	}
@@ -394,9 +402,9 @@ func (r *Runner) login() error {
 		return err
 	}
 
-	switch r.Definition.Login.Method {
+	switch r.definition.Login.Method {
 	case "", loginMethodForm:
-		if err = r.loginViaForm(loginUrl, r.Definition.Login.FormSelector, vals); err != nil {
+		if err = r.loginViaForm(loginUrl, r.definition.Login.FormSelector, vals); err != nil {
 			return err
 		}
 	case loginMethodPost:
@@ -408,21 +416,21 @@ func (r *Runner) login() error {
 			return err
 		}
 	default:
-		return fmt.Errorf("Unknown login method %q", r.Definition.Login.Method)
+		return fmt.Errorf("Unknown login method %q", r.definition.Login.Method)
 	}
 
-	if len(r.Definition.Login.Error) > 0 {
-		r.Logger.
-			WithField("block", r.Definition.Login.Error).
+	if len(r.definition.Login.Error) > 0 {
+		r.logger.
+			WithField("block", r.definition.Login.Error).
 			Debug("Testing if login succeeded")
 
-		if err = r.Definition.Login.hasError(r.Browser); err != nil {
-			r.Logger.WithError(err).Error("Failed to login")
+		if err = r.definition.Login.hasError(r.browser); err != nil {
+			r.logger.WithError(err).Error("Failed to login")
 			return err
 		}
 	}
 
-	if r.Definition.Login.Test.Path != "" {
+	if r.definition.Login.Test.Path != "" {
 		if required, err := r.isLoginRequired(); err != nil {
 			return err
 		} else if required {
@@ -430,21 +438,21 @@ func (r *Runner) login() error {
 		}
 	}
 
-	r.Logger.Info("Successfully logged in")
+	r.logger.Info("Successfully logged in")
 	return nil
 }
 
 func (r *Runner) Info() torznab.Info {
 	return torznab.Info{
-		ID:       r.Definition.Site,
-		Title:    r.Definition.Name,
-		Language: r.Definition.Language,
-		Link:     r.Definition.Links[0],
+		ID:       r.definition.Site,
+		Title:    r.definition.Name,
+		Language: r.definition.Language,
+		Link:     r.definition.Links[0],
 	}
 }
 
 func (r *Runner) Capabilities() torznab.Capabilities {
-	return r.Definition.Capabilities.ToTorznab()
+	return r.definition.Capabilities.ToTorznab()
 }
 
 type extractedItem struct {
@@ -460,11 +468,11 @@ func (r *Runner) localCategories(query torznab.Query) []string {
 		queryCats := torznab.AllCategories.Subset(query.Categories...)
 
 		// resolve query categories to the exact local, or the local based on parent cat
-		for _, id := range r.Definition.Capabilities.CategoryMap.ResolveAll(queryCats...) {
+		for _, id := range r.definition.Capabilities.CategoryMap.ResolveAll(queryCats...) {
 			localCats = append(localCats, id)
 		}
 
-		r.Logger.
+		r.logger.
 			WithFields(logrus.Fields{"querycats": query.Categories, "local": localCats}).
 			Debugf("Resolved torznab cats to local")
 	}
@@ -477,13 +485,13 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	defer r.releaseBrowser()
 
 	// TODO: make this concurrency safe
-	filterLogger = r.Logger
+	filterLogger = r.logger
 
 	if required, err := r.isLoginRequired(); err != nil {
 		return nil, err
 	} else if required {
 		if err := r.login(); err != nil {
-			r.Logger.WithError(err).Error("Login failed")
+			r.logger.WithError(err).Error("Login failed")
 			return nil, err
 		}
 	}
@@ -500,7 +508,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		localCats,
 	}
 
-	searchURL, err := r.applyTemplate("search_path", r.Definition.Search.Path, templateCtx)
+	searchURL, err := r.applyTemplate("search_path", r.definition.Search.Path, templateCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -510,13 +518,13 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		return nil, err
 	}
 
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"query": query.Encode()}).
 		Infof("Searching indexer")
 
 	vals := url.Values{}
 
-	for name, val := range r.Definition.Search.Inputs {
+	for name, val := range r.definition.Search.Inputs {
 		resolved, err := r.applyTemplate("search_inputs", val, templateCtx)
 		if err != nil {
 			return nil, err
@@ -525,11 +533,11 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		case "$raw":
 			parsedVals, err := url.ParseQuery(resolved)
 			if err != nil {
-				r.Logger.WithError(err).Warn(err)
+				r.logger.WithError(err).Warn(err)
 				return nil, fmt.Errorf("Error parsing $raw input: %s", err.Error())
 			}
 
-			r.Logger.
+			r.logger.
 				WithFields(logrus.Fields{"source": val, "parsed": parsedVals}).
 				Debugf("Processed $raw input")
 
@@ -545,7 +553,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 	timer := time.Now()
 
-	switch r.Definition.Search.Method {
+	switch r.definition.Search.Method {
 	case "", searchMethodGet:
 		if len(vals) > 0 {
 			searchURL = fmt.Sprintf("%s?%s", searchURL, vals.Encode())
@@ -559,14 +567,14 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		}
 
 	default:
-		return nil, fmt.Errorf("Unknown search method %q", r.Definition.Search.Method)
+		return nil, fmt.Errorf("Unknown search method %q", r.definition.Search.Method)
 	}
 
-	dom := r.Browser.Dom()
+	dom := r.browser.Dom()
 
 	// merge following rows for After selector
-	if after := r.Definition.Search.Rows.After; after > 0 {
-		rows := dom.Find(r.Definition.Search.Rows.Selector)
+	if after := r.definition.Search.Rows.After; after > 0 {
+		rows := dom.Find(r.definition.Search.Rows.Selector)
 		for i := 0; i < rows.Length(); i += 1 + after {
 			rows.Eq(i).AppendSelection(rows.Slice(i+1, i+1+after).Find("td"))
 			rows.Slice(i+1, i+1+after).Remove()
@@ -574,20 +582,20 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	}
 
 	// apply Remove if it exists
-	if remove := r.Definition.Search.Rows.Remove; remove != "" {
-		matching := dom.Find(r.Definition.Search.Rows.Selector).Filter(remove)
-		r.Logger.
+	if remove := r.definition.Search.Rows.Remove; remove != "" {
+		matching := dom.Find(r.definition.Search.Rows.Selector).Filter(remove)
+		r.logger.
 			WithFields(logrus.Fields{"selector": remove}).
 			Debugf("Applying remove to %d rows", matching.Length())
 		matching.Remove()
 	}
 
-	rows := dom.Find(r.Definition.Search.Rows.Selector)
+	rows := dom.Find(r.definition.Search.Rows.Selector)
 
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{
 			"rows":     rows.Length(),
-			"selector": r.Definition.Search.Rows.Selector,
+			"selector": r.definition.Search.Rows.Selector,
 			"limit":    query.Limit,
 			"offset":   query.Offset,
 		}).Debugf("Found %d rows", rows.Length())
@@ -613,17 +621,17 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			}
 
 			if !matchCat {
-				r.Logger.
+				r.logger.
 					WithFields(logrus.Fields{"id": item.LocalCategoryID, "localCats": localCats}).
 					Debug("Skipping non-matching category")
 				continue
 			}
 		}
 
-		if mappedCat, ok := r.Definition.Capabilities.CategoryMap[item.LocalCategoryID]; ok {
+		if mappedCat, ok := r.definition.Capabilities.CategoryMap[item.LocalCategoryID]; ok {
 			item.Category = mappedCat.ID
 		} else {
-			r.Logger.
+			r.logger.
 				WithFields(logrus.Fields{"localId": item.LocalCategoryID}).
 				Warn("Unknown local category")
 
@@ -635,7 +643,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		extracted = append(extracted, item)
 	}
 
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"time": time.Now().Sub(timer)}).
 		Infof("Query returned %d results", len(extracted))
 
@@ -651,10 +659,10 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 	row := map[string]string{}
 
 	html, _ := goquery.OuterHtml(selection)
-	r.Logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing row")
+	r.logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing row")
 
-	for _, item := range r.Definition.Search.Fields {
-		r.Logger.
+	for _, item := range r.definition.Search.Fields {
+		r.logger.
 			WithFields(logrus.Fields{"row": rowIdx, "block": item.Block.String()}).
 			Debugf("Processing field %q", item.Field)
 
@@ -663,7 +671,7 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 			return extractedItem{}, err
 		}
 
-		r.Logger.
+		r.logger.
 			WithFields(logrus.Fields{"row": rowIdx, "output": val}).
 			Debugf("Finished processing field %q", item.Field)
 
@@ -672,13 +680,13 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 
 	item := extractedItem{
 		ResultItem: torznab.ResultItem{
-			Site:            r.Definition.Site,
+			Site:            r.definition.Site,
 			MinimumRatio:    1,
 			MinimumSeedTime: time.Hour * 48,
 		},
 	}
 
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"row": rowIdx, "data": row}).
 		Debugf("Finished row %d", rowIdx)
 
@@ -687,21 +695,21 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		case "download":
 			u, err := r.resolvePath(val)
 			if err != nil {
-				r.Logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
+				r.logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Link = u
 		case "details":
 			u, err := r.resolvePath(val)
 			if err != nil {
-				r.Logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
+				r.logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.GUID = u
 		case "comments":
 			u, err := r.resolvePath(val)
 			if err != nil {
-				r.Logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
+				r.logger.Warnf("Row #%d has unparseable url %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Comments = u
@@ -714,22 +722,22 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		case "size":
 			bytes, err := humanize.ParseBytes(strings.Replace(val, ",", "", -1))
 			if err != nil {
-				r.Logger.Warnf("Row #%d has unparseable size %q: %v", rowIdx, val, err.Error())
+				r.logger.Warnf("Row #%d has unparseable size %q: %v", rowIdx, val, err.Error())
 				continue
 			}
-			r.Logger.Debugf("After parsing, size is %v", bytes)
+			r.logger.Debugf("After parsing, size is %v", bytes)
 			item.Size = bytes
 		case "leechers":
 			leechers, err := strconv.Atoi(val)
 			if err != nil {
-				r.Logger.Warnf("Row #%d has unparseable leechers value %q in %s", rowIdx, val, key)
+				r.logger.Warnf("Row #%d has unparseable leechers value %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Peers += leechers
 		case "seeders":
 			seeders, err := strconv.Atoi(val)
 			if err != nil {
-				r.Logger.Warnf("Row #%d has unparseable seeders value %q in %s", rowIdx, val, key)
+				r.logger.Warnf("Row #%d has unparseable seeders value %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Seeders = seeders
@@ -737,12 +745,12 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		case "date":
 			t, err := parseFuzzyTime(val, time.Now())
 			if err != nil {
-				r.Logger.Warnf("Row #%d has unparseable time %q in %s", rowIdx, val, key)
+				r.logger.Warnf("Row #%d has unparseable time %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.PublishDate = t
 		default:
-			r.Logger.Warnf("Row #%d has unknown field %s", rowIdx, key)
+			r.logger.Warnf("Row #%d has unknown field %s", rowIdx, key)
 			continue
 		}
 	}
@@ -764,13 +772,13 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 }
 
 func (r *Runner) hasDateHeader() bool {
-	return !r.Definition.Search.Rows.DateHeaders.IsEmpty()
+	return !r.definition.Search.Rows.DateHeaders.IsEmpty()
 }
 
 func (r *Runner) extractDateHeader(selection *goquery.Selection) (time.Time, error) {
-	dateHeaders := r.Definition.Search.Rows.DateHeaders
+	dateHeaders := r.definition.Search.Rows.DateHeaders
 
-	r.Logger.
+	r.logger.
 		WithFields(logrus.Fields{"selector": dateHeaders.String()}).
 		Debugf("Searching for date header")
 
@@ -788,7 +796,7 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 
 	if required, err := r.isLoginRequired(); required {
 		if err := r.login(); err != nil {
-			r.Logger.WithError(err).Error("Login failed")
+			r.logger.WithError(err).Error("Login failed")
 			return nil, http.Header{}, err
 		}
 	} else if err != nil {
@@ -800,7 +808,7 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 		return nil, http.Header{}, err
 	}
 
-	if err := r.Browser.Open(fullUrl); err != nil {
+	if err := r.browser.Open(fullUrl); err != nil {
 		return nil, http.Header{}, err
 	}
 
@@ -808,12 +816,12 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 	go func() {
 		defer pipeW.Close()
 		defer r.releaseBrowser()
-		n, err := r.Browser.Download(pipeW)
+		n, err := r.browser.Download(pipeW)
 		if err != nil {
-			r.Logger.Error(err)
+			r.logger.Error(err)
 		}
-		r.Logger.WithFields(logrus.Fields{"url": fullUrl}).Debugf("Downloaded %d bytes", n)
+		r.logger.WithFields(logrus.Fields{"url": fullUrl}).Debugf("Downloaded %d bytes", n)
 	}()
 
-	return pipeR, r.Browser.ResponseHeaders(), nil
+	return pipeR, r.browser.ResponseHeaders(), nil
 }

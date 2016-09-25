@@ -120,7 +120,9 @@ func (h *handler) createIndexer(key string) (torznab.Indexer, error) {
 	}
 
 	log.WithFields(logrus.Fields{"indexer": key}).Debugf("Loaded indexer")
-	indexer, err := indexer.NewRunner(def, h.Params.Config), nil
+	indexer, err := indexer.NewRunner(def, indexer.RunnerOpts{
+		Config: h.Params.Config,
+	}), nil
 	if err != nil {
 		return nil, err
 	}
