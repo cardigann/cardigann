@@ -21,18 +21,7 @@ cardigann server
 
 Once the server is running, visit http://localhost:5060 and configure via the web interface.
 
-You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting a password in the global config file.
-
-## Configuration
-
-Config is stored in a `config.json` file that is read from the current directory or your user level config dir (e.g `$HOME/.config` in linux). Tracker credentials will be stored here, but you can also set the following keys:
-
-<table>
-<thead><tr><th>Key</th><th>Values</th></tr></thead>
-<tbody>
-<tr><td>apikey</td><td>A 16 character hex value</td></tr>
-</tbody>
-</table>
+You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting `global.password` in the [Configuration](#Configuration).
 
 ## Installation
 
@@ -55,7 +44,49 @@ If you want to run this service non-interactively, you can install it as a servi
 ./cardigann service start
 ```
 
-Install your definitions in `$HOME/.config/cardigann/cardigann/definitions` for them to be found. `$HOME` is the home directory of the user. Config files are looked for in a variety of locations on different platform, see [configdir](https://github.com/shibukawa/configdir) for more details.
+## Configuration
+
+Configuration is stored in a `config.json` file. It's searched for in a few different locations, in order of priority:
+
+#### All Platforms
+  * `$CWD/config.json`
+  * `$CONFIG_DIR/config.json`
+
+#### Linux/BSD:
+  * `$HOME/.config/cardigann/config.json`
+  * `/etc/xdg/cardigan/config.json`
+  
+#### OSX:
+  * `$HOME/Library/Preferences/cardigann/config.json`
+  * `/Library/Preferences/cardigann/config.json`
+  * `/Library/Application Support/cardigann/config.json`
+
+#### Windows
+  * `%APPDATA%\cardigann\config.json`
+  * `%LOCALAPPDATA%\cardigann\config.json`
+
+This configuration file will contain your tracker credentials in plain-text, so it's important to keep it secure. 
+
+## Definitions
+
+Definitions are yaml files (see [definitions](definitions/) for their source) that define how to login and search on an indexer. You can either use the included definitions or write your own. Definitions are loaded from the following directories:
+
+#### All Platforms
+  * `$CWD/definitions/`
+  * `$CONFIG_DIR/definitions/`
+
+#### Linux/BSD:
+  * `$HOME/.config/cardigann/definitions/`
+  * `/etc/xdg/cardigan/definitions/`
+  
+#### OSX:
+  * `$HOME/Library/Preferences/cardigann/definitions/`
+  * `/Library/Preferences/cardigann/definitions/`
+  * `/Library/Application Support/cardigann/definitions/`
+
+#### Windows
+  * `%APPDATA%\cardigann\definitions\`
+  * `%LOCALAPPDATA%\cardigann\definitions\`
 
 ## Supported Indexers
 

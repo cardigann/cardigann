@@ -15,12 +15,14 @@ import (
 
 type programOpts struct {
 	UserService bool
+	Config      config.Config
 }
 
 type program struct {
 	exit    chan struct{}
 	service service.Service
 	logger  service.Logger
+	cfg     config.Config
 }
 
 func newProgram(opts programOpts) (*program, error) {
@@ -37,7 +39,7 @@ func newProgram(opts programOpts) (*program, error) {
 		},
 	}
 
-	prg := &program{}
+	prg := &program{cfg: opts.Config}
 	s, err := service.New(prg, svcConfig)
 	if err != nil {
 		return nil, err
@@ -59,12 +61,7 @@ func (p *program) Start(s service.Service) error {
 func (p *program) run() error {
 	p.logger.Infof("Running service via %v.", service.Platform())
 
-	conf, err := config.NewJSONConfig()
-	if err != nil {
-		return err
-	}
-
-	bind, err := config.GetGlobalConfig("bind", "0.0.0.0", conf)
+	bind, err := config.GetGlobalConfig("bind", "0.0.0.0", p.cfg)
 	if err != nil {
 		return err
 	}
@@ -75,7 +72,7 @@ func (p *program) run() error {
 		defaultPort = "5060"
 	}
 
-	port, err := config.GetGlobalConfig("port", defaultPort, conf)
+	port, err := config.GetGlobalConfig("port", defaultPort, p.cfg)
 	if err != nil {
 		return err
 	}
@@ -84,7 +81,7 @@ func (p *program) run() error {
 	p.logger.Infof("Listening on %s", listenOn)
 
 	h, err := server.NewHandler(server.Params{
-		Config: conf,
+		Config: p.cfg,
 	})
 	if err != nil {
 		return err

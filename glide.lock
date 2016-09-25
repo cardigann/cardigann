@@ -1,5 +1,5 @@
-hash: 9106ff14377681ffcd6a6d2c53f083bfea38fd83e1cb457bc88356b4be7e70a3
-updated: 2016-09-23T11:18:10.276270844+10:00
+hash: 90dbaa5d95b16880e71ecbc1987c538af1f1db3a97cfbfec26890d5a3fb441c1
+updated: 2016-09-25T15:54:59.702263497+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -11,10 +11,13 @@ imports:
   version: 1c31af6f6c1a7b101ed05aacc7d8a738b43ae86e
 - name: github.com/bcampbell/fuzzytime
   version: 39f1cd4b72489d771d9407a46ec1c6a5cf3d1c73
+- name: github.com/casimir/xdg-go
+  version: 3b31ec681f20e43bee5697d18b4686f1bfa24e12
+  repo: git@github.com:cardigann/xdg-go.git
 - name: github.com/dgrijalva/jwt-go
   version: 24c63f56522a87ec5339cc3567883f1039378fdb
 - name: github.com/dustin/go-humanize
-  version: 2fcb5204cdc65b4bec9fd0a87606bb0d0e3c54e8
+  version: bd88f87ad3a420f7bcf05e90566fd1ceb351fa7f
 - name: github.com/f2prateek/train
   version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
   subpackages:
@@ -40,8 +43,6 @@ imports:
   version: 7a88211485df5d3da6ec68f4f8a5ff9bec297327
 - name: github.com/PuerkitoBio/goquery
   version: 152b1a2c8f5d0340f658bb656032a39b94e52958
-- name: github.com/shibukawa/configdir
-  version: f5173a2c50e0358987cec35dfca337496f88f8bf
 - name: github.com/Sirupsen/logrus
   version: 3ec0642a7fb6488f65b06f9040adc67e3990296a
 - name: github.com/vaughan0/go-ini
@@ -49,7 +50,7 @@ imports:
 - name: github.com/yosssi/gohtml
   version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: 6d3beaea10370160dea67f5c9327ed791afd5389
+  version: f09c4662a0bd6bd8943ac7b4931e185df9471da4
   subpackages:
   - html
   - context

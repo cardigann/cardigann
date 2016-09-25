@@ -8,32 +8,40 @@ import (
 	"strings"
 
 	"github.com/cardigann/cardigann/config"
+	"github.com/cardigann/cardigann/logger"
 )
 
+var definitions = map[string]string{}
 var ErrUnknownIndexer = errors.New("Unknown indexer")
 
 func findDefinitions() (map[string]string, error) {
-	dirs, err := config.Dirs()
+	dirs, err := config.GetDefinitionDirs()
 	if err != nil {
 		return nil, err
 	}
 
-	results := map[string]string{}
 	for _, dirpath := range dirs {
-		if dir, err := os.Open(path.Join(dirpath, "definitions")); err == nil {
-			files, err := dir.Readdirnames(-1)
-			if err != nil {
-				continue
-			}
-			for _, basename := range files {
-				if strings.HasSuffix(basename, ".yml") {
-					results[strings.TrimSuffix(basename, ".yml")] = path.Join(dir.Name(), basename)
+		dir, err := os.Open(dirpath)
+		if os.IsNotExist(err) {
+			continue
+		}
+		files, err := dir.Readdirnames(-1)
+		if err != nil {
+			continue
+		}
+		for _, basename := range files {
+			if strings.HasSuffix(basename, ".yml") {
+				key := strings.TrimSuffix(basename, ".yml")
+				f := path.Join(dir.Name(), basename)
+				if existing := definitions[key]; existing != f {
+					logger.Logger.WithField("path", f).Debug("Found definition")
+					definitions[key] = f
 				}
 			}
 		}
 	}
 
-	return results, nil
+	return definitions, nil
 }
 
 func ListDefinitions() ([]string, error) {

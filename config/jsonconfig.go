@@ -7,22 +7,10 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-
-	"github.com/Sirupsen/logrus"
-	"github.com/cardigann/cardigann/logger"
-)
-
-var (
-	log = logger.Logger
-)
-
-const (
-	configFileName = "config.json"
 )
 
 type jsonConfig struct {
-	dirs       []string
-	defaultDir string
+	path string
 }
 
 type boolOrString string
@@ -45,43 +33,31 @@ func (b *boolOrString) UnmarshalJSON(data []byte) error {
 
 type jsonConfigMap map[string]map[string]boolOrString
 
-func NewJSONConfig() (Config, error) {
-	dirs, err := Dirs()
-	if err != nil {
-		return nil, err
-	}
-
-	defaultDir, err := DefaultDir()
-	if err != nil {
-		return nil, err
-	}
-
-	return &jsonConfig{dirs, defaultDir}, nil
+// NewJSONConfig creates a new json config backed on the given file
+func NewJSONConfig(f string) (Config, error) {
+	return &jsonConfig{f}, nil
 }
 
 func (jc *jsonConfig) load() (jsonConfigMap, error) {
 	config := jsonConfigMap{}
 
-	path, err := Find(configFileName, jc.dirs)
-	if err == nil {
-		data, err := ioutil.ReadFile(path)
-		if err != nil {
-			return nil, err
-		}
-		if err := json.Unmarshal(data, &config); err != nil {
-			return nil, err
-		}
+	data, err := ioutil.ReadFile(jc.path)
+	if os.IsNotExist(err) {
+		return config, nil
+	} else if err != nil {
+		return nil, err
 	}
+
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil, err
+	}
+
 	return config, nil
 }
 
 func (jc *jsonConfig) save(c jsonConfigMap) error {
-	path, err := Find(configFileName, jc.dirs)
-	if err != nil {
-		if err = os.MkdirAll(jc.defaultDir, 0700); err != nil {
-			return err
-		}
-		path = filepath.Join(jc.defaultDir, configFileName)
+	if err := os.MkdirAll(filepath.Dir(jc.path), 0700); err != nil {
+		return err
 	}
 
 	b, err := json.MarshalIndent(c, "", "  ")
@@ -89,8 +65,7 @@ func (jc *jsonConfig) save(c jsonConfigMap) error {
 		return err
 	}
 
-	log.WithFields(logrus.Fields{"file": path}).Debug("Writing config file")
-	return ioutil.WriteFile(path, b, 0700)
+	return ioutil.WriteFile(jc.path, b, 0700)
 }
 
 func (jc *jsonConfig) Get(section, key string) (string, bool, error) {
