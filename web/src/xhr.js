@@ -1,7 +1,13 @@
 
+import parse from 'url-parse';
+
 export default function(path) {
-  if (window.location.hostname === "localhost" && window.location.port === "3000") {
-    return "http://localhost:5060" + path
+  let url = parse(path, true);
+
+  // rewrite xhr requests to the backend
+  if (url.host === "localhost:3000") {
+    url.set('port', '5060');
   }
-  return path;
+
+  return url.toString();
 };

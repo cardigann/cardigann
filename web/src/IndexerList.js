@@ -150,7 +150,7 @@ class IndexerListRow extends Component {
         <td className="col-md-2">{this.props.indexer.name}</td>
         <td className="col-md-6">
           <FeedLink
-            feedHref={this.props.indexer.feeds.torznab}
+            feedHref={xhrUrl(this.props.indexer.feeds.torznab)}
             label="torznab" />
         </td>
         <td className="col-md-1">{this.state.status}</td>

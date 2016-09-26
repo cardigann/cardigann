@@ -14,7 +14,6 @@ class Spinner extends Component {
       align: 'center',
       marginTop: '10px',
     };
-
     return (
       <div style={style}><Halogen.ClipLoader color={this.props.color}/></div>
     );
