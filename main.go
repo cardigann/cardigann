@@ -77,7 +77,7 @@ func lookupRunner(key string, opts indexer.RunnerOpts) (torznab.Indexer, error) 
 		return lookupAggregate(opts)
 	}
 
-	def, err := indexer.LoadDefinition(key)
+	def, err := indexer.DefaultDefinitionLoader.Load(key)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func lookupRunner(key string, opts indexer.RunnerOpts) (torznab.Indexer, error) 
 }
 
 func lookupAggregate(opts indexer.RunnerOpts) (torznab.Indexer, error) {
-	keys, err := indexer.ListDefinitions()
+	keys, err := indexer.DefaultDefinitionLoader.List()
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func lookupAggregate(opts indexer.RunnerOpts) (torznab.Indexer, error) {
 	agg := indexer.Aggregate{}
 	for _, key := range keys {
 		if config.IsSectionEnabled(key, opts.Config) {
-			def, err := indexer.LoadDefinition(key)
+			def, err := indexer.DefaultDefinitionLoader.Load(key)
 			if err != nil {
 				return nil, err
 			}
@@ -316,13 +316,8 @@ func serverCommand(addr, port string, password string) error {
 		return err
 	}
 
-	defDirs, err := config.GetDefinitionDirs()
-	if err != nil {
-		return err
-	}
-
-	for _, dir := range defDirs {
-		log.WithField("dir", dir).Debug("Reading definitions")
+	for _, dir := range config.GetDefinitionDirs() {
+		log.WithField("dir", dir).Debug("Adding dir to definition load path")
 	}
 
 	listenOn := fmt.Sprintf("%s:%s", addr, port)

@@ -113,7 +113,7 @@ func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
 }
 
 func (h *handler) createIndexer(key string) (torznab.Indexer, error) {
-	def, err := indexer.LoadDefinition(key)
+	def, err := indexer.DefaultDefinitionLoader.Load(key)
 	if err != nil {
 		log.WithError(err).Warnf("Failed to load definition for %q", key)
 		return nil, err
@@ -146,7 +146,7 @@ func (h *handler) lookupIndexer(key string) (torznab.Indexer, error) {
 }
 
 func (h *handler) createAggregate() (torznab.Indexer, error) {
-	keys, err := indexer.ListDefinitions()
+	keys, err := indexer.DefaultDefinitionLoader.List()
 	if err != nil {
 		return nil, err
 	}

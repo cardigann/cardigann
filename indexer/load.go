@@ -2,25 +2,45 @@ package indexer
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/cardigann/cardigann/config"
-	"github.com/cardigann/cardigann/logger"
 )
 
-var definitions = map[string]string{}
-var ErrUnknownIndexer = errors.New("Unknown indexer")
+var (
+	ErrUnknownIndexer       = errors.New("Unknown indexer")
+	DefaultDefinitionLoader DefinitionLoader
+)
 
-func findDefinitions() (map[string]string, error) {
-	dirs, err := config.GetDefinitionDirs()
-	if err != nil {
-		return nil, err
+type DefinitionLoader interface {
+	List() ([]string, error)
+	Load(key string) (*IndexerDefinition, error)
+}
+
+func init() {
+	DefaultDefinitionLoader = &multiLoader{
+		newFsLoader(),
+		escLoader{Dir(false, "")},
 	}
+}
 
-	for _, dirpath := range dirs {
+type fsLoader struct {
+	dirs []string
+}
+
+func newFsLoader() DefinitionLoader {
+	return &fsLoader{config.GetDefinitionDirs()}
+}
+
+func (fs *fsLoader) walkDirectories() (map[string]string, error) {
+	defs := map[string]string{}
+
+	for _, dirpath := range fs.dirs {
 		dir, err := os.Open(dirpath)
 		if os.IsNotExist(err) {
 			continue
@@ -31,36 +51,31 @@ func findDefinitions() (map[string]string, error) {
 		}
 		for _, basename := range files {
 			if strings.HasSuffix(basename, ".yml") {
-				key := strings.TrimSuffix(basename, ".yml")
-				f := path.Join(dir.Name(), basename)
-				if existing := definitions[key]; existing != f {
-					logger.Logger.WithField("path", f).Debug("Found definition")
-					definitions[key] = f
-				}
+				defs[strings.TrimSuffix(basename, ".yml")] = path.Join(dir.Name(), basename)
 			}
 		}
 	}
 
-	return definitions, nil
+	return defs, nil
 }
 
-func ListDefinitions() ([]string, error) {
-	keys, err := findDefinitions()
+func (fs *fsLoader) List() ([]string, error) {
+	defs, err := fs.walkDirectories()
 	if err != nil {
 		return nil, err
 	}
 
 	results := []string{}
 
-	for k := range keys {
+	for k := range defs {
 		results = append(results, k)
 	}
 
 	return results, nil
 }
 
-func LoadDefinition(key string) (*IndexerDefinition, error) {
-	defs, err := findDefinitions()
+func (fs *fsLoader) Load(key string) (*IndexerDefinition, error) {
+	defs, err := fs.walkDirectories()
 	if err != nil {
 		return nil, err
 	}
@@ -74,5 +89,62 @@ func LoadDefinition(key string) (*IndexerDefinition, error) {
 	if err != nil {
 		return nil, err
 	}
+	return ParseDefinition(data)
+}
+
+type multiLoader []DefinitionLoader
+
+func (ml multiLoader) List() ([]string, error) {
+	results := []string{}
+
+	for _, loader := range ml {
+		result, err := loader.List()
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, result...)
+	}
+
+	return results, nil
+}
+
+func (ml multiLoader) Load(key string) (*IndexerDefinition, error) {
+	for _, loader := range ml {
+		def, err := loader.Load(key)
+		if err == nil {
+			return def, nil
+		}
+	}
+	return nil, ErrUnknownIndexer
+}
+
+type escLoader struct {
+	http.FileSystem
+}
+
+func (el escLoader) List() ([]string, error) {
+	results := []string{}
+
+	for key := range _escData {
+		results = append(results, key)
+	}
+
+	return results, nil
+}
+
+func (el escLoader) Load(key string) (*IndexerDefinition, error) {
+	f, err := el.Open(fmt.Sprintf("/definitions/%s.yml", key))
+	if os.IsNotExist(err) {
+		return nil, ErrUnknownIndexer
+	} else if err != nil {
+		return nil, err
+	}
+
+	defer f.Close()
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
 	return ParseDefinition(data)
 }

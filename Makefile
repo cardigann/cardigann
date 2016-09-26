@@ -34,7 +34,10 @@ $(BIN)-windows-386: $(SRC)
 test-defs:
 	find definitions -name '*.yml' -print -exec go run *.go test {} \;
 
-build: server/static.go $(BIN)-$(OS)-$(ARCH)
+build: server/static.go indexer/definitions.go $(BIN)-$(OS)-$(ARCH)
+
+indexer/definitions.go: $(shell find definitions)
+	esc -o indexer/definitions.go -prefix templates -pkg indexer definitions/
 
 server/static.go: $(shell find web/src)
 	cd web; npm run build
