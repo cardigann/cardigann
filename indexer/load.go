@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/cardigann/cardigann/config"
@@ -118,6 +119,8 @@ func (ml multiLoader) Load(key string) (*IndexerDefinition, error) {
 	return nil, ErrUnknownIndexer
 }
 
+var escFilenameRegex = regexp.MustCompile(`^/definitions/(.+?)\.yml$`)
+
 type escLoader struct {
 	http.FileSystem
 }
@@ -125,8 +128,10 @@ type escLoader struct {
 func (el escLoader) List() ([]string, error) {
 	results := []string{}
 
-	for key := range _escData {
-		results = append(results, key)
+	for filename := range _escData {
+		if matches := escFilenameRegex.FindStringSubmatch(filename); matches != nil {
+			results = append(results, matches[1])
+		}
 	}
 
 	return results, nil
