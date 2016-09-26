@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
 	"golang.org/x/sync/errgroup"
 )
@@ -23,7 +24,7 @@ func (ag Aggregate) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		g.Go(func() error {
 			result, err := indexer.Search(query)
 			if err != nil {
-				log.Warnf("Indexer %q failed: %s", indexerID, err)
+				logger.Logger.Warnf("Indexer %q failed: %s", indexerID, err)
 				return nil
 			}
 			allResults[idx] = result
@@ -34,7 +35,7 @@ func (ag Aggregate) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 		})
 	}
 	if err := g.Wait(); err != nil {
-		log.Warn(err)
+		logger.Logger.Warn(err)
 		return nil, err
 	}
 

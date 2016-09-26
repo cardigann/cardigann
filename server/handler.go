@@ -153,11 +153,13 @@ func (h *handler) createAggregate() (torznab.Indexer, error) {
 
 	agg := indexer.Aggregate{}
 	for _, key := range keys {
-		indexer, err := h.lookupIndexer(key)
-		if err != nil {
-			return nil, err
+		if config.IsSectionEnabled(key, h.Params.Config) {
+			indexer, err := h.lookupIndexer(key)
+			if err != nil {
+				return nil, err
+			}
+			agg = append(agg, indexer)
 		}
-		agg = append(agg, indexer)
 	}
 
 	return agg, nil

@@ -93,12 +93,14 @@ func lookupAggregate(opts indexer.RunnerOpts) (torznab.Indexer, error) {
 
 	agg := indexer.Aggregate{}
 	for _, key := range keys {
-		def, err := indexer.LoadDefinition(key)
-		if err != nil {
-			return nil, err
-		}
+		if config.IsSectionEnabled(key, opts.Config) {
+			def, err := indexer.LoadDefinition(key)
+			if err != nil {
+				return nil, err
+			}
 
-		agg = append(agg, indexer.NewRunner(def, opts))
+			agg = append(agg, indexer.NewRunner(def, opts))
+		}
 	}
 
 	return agg, nil
