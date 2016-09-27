@@ -3,7 +3,7 @@ set -eu -o pipefail
 
 DOCKER_IMAGE=${DOCKER_IMAGE:-cardigann/cardigann}
 DOCKER_TAG=${DOCKER_TAG:-$DOCKER_IMAGE:$COMMIT}
-VERSION=$(git describe --tags --candidates=1)
+VERSION="$(git describe --tags --candidates=1)"
 
 download_cacert() {
   wget -N https://curl.haxx.se/ca/cacert.pem
@@ -35,10 +35,10 @@ download_equinox() {
 equinox_release() {
   download_equinox
   ./equinox release \
-    --version="$VERSION" \
+    --version="${VERSION}" \
     --config ./equinox.yml \
     --channel "edge" \
-    -- -ldflags="-X main.Version=$version -s -w" \
+    -- -ldflags="-X main.Version=${VERSION} -s -w" \
     github.com/cardigann/cardigann
 }
 
