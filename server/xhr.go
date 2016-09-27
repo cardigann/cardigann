@@ -47,14 +47,14 @@ func (slice indexerViewByName) Swap(i, j int) {
 }
 
 func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
-	defs, err := indexer.ListDefinitions()
+	defs, err := indexer.DefaultDefinitionLoader.List()
 	if err != nil {
 		return nil, err
 	}
 
 	reply := []indexerView{}
 	for _, indexerID := range defs {
-		def, err := indexer.LoadDefinition(indexerID)
+		def, err := indexer.DefaultDefinitionLoader.Load(indexerID)
 		if err == indexer.ErrUnknownIndexer {
 			log.Printf("Unknown indexer %q in configuration", indexerID)
 			continue

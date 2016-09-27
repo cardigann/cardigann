@@ -32,22 +32,20 @@ func GetConfigPath() (string, error) {
 	return app.ConfigPath(configFileName), nil
 }
 
-func GetDefinitionDirs() ([]string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
+func GetDefinitionDirs() []string {
+	dirs := []string{}
+
+	if cwd, err := os.Getwd(); err == nil {
+		dirs = append(dirs, filepath.Join(cwd, "definitions"))
 	}
 
-	dirs := []string{
-		filepath.Join(cwd, "definitions"),
-		app.ConfigPath("definitions"),
-	}
+	dirs = append(dirs, app.ConfigPath("definitions"))
 
 	if configDir := os.Getenv("CONFIG_DIR"); configDir != "" {
 		dirs = append(dirs, filepath.Join(configDir, "definitions"))
 	}
 
-	return append(dirs, app.SystemConfigPaths("definitions")...), nil
+	return append(dirs, app.SystemConfigPaths("definitions")...)
 }
 
 func GetCachePath(file string) string {
