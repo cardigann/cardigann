@@ -14,7 +14,7 @@ else
 endif
 
 test:
-	go test -v ./indexer ./server ./config ./torznab
+	go test -v $(shell go list ./... | grep -v /vendor/)
 
 $(BIN)-linux-armv5: $(SRC)
 	CGO_ENABLED=0  GOOS=linux   GOARCH=arm    GOARM=5    go build -o $@ -ldflags="$(FLAGS)" *.go
@@ -54,10 +54,7 @@ run-dev:
 	cd web/; npm start &
 	rerun $(PREFIX) server --debug --passphrase "llamasrock"
 
-defs.zip: $(shell find definitions/)
-	zip defs.zip definitions/*
-
-release: defs.zip $(BIN)-linux-armv5 $(BIN)-linux-386 $(BIN)-linux-amd64 $(BIN)-darwin-amd64 $(BIN)-windows-386
+release: $(BIN)-linux-armv5 $(BIN)-linux-386 $(BIN)-linux-amd64 $(BIN)-darwin-amd64 $(BIN)-windows-386
 
 cacert.pem:
 	wget -N https://curl.haxx.se/ca/cacert.pem
