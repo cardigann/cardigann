@@ -19,6 +19,7 @@ import (
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/server"
 	"github.com/cardigann/cardigann/torznab"
+	"github.com/equinox-io/equinox"
 	"github.com/kardianos/service"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -52,6 +53,7 @@ func run(args ...string) (exitCode int) {
 	configureDownloadCommand(app)
 	configureTestDefinitionCommand(app)
 	configureServiceCommand(app)
+	configureUpdateCommand(app)
 
 	app.Command("version", "Print the application version").Action(func(c *kingpin.ParseContext) error {
 		fmt.Print(Version)
@@ -451,5 +453,60 @@ func runServiceCommand(prg *program) error {
 		prg.logger.Error(err)
 	}
 
+	return nil
+}
+
+func configureUpdateCommand(app *kingpin.Application) {
+	var channel string
+	var dryRun bool
+
+	cmd := app.Command("update", "Update cardigann to the latest version")
+
+	cmd.Flag("channel", "The channel to update from").
+		EnumVar(&channel, "stable", "edge")
+
+	cmd.Flag("dry-run", "Whether to do a dry run or to execute").
+		BoolVar(&dryRun)
+
+	configureGlobalFlags(cmd)
+	cmd.Action(func(c *kingpin.ParseContext) error {
+		return runUpdateCommand(channel, dryRun)
+	})
+}
+
+const appID = "app_doJjayUsKxb"
+
+var publicKey = []byte(`
+-----BEGIN ECDSA PUBLIC KEY-----
+MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEJmeGsHuOSDZI6nhtlWljGkwHVUow7yVx
+KaGKMPQAGXIVEGg4kTYmDPTvCOoFmMZT+foLsJ2qu6xsLAavaZYlY7oXrYyNzM3S
+x0cFjxMjM+8k+dQFEfYnemm5TUFQ3Hwz
+-----END ECDSA PUBLIC KEY-----
+`)
+
+func runUpdateCommand(channel string, dryRun bool) error {
+	var opts equinox.Options
+	if err := opts.SetPublicKeyPEM(publicKey); err != nil {
+		return err
+	}
+
+	// check for the update
+	resp, err := equinox.Check(appID, opts)
+	switch {
+	case err == equinox.NotAvailableErr:
+		log.Info("No update available, already at the latest version!")
+		return nil
+	case err != nil:
+		log.Errorf("Update failed:", err)
+		return err
+	}
+
+	// fetch the update and apply it
+	err = resp.Apply()
+	if err != nil {
+		return err
+	}
+
+	log.Infof("Updated to new version: %s!\n", resp.ReleaseVersion)
 	return nil
 }

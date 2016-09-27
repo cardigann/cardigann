@@ -1,5 +1,5 @@
-hash: 90dbaa5d95b16880e71ecbc1987c538af1f1db3a97cfbfec26890d5a3fb441c1
-updated: 2016-09-25T20:39:38.464690991+10:00
+hash: 047e096b185c4f4d4ab546c55167f99449c86cedf6bf1b28571c78997920dd3e
+updated: 2016-09-26T19:47:11.544290967+10:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -18,6 +18,8 @@ imports:
   version: 24c63f56522a87ec5339cc3567883f1039378fdb
 - name: github.com/dustin/go-humanize
   version: bd88f87ad3a420f7bcf05e90566fd1ceb351fa7f
+- name: github.com/equinox-io/equinox
+  version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
 - name: github.com/f2prateek/train
   version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
   subpackages:
