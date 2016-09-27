@@ -80,10 +80,12 @@ func NewHandler(p Params) (http.Handler, error) {
 
 func (h *handler) initialize() error {
 	if h.Params.Passphrase == "" {
-		apiKey, hasApiKey, err := h.Params.Config.Get("global", "apikey")
-		if err != nil {
-			return err
+		pass, hasPassphrase, _ := h.Params.Config.Get("global", "passphrase")
+		if hasPassphrase {
+			h.Params.Passphrase = pass
+			return nil
 		}
+		apiKey, hasApiKey, _ := h.Params.Config.Get("global", "apikey")
 		if !hasApiKey {
 			k, err := h.sharedKey()
 			if err != nil {
