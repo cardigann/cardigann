@@ -1,0 +1,82 @@
+---
+  site: speedcd
+  name: speed.cd
+  description: "TV Series anyone?"
+  language: en-us
+  links:
+    - http://speed.cd/
+
+  caps:
+    categories:
+      52: TV/HD    #TV/B-Ray
+      51: TV/SD    #TV/DVD-R
+      2: TV/SD     #TV/Episodes
+      49: TV/HD    #TV/HD
+      55: TV/Other #TV/Kids
+      41: TV/Other #TV/Packs
+      50: TV/Sport #TV/Sports
+      30: TV/Anime
+      1: Movies/Other
+      42: Movies
+      32: Movies
+      43: Movies/HD
+      47: Movies
+      28: Movies/BluRay
+      48: Movies/3D
+      40: Movies/DVD
+      25: PC/ISO
+      39: Console/Wii
+      45: Console/PS3
+      35: Console
+      33: Console/Xbox 360
+      46: PC/Phone-Other
+      24: PC/0day
+      51: PC/Mac
+      27: Books
+      26: Audio
+      44: Audio
+      29: Audio/Video
+
+    modes:
+      tv-search: [q, season, ep]
+
+  login:
+    path: /takeElogin.php
+    method: post
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      - selector: tbody:contains("File Not Found")
+    test:
+      path: /user/
+
+
+  search:
+    path: /browse.php
+    inputs:
+      search: "{{ .Query.Keywords }}"
+    rows:
+      selector: "#torrentTable .boxContent > table tbody tr"
+    fields:
+      title:
+        selector: b:nth-child(1)
+      category:
+        selector: td:nth-child(1) > div:nth-child(1) > a:nth-child(2)
+        attribute: href
+        filters:
+          - name: querystring
+            args: cat
+      download:
+        selector: td:nth-child(3) > a:nth-child(1)
+        attribute: href
+      date:
+        selector: td.lft > div > span.date > span
+        attribute: title
+      size:
+        selector: td:nth-child(5)
+      seeders:
+        selector: td:nth-child(6)
+      leechers:
+        selector: td:nth-child(7)
+
