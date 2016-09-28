@@ -41,3 +41,12 @@
 .App__SearchModal {
   width: 90% !important;
 }
+
+img.loading {
+  visibility: hidden;
+}
+
+.App__SearchModal .searching img.loading {
+  visibility: visible;
+}
+

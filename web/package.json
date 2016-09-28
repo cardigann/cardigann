@@ -8,7 +8,6 @@
   "dependencies": {
     "bootswatch": "^3.3.7",
     "eventsource": "^0.2.1",
-    "halogen": "^0.2.0",
     "query-string": "^4.2.3",
     "react": "^15.2.1",
     "react-bootstrap": "^0.30.0",

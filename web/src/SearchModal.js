@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Modal, Button, Form, FormGroup, FormControl, ControlLabel }  from 'react-bootstrap';
 import { BootstrapTable, TableHeaderColumn }  from 'react-bootstrap-table';
 import xhrUrl from './xhr';
-import Spinner from './Spinner';
+import spinner from './spinner.gif';
 import queryString from 'query-string';
 
 import 'react-bootstrap-table/dist/react-bootstrap-table.min.css';
@@ -17,7 +17,7 @@ class SearchForm extends Component {
     this.props.onSearch({keywords: ReactDOM.findDOMNode(this.refs.keywords).value});
   }
   render() {
-    return <Form inline onSubmit={this.onSubmit}>
+    return <Form inline onSubmit={this.onSubmit} className={this.props.searching?'searching':''}>
       <FormGroup controlId="formInlineName">
         <ControlLabel>Keywords</ControlLabel>
         {' '}
@@ -26,7 +26,7 @@ class SearchForm extends Component {
       {' '}
       <Button type="submit">Go</Button>
       {' '}
-      {this.props.searching ? <FormGroup><Spinner /></FormGroup> : null}
+      <img src={spinner} height="50" width="50" alt="loading..." className="loading" />
     </Form>;
   }
 }

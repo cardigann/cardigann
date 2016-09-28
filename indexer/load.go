@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/cardigann/cardigann/config"
@@ -96,16 +97,25 @@ func (fs *fsLoader) Load(key string) (*IndexerDefinition, error) {
 type multiLoader []DefinitionLoader
 
 func (ml multiLoader) List() ([]string, error) {
-	results := []string{}
+	allResults := map[string]struct{}{}
 
 	for _, loader := range ml {
 		result, err := loader.List()
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, result...)
+		for _, val := range result {
+			allResults[val] = struct{}{}
+		}
 	}
 
+	results := []string{}
+
+	for key := range allResults {
+		results = append(results, key)
+	}
+
+	sort.Sort(sort.StringSlice(results))
 	return results, nil
 }
 
