@@ -4,8 +4,11 @@ web/build
 web/node_modules
 cacert.pem
 defs.zip
+cardigann
 cardigann-linux-armv5
 cardigann-linux-386
 cardigann-linux-amd64
 cardigann-darwin-amd64
 cardigann-windows-386
+equinox.yml
+equinox.key
