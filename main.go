@@ -501,6 +501,11 @@ func runUpdateCommand(channel string, dryRun bool) error {
 		return err
 	}
 
+	if dryRun {
+		log.Info("An update to %v exists, and would be applied at this stage", resp.ReleaseVersion)
+		return nil
+	}
+
 	// fetch the update and apply it
 	err = resp.Apply()
 	if err != nil {
