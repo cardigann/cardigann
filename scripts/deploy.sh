@@ -46,7 +46,7 @@ equinox_release_edge() {
 equinox_publish_stable() {
   local version="$1"
   ./equinox publish \
-    --version="${version}" \
+    --release="${version}" \
     --config ./equinox.yml \
     --channel stable
 }
