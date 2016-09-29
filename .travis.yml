@@ -23,8 +23,6 @@ deploy:
   provider: script
   script: scripts/deploy.sh
   on:
-    branch:
-    - master
-    - equinox
+    branch: master
     condition: "$TRAVIS_OS_NAME = linux"
 
