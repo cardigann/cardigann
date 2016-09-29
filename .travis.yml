@@ -19,11 +19,14 @@ before_deploy:
   -in equinox.tar.enc -out equinox.tar -d
 - tar xvf equinox.tar
 deploy:
-  skip_cleanup: true
-  provider: script
-  script: scripts/deploy.sh
-  on:
-    branch:
-     - master
-     - /^v\d+/
-    condition: "$TRAVIS_OS_NAME = linux"
+  - provider: script
+    script: scripts/deploy.sh
+    skip_cleanup: true
+    on:
+      branch: master
+      condition: "$TRAVIS_OS_NAME = linux"
+  - provider: script
+    script: scripts/deploy.sh
+    skip_cleanup: true
+    on:
+      tags: true
