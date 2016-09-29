@@ -23,7 +23,5 @@ deploy:
   provider: script
   script: scripts/deploy.sh
   on:
+    all_branches: true
     tags: true
-    branch: master
-    condition: "$TRAVIS_OS_NAME = linux"
-

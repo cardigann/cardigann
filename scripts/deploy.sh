@@ -51,19 +51,22 @@ equinox_publish_stable() {
     --channel stable
 }
 
-download_equinox
+echo TRAVIS_BRANCH: $TRAVIS_BRANCH
+echo TRAVIS_TAG: $TRAVIS_TAG
 
-echo "Building docker image ${DOCKER_TAG}"
-docker_build
-docker_login
+# download_equinox
 
-echo "Releasing version $VERSION to equinox.io edge"
-equinox_release_edge "$VERSION"
+# echo "Building docker image ${DOCKER_TAG}"
+# docker_build
+# docker_login
 
-echo "Pushing docker image ${DOCKER_IMAGE}"
-docker push "${DOCKER_IMAGE}"
+# echo "Releasing version $VERSION to equinox.io edge"
+# equinox_release_edge "$VERSION"
 
-if [ -n "$TRAVIS_TAG" ]; then
-  echo "Promoting version $VERSION to equinox.io stable"
-  equinox_publish_stable "$VERSION"
-fi
+# echo "Pushing docker image ${DOCKER_IMAGE}"
+# docker push "${DOCKER_IMAGE}"
+
+# if [ -n "$TRAVIS_TAG" ]; then
+#   echo "Promoting version $VERSION to equinox.io stable"
+#   equinox_publish_stable "$VERSION"
+# fi
