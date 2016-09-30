@@ -25,14 +25,14 @@ You can set a password requirement by either passing the `--passphrase` flag to 
 
 ## Installation
 
-Cardigann is distributed as a binary and a collection of tracker definition files. These are available from the [releases page](https://github.com/cardigann/cardigann/releases) for macOS, Linux and Windows. The following example shows how to run the daemon interactively under Linux:
+Cardigann is distributed on equinox.io in a variety of formats for macOS, Linux and Windows. 
+
+https://dl.equinox.io/cardigann/cardigann/stable
+
+Follow the instructions on the above to install the cardigan binary, and then you can run the following to run the server in the foreground:
 
 ```bash
-curl -Lf https://github.com/cardigann/cardigann/releases/download/(VERSION)/cardigann-linux-amd64 > cardigann
-chmod +x cardigann
-curl -Lf https://github.com/cardigann/cardigann/releases/download/(VERSION)/defs.zip > defs.zip
-unzip defs.zip
-./cardigann server
+cardigann server
 ```
 
 At this point you can visit the web interface on http://localhost:5060.
@@ -40,8 +40,8 @@ At this point you can visit the web interface on http://localhost:5060.
 If you want to run this service non-interactively, you can install it as a service (supports windows services, macOS launchd, linux upstart, systemv and systemd):
 
 ```bash
-./cardigann service install
-./cardigann service start
+cardigann service install
+cardigann service start
 ```
 
 ## Configuration
