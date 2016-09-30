@@ -32,33 +32,23 @@ download_equinox() {
   tar -vxf release-tool-stable-linux-amd64.tgz
 }
 
-equinox_release_edge() {
+equinox_release() {
   local version="$1"
+  local channel="$2"
   download_equinox
   ./equinox release \
     --version="${version}" \
     --config ./equinox.yml \
-    --channel edge \
+    --channel "${channel}" \
     -- -ldflags="-X main.Version=${version} -s -w" \
     github.com/cardigann/cardigann
 }
 
-equinox_publish_stable() {
-  local version="$1"
-  ./equinox publish \
-    --release="${version}" \
-    --config ./equinox.yml \
-    --channel stable
-}
+CHANNEL=edge
 
 if [[ "$TRAVIS_TAG" =~ ^v ]] ; then
-  download_equinox
-  echo "Promoting version $TRAVIS_TAG to equinox.io stable"
-  equinox_publish_stable "$TRAVIS_TAG"
-  exit 0
-fi
-
-if [[ -n "$TRAVIS_TAG" ]] ; then
+  CHANNEL=stable
+elif [[ -n "$TRAVIS_TAG" ]] ; then
   echo "Skipping non-version tag"
   exit 0
 fi
@@ -67,10 +57,8 @@ echo "Building docker image ${DOCKER_TAG}"
 docker_build
 docker_login
 
-download_equinox
-
-echo "Releasing version $VERSION to equinox.io edge"
-equinox_release_edge "$VERSION"
+echo "Releasing version ${VERSION#v} to equinox.io $CHANNEL"
+equinox_release "${VERSION#v}" "$CHANNEL"
 
 echo "Pushing docker image ${DOCKER_IMAGE}"
 docker push "${DOCKER_IMAGE}"

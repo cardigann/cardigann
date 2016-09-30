@@ -40,3 +40,11 @@ clean:
 run-dev:
 	cd web/; npm start &
 	rerun $(PREFIX) server --debug --passphrase "llamasrock"
+
+CHANNEL ?= edge
+release:
+	echo equinox release \
+	--version=$(shell echo $(VERSION) | sed -e "s/^v//") \
+	--config=equinox.yml \
+	--channel=$(CHANNEL) \
+	$(PREFIX)
