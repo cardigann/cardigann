@@ -1,0 +1,103 @@
+---
+  site: torrentday
+  name: TorrentDay
+  language: en-us
+  links:
+    - https://www.torrentday.com/
+
+  settings:
+    - name: cookie
+      type: text
+      label: Cookie
+
+  caps:
+    categories:
+      9:  Movies           # Movies
+      25: Movies/SD        # Movies/480p
+      11: Movies/HD        # Movies/Bluray
+      5:  Movies/HD        # Movies/Bluray-Full
+      3:  Movies/SD        # Movies/DVD-R
+      21: Movies/SD        # Movies/MP4
+      22: Movies/SD        # Movies/Non-English
+      13: Movies/SD        # Movies/Packs
+      44: Movies/SD        # Movies/SD/x264
+      48: Movies/HD        # Movies/x265
+      1:  Movies/SD        # Movies/XviD
+      8:  TV               # TV
+      24: TV/SD            # TV/480p
+      32: TV/HD            # TV/Bluray
+      31: TV/SD            # TV/DVD-R
+      33: TV/SD            # TV/DVD-Rip
+      46: TV/SD            # TV/Mobile
+      14: TV               # TV/Packs
+      26: TV/SD            # TV/SD/x264
+      7:  TV/SD            # TV/x264
+      34: TV/SD            # TV/x265
+      2:  TV/SD            # TV/XviD
+      29: TV/Anime         # Anime
+      4:  PC/Games         # Games
+      18: Console/PS3      # PS3
+      8:  Console/PSP      # PSP
+      10: Console/Wii      # Wii
+      9:  Console/Xbox360  # Xbox-360
+      6:  Audio            # Music
+      17: Audio/MP3        # Music/Audio
+      27: Audio/Lossless   # Music/Flac
+      23: Audio/Foreign    # Music/Non-English
+      41: Audio            # Music/Packs
+      16: Audio/Video      # Music/Video
+      42: Audio/Audiobook  # Audio Books
+      12: PC               # Appz
+      28: PC               # Appz/Packs
+      20: Books            # Books
+      30: TV/Documentary   # Documentary
+      43: PC/Mac           # Mac
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    method: cookie
+    inputs:
+      cookie: "{{ .Config.cookie }}"
+    test:
+      path: /messages.php
+
+  search:
+    path: "/t"
+    inputs:
+      $raw: "{{range .Categories}}{{.}}&{{end}}q={{ .Query.Keywords }}"
+    rows:
+      selector: table#torrentTable > tbody > tr:not(tr:nth-child(1))
+    fields:
+      category:
+        selector: td:nth-child(1) > a
+        attribute: href
+        filters:
+          - name: regexp
+            args: "^\\?(\\d+)$"
+      title:
+        selector: td:nth-child(2) > a
+      details:
+        selector: td:nth-child(2) > a
+        attribute: href
+      comments:
+        selector: td:nth-child(4) > a
+        attribute: href
+      download:
+        selector: td:nth-child(3) > a
+        attribute: href
+      size:
+        selector: td:nth-child(5)
+      date:
+        selector: td:nth-child(2) .t_ctime
+        filters:
+          - name: split
+            args: [ "|", -1 ]
+          - name: split
+            args: [ " by ", 0 ]
+      seeders:
+        selector: td:nth-child(6)
+      leechers:
+        selector: td:nth-child(7)
