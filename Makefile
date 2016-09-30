@@ -43,8 +43,15 @@ run-dev:
 
 CHANNEL ?= edge
 release:
-	echo equinox release \
+	equinox release \
 	--version=$(shell echo $(VERSION) | sed -e "s/^v//") \
 	--config=equinox.yml \
 	--channel=$(CHANNEL) \
+	-- -ldflags="-X main.Version=$(VERSION) -s -w" \
 	$(PREFIX)
+
+publish:
+	equinox publish \
+	--release=$(shell echo $(VERSION) | sed -e "s/^v//") \
+	--config=equinox.yml \
+	--channel stable
