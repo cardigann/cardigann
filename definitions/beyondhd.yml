@@ -49,6 +49,9 @@
     test:
       path: /messages.php
 
+  ratio:
+    text: "∞"
+
   search:
     path: browse.php
     inputs:

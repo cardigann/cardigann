@@ -858,12 +858,16 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 }
 
 func (r *Runner) Ratio() (string, error) {
-	r.createBrowser()
-	defer r.releaseBrowser()
+	if r.definition.Ratio.TextVal != "" {
+		return r.definition.Ratio.TextVal, nil
+	}
 
 	if r.definition.Ratio.Path == "" {
 		return "n/a", nil
 	}
+
+	r.createBrowser()
+	defer r.releaseBrowser()
 
 	if required, err := r.isLoginRequired(); required {
 		if err := r.login(); err != nil {

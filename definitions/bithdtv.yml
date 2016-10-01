@@ -37,6 +37,10 @@
     test:
       path: /my.php
 
+  ratio:
+    path: /index.php
+    selector: "#statusbar font:contains('Ratio') + font"
+
   search:
     path: torrents.php
     inputs:
