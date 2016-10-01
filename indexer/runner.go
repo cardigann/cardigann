@@ -865,8 +865,12 @@ func (r *Runner) Ratio() (string, error) {
 		return "n/a", nil
 	}
 
-	if err := r.login(); err != nil {
-		r.logger.WithError(err).Error("Login failed")
+	if required, err := r.isLoginRequired(); required {
+		if err := r.login(); err != nil {
+			r.logger.WithError(err).Error("Login failed")
+			return "error", err
+		}
+	} else if err != nil {
 		return "error", err
 	}
 
