@@ -5,8 +5,6 @@ DOCKER_IMAGE=${DOCKER_IMAGE:-cardigann/cardigann}
 DOCKER_TAG=${DOCKER_TAG:-$DOCKER_IMAGE:$COMMIT}
 VERSION="$(git describe --tags --candidates=1)"
 
-echo "Travis Tag: $TRAVIS_TAG" "Version: $VERSION"
-
 download_cacert() {
   wget -N https://curl.haxx.se/ca/cacert.pem
 }
@@ -36,23 +34,25 @@ download_equinox() {
 
 equinox_release() {
   local version="$1"
-  local channel="$2"
   download_equinox
   ./equinox release \
     --version="${version}" \
     --config ./equinox.yml \
-    --channel "${channel}" \
+    --channel edge \
     -- -ldflags="-X main.Version=${version} -s -w" \
     github.com/cardigann/cardigann
 }
 
-CHANNEL=edge
+equinox_publish() {
+  local version="$1"
+  download_equinox
+  ./equinox publish \
+    --release="${version}" \
+    --config ./equinox.yml \
+    --channel stable
+}
 
-if [[ "$TRAVIS_TAG" =~ ^v ]] ; then
-  CHANNEL=stable
-  VERSION=$TRAVIS_TAG
-  echo "Detected travis tag $TRAVIS_TAG"
-elif [[ -n "$TRAVIS_TAG" ]] ; then
+if [[ -n "$TRAVIS_TAG" ]] && [[ ! "$TRAVIS_TAG" =~ ^v ]] ; then
   echo "Skipping non-version tag"
   exit 0
 fi
@@ -61,8 +61,13 @@ echo "Building docker image ${DOCKER_TAG}"
 docker_build
 docker_login
 
-echo "Releasing version ${VERSION#v} to equinox.io $CHANNEL"
-equinox_release "${VERSION#v}" "$CHANNEL"
+echo "Releasing version ${VERSION#v} to equinox.io edge"
+equinox_release "${VERSION#v}"
+
+if [[ "$TRAVIS_TAG" =~ ^v ]] ; then
+  echo "Publishing version ${VERSION#v} to equinox.io stable"
+  equinox_publish "${VERSION#v}"
+fi
 
 echo "Pushing docker image ${DOCKER_IMAGE}"
 docker push "${DOCKER_IMAGE}"
