@@ -54,6 +54,7 @@ func run(args ...string) (exitCode int) {
 	configureTestDefinitionCommand(app)
 	configureServiceCommand(app)
 	configureUpdateCommand(app)
+	configureRatiosCommand(app)
 
 	app.Command("version", "Print the application version").Action(func(c *kingpin.ParseContext) error {
 		fmt.Print(Version)
@@ -513,5 +514,50 @@ func runUpdateCommand(channel string, dryRun bool) error {
 	}
 
 	log.Infof("Updated to new version: %s!\n", resp.ReleaseVersion)
+	return nil
+}
+
+func configureRatiosCommand(app *kingpin.Application) {
+	cmd := app.Command("ratios", "Find your ratio on all your indexers")
+
+	configureGlobalFlags(cmd)
+	cmd.Action(func(c *kingpin.ParseContext) error {
+		return runRatiosCommand()
+	})
+}
+
+func runRatiosCommand() error {
+	conf, err := newConfig()
+	if err != nil {
+		return err
+	}
+
+	keys, err := indexer.DefaultDefinitionLoader.List()
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if config.IsSectionEnabled(key, conf) {
+			def, err := indexer.DefaultDefinitionLoader.Load(key)
+			if err != nil {
+				return err
+			}
+
+			runner := indexer.NewRunner(def, indexer.RunnerOpts{
+				Config: conf,
+			})
+
+			log.Infof("Querying %s", def.Site)
+
+			ratio, err := runner.Ratio()
+			if err != nil {
+				return err
+			}
+
+			log.Infof("Ratio is %v", ratio)
+		}
+	}
+
 	return nil
 }

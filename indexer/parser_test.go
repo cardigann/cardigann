@@ -24,6 +24,10 @@ const exampleDefinition1 = `
       search: q
       tv-search: [q, season, ep]
 
+  ratio:
+    path: /my.php
+    selector: .ratio
+
   login:
     path: /login.php
     form: form
@@ -66,6 +70,10 @@ func TestIndexerParser(t *testing.T) {
 
 	if l := len(def.Capabilities.ToTorznab().Categories); l != 5 {
 		t.Fatalf("Expected 6 categories, got %d", l)
+	}
+
+	if def.Ratio.Path != "/my.php" {
+		t.Fatalf("Expected ratio path to be /my.php, got %q", def.Ratio.Path)
 	}
 }
 
