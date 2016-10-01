@@ -5,13 +5,15 @@ DOCKER_IMAGE=${DOCKER_IMAGE:-cardigann/cardigann}
 DOCKER_TAG=${DOCKER_TAG:-$DOCKER_IMAGE:$COMMIT}
 VERSION="$(git describe --tags --candidates=1)"
 
+echo "Travis Tag: $TRAVIS_TAG" "Version: $VERSION"
+
 download_cacert() {
   wget -N https://curl.haxx.se/ca/cacert.pem
 }
 
 docker_build() {
   touch server/static.go
-  make cardigann-linux-amd64
+  make clean cardigann-linux-amd64
   file cardigann-linux-amd64
   download_cacert
   docker build -t "${DOCKER_TAG}" .
@@ -48,6 +50,8 @@ CHANNEL=edge
 
 if [[ "$TRAVIS_TAG" =~ ^v ]] ; then
   CHANNEL=stable
+  VERSION=$TRAVIS_TAG
+  echo "Detected travis tag $TRAVIS_TAG"
 elif [[ -n "$TRAVIS_TAG" ]] ; then
   echo "Skipping non-version tag"
   exit 0

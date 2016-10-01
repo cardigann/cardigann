@@ -31,10 +31,10 @@ install:
 	go install -ldflags="$(FLAGS)" $(PREFIX)
 
 clean-statics:
+	-rm -rf web/build
 	-rm server/static.go indexer/definitions.go
 
 clean:
-	-rm -rf web/build
 	-rm -rf $(BIN)*
 
 run-dev:
