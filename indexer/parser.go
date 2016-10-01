@@ -115,8 +115,13 @@ func (e *errorBlock) errorText(from *goquery.Selection) (string, error) {
 	return "", errors.New("Error declaration must have either Message block or Selection")
 }
 
-type testBlock struct {
-	Path string `yaml:"path"`
+type pageTestBlock struct {
+	Path     string `yaml:"path"`
+	Selector string `yaml:"selector"`
+}
+
+func (t *pageTestBlock) IsEmpty() bool {
+	return t.Path == "" && t.Selector == ""
 }
 
 const (
@@ -132,7 +137,11 @@ type loginBlock struct {
 	Method       string            `yaml:"method"`
 	Inputs       inputsBlock       `yaml:"inputs,omitempty"`
 	Error        errorBlockOrSlice `yaml:"error,omitempty"`
-	Test         testBlock         `yaml:"test,omitempty"`
+	Test         pageTestBlock     `yaml:"test,omitempty"`
+}
+
+func (l *loginBlock) IsEmpty() bool {
+	return l.Path == "" && l.Method == ""
 }
 
 func (l *loginBlock) hasError(browser browser.Browsable) error {

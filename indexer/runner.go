@@ -353,29 +353,65 @@ func (r *Runner) extractInputLogins() (map[string]string, error) {
 	return result, nil
 }
 
-func (r *Runner) isLoginRequired() (bool, error) {
-	if r.definition.Login.Path == "" && r.definition.Login.Method == "" {
-		return false, nil
-	} else if r.definition.Login.Test.Path == "" {
+func (r *Runner) matchPageTestBlock(p pageTestBlock) (bool, error) {
+	if p.IsEmpty() {
 		return true, nil
 	}
 
 	r.logger.
-		WithField("path", r.definition.Login.Test).
-		Debug("Testing if login is needed")
+		WithFields(logrus.Fields{"path": p.Path, "selector": p.Selector}).
+		Debug("Checking page test block")
 
-	testUrl, err := r.resolvePath(r.definition.Login.Test.Path)
+	if r.browser.Url() == nil && p.Path == "" {
+		return false, errors.New("No url loaded and pageTestBlock has no path")
+	}
+
+	if p.Path != "" {
+		testUrl, err := r.resolvePath(p.Path)
+		if err != nil {
+			return false, err
+		}
+
+		err = r.openPage(testUrl)
+		if err != nil {
+			r.logger.WithError(err).Warn("Failed to open page")
+			return false, nil
+		}
+
+		if testUrl != r.browser.Url().String() {
+			r.logger.
+				WithFields(logrus.Fields{"wanted": testUrl, "got": r.browser.Url().String()}).
+				Debug("Test failed, got a redirect")
+			return false, nil
+		}
+	}
+
+	if p.Selector != "" && r.browser.Find(p.Selector).Length() == 0 {
+		r.logger.Debug(r.browser.Body())
+		r.logger.
+			WithFields(logrus.Fields{"selector": p.Selector}).
+			Debug("Selector didn't match page")
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *Runner) isLoginRequired() (bool, error) {
+	if r.definition.Login.IsEmpty() {
+		return false, nil
+	} else if r.definition.Login.Test.IsEmpty() {
+		return true, nil
+	}
+
+	r.logger.Debug("Testing if login is needed")
+
+	match, err := r.matchPageTestBlock(r.definition.Login.Test)
 	if err != nil {
 		return true, err
 	}
 
-	err = r.openPage(testUrl)
-	if err != nil {
-		r.logger.WithError(err).Warn("Failed to open page")
-		return true, nil
-	}
-
-	if testUrl == r.browser.Url().String() {
+	if match {
 		r.logger.Debug("No login needed, already logged in")
 		return false, nil
 	}
@@ -420,22 +456,17 @@ func (r *Runner) login() error {
 	}
 
 	if len(r.definition.Login.Error) > 0 {
-		r.logger.
-			WithField("block", r.definition.Login.Error).
-			Debug("Testing if login succeeded")
-
 		if err = r.definition.Login.hasError(r.browser); err != nil {
 			r.logger.WithError(err).Error("Failed to login")
 			return err
 		}
 	}
 
-	if r.definition.Login.Test.Path != "" {
-		if required, err := r.isLoginRequired(); err != nil {
-			return err
-		} else if required {
-			return errors.New("Login check after login failed")
-		}
+	match, err := r.matchPageTestBlock(r.definition.Login.Test)
+	if err != nil {
+		return err
+	} else if !match {
+		return errors.New("Login check after login failed")
 	}
 
 	r.logger.Info("Successfully logged in")

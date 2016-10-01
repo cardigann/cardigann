@@ -33,6 +33,7 @@ const exampleDefinition2 = `
       selector: .loginerror a
     test:
       path: /profile.php
+      selector: .header:contains('Welcome back')
 
   search:
     path: torrents.php
@@ -100,6 +101,7 @@ const exampleLoginErrorPage = `
 const exampleSearchPage = `
 <html>
 <body>
+  <div class="header">Welcome back user!</div>
   <table class="results">
     <tbody>
       <tr>
@@ -249,7 +251,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 	var loggedIn bool
 
 	registerResponder("GET", "https://example.org/", func(req *http.Request) (*http.Response, error) {
-		return httpmock.NewStringResponse(http.StatusOK, "Ok"), nil
+		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPage), nil
 	})
 
 	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
@@ -259,7 +261,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 			resp.Request = req
 			return resp, nil
 		}
-		return httpmock.NewStringResponse(http.StatusOK, "Ok"), nil
+		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPage), nil
 	})
 
 	registerResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
@@ -278,7 +280,7 @@ func TestIndexerDefinitionRunner_Login(t *testing.T) {
 	}
 
 	registerResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusOK, "Success!")
+		resp := httpmock.NewStringResponse(http.StatusOK, exampleSearchPage)
 
 		if pwd := req.FormValue("llamas_password"); pwd != "mypassword" {
 			t.Fatalf("Incorrect password %q was provided", pwd)
@@ -326,7 +328,7 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 			resp.Header.Set("Location", "/login.php")
 			return resp, nil
 		}
-		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPage), nil
 	})
 
 	registerResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
@@ -364,7 +366,7 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 	}
 }
 
-func TestIndexerDefinitionRunner_SearchWithMultiRow(t *testing.T) {
+func TestIndexerDefinitionRunner_MultiRowSearch(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
