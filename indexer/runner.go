@@ -469,7 +469,7 @@ func (r *Runner) login() error {
 		return errors.New("Login check after login failed")
 	}
 
-	r.logger.Info("Successfully logged in")
+	r.logger.Debug("Successfully logged in")
 	return nil
 }
 
@@ -855,4 +855,39 @@ func (r *Runner) Download(u string) (io.ReadCloser, http.Header, error) {
 	}()
 
 	return pipeR, r.browser.ResponseHeaders(), nil
+}
+
+func (r *Runner) Ratio() (string, error) {
+	if r.definition.Ratio.TextVal != "" {
+		return r.definition.Ratio.TextVal, nil
+	}
+
+	if r.definition.Ratio.Path == "" {
+		return "unknown", nil
+	}
+
+	r.createBrowser()
+	defer r.releaseBrowser()
+
+	if required, err := r.isLoginRequired(); required {
+		if err := r.login(); err != nil {
+			r.logger.WithError(err).Error("Login failed")
+			return "error", err
+		}
+	} else if err != nil {
+		return "error", err
+	}
+
+	ratioUrl, err := r.resolvePath(r.definition.Ratio.Path)
+	if err != nil {
+		return "error", err
+	}
+
+	err = r.openPage(ratioUrl)
+	if err != nil {
+		r.logger.WithError(err).Warn("Failed to open page")
+		return "error", nil
+	}
+
+	return r.definition.Ratio.MatchText(r.browser.Dom())
 }

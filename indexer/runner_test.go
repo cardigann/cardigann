@@ -35,6 +35,10 @@ const exampleDefinition2 = `
       path: /profile.php
       selector: .header:contains('Welcome back')
 
+  ratio:
+    path: /profile.php
+    selector: .ratio a
+
   search:
     path: torrents.php
     inputs:
@@ -101,7 +105,7 @@ const exampleLoginErrorPage = `
 const exampleSearchPage = `
 <html>
 <body>
-  <div class="header">Welcome back user!</div>
+  <div class="header">Welcome back user! Your ratio is <span class="ratio"><a href="">1.5</a></span></div>
   <table class="results">
     <tbody>
       <tr>
@@ -436,5 +440,42 @@ func TestIndexerDefinitionRunner_MultiRowSearch(t *testing.T) {
 	if !results[1].PublishDate.Equal(expectedDate) {
 		t.Fatalf("Expected row 2 to have publish date of %q, got %q",
 			expectedDate.String(), results[1].PublishDate)
+	}
+}
+
+func TestIndexerDefinitionRunner_Ratio(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	def, err := ParseDefinition([]byte(exampleDefinition2))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	conf := &config.ArrayConfig{
+		"example": map[string]string{
+			"username": "myusername",
+			"password": "mypassword",
+			"url":      "https://example.org/",
+		},
+	}
+
+	registerResponder("GET", "https://example.org/", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+	})
+
+	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPage), nil
+	})
+
+	r := NewRunner(def, RunnerOpts{Config: conf})
+	ratio, err := r.Ratio()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if ratio != "1.5" {
+		t.Fatalf("Expected ratio of 1.5, got %v", ratio)
 	}
 }

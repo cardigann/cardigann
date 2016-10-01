@@ -90,7 +90,28 @@ func (t *Tester) Test() error {
 
 			log.Infof("Downloaded %d bytes from linked torrent", n)
 		}
+
+		if mode.Key == "tv-search" {
+			query.Q = "Rbsv8PdxikCzJMo6hJXMbbYnoDxEVb"
+
+			log.Infof("Testing searching where there are no results in mode %q", mode.Key)
+
+			results, err := t.Runner.Search(query)
+			if err != nil {
+				return err
+			}
+
+			if len(results) > 0 {
+				return fmt.Errorf("Expected no results, got %d", len(results))
+			}
+		}
 	}
 
+	ratio, err := t.Runner.Ratio()
+	if err != nil {
+		return err
+	}
+
+	log.Infof("Ratio returned %s", ratio)
 	return nil
 }

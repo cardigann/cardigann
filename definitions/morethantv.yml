@@ -28,6 +28,9 @@
     test:
       path: /top10.php
 
+  ratio:
+    text: "∞"
+
   search:
     path: /torrents.php
     inputs:

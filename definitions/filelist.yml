@@ -39,6 +39,13 @@
       password: "{{ .Config.password }}"
       unlock: "1"
 
+  ratio:
+    path: /my.php
+    selector: .statusbar div:nth-child(2) div:nth-child(4)
+    filters:
+      - name: regexp
+        args: "^Ratio: (.+?)$"
+
   search:
     path: browse.php
     inputs:

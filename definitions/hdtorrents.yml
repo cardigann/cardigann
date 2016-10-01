@@ -45,6 +45,13 @@
     test:
       path: /wishlist.php
 
+  ratio:
+    path: /
+    selector: .navus td:nth-child(3)
+    filters:
+      - name: regexp
+        args: "Ratio: (.+)FAQ"
+
   search:
     path: torrents.php
     inputs:
