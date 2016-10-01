@@ -548,14 +548,12 @@ func runRatiosCommand() error {
 				Config: conf,
 			})
 
-			log.Infof("Querying %s", def.Site)
-
 			ratio, err := runner.Ratio()
 			if err != nil {
-				return err
+				return fmt.Errorf("Failed to get ratio for %s: %v", key, err)
 			}
 
-			log.Infof("Ratio is %v", ratio)
+			fmt.Printf("Ratio for %s is %v\n", key, ratio)
 		}
 	}
 

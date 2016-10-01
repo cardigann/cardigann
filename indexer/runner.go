@@ -469,7 +469,7 @@ func (r *Runner) login() error {
 		return errors.New("Login check after login failed")
 	}
 
-	r.logger.Info("Successfully logged in")
+	r.logger.Debug("Successfully logged in")
 	return nil
 }
 
@@ -863,7 +863,7 @@ func (r *Runner) Ratio() (string, error) {
 	}
 
 	if r.definition.Ratio.Path == "" {
-		return "n/a", nil
+		return "unknown", nil
 	}
 
 	r.createBrowser()

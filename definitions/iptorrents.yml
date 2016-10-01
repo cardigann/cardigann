@@ -77,6 +77,10 @@
     test:
       path: /my.php
 
+  ratio:
+    path: /indexipt.php
+    selector: .c_ratio
+
   search:
     path: "/t"
     inputs:

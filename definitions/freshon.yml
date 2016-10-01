@@ -27,6 +27,9 @@
     test:
       path: /profile.php
 
+  ratio:
+    path: /home.php
+    selector: "#stats p:nth-child(3) span:nth-child(1)"
 
   search:
     path: /browse.php
