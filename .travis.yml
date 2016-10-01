@@ -21,12 +21,10 @@ before_deploy:
 deploy:
   - provider: script
     script: scripts/deploy.sh
-    skip_cleanup: true
     on:
       branch: master
       condition: "$TRAVIS_OS_NAME = linux"
   - provider: script
     script: scripts/deploy.sh
-    skip_cleanup: true
     on:
       tags: true
