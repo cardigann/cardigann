@@ -304,20 +304,26 @@ func serverCommand(s *server.Server) error {
 
 func configureTestDefinitionCommand(app *kingpin.Application) {
 	var f *os.File
-	var cachePages bool
+	var cachePages, verbose bool
 
 	cmd := app.Command("test-definition", "Test a yaml indexer definition file")
 	cmd.Alias("test")
+
+	cmd.Flag("verbose", "Wheter to show info logger output").
+		BoolVar(&verbose)
 
 	cmd.Flag("cachepages", "Whether to store the output of browser actions for debugging").
 		BoolVar(&cachePages)
 
 	cmd.Arg("file", "The definition yaml file").
-		Required().
 		FileVar(&f)
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
+		if !verbose {
+			logger.SetLevel(logrus.WarnLevel)
+		}
+
 		applyGlobalFlags()
 		return testDefinitionCommand(f, cachePages)
 	})
@@ -329,27 +335,48 @@ func testDefinitionCommand(f *os.File, cachePages bool) error {
 		return err
 	}
 
-	def, err := indexer.ParseDefinitionFile(f)
-	if err != nil {
-		return err
+	defs := []*indexer.IndexerDefinition{}
+
+	if f == nil {
+		keys, err := indexer.DefaultDefinitionLoader.List()
+		if err != nil {
+			return err
+		}
+		for _, key := range keys {
+			if config.IsSectionEnabled(key, conf) {
+				def, err := indexer.DefaultDefinitionLoader.Load(key)
+				if err != nil {
+					return err
+				}
+				defs = append(defs, def)
+			}
+		}
+	} else {
+		def, err := indexer.ParseDefinitionFile(f)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Definition file for %s parsed OK ✓\n", def.Site)
+		defs = append(defs, def)
 	}
 
-	fmt.Println("Definition file parsing OK")
+	for _, def := range defs {
+		fmt.Printf("Testing indexer %s\n", def.Site)
 
-	runner := indexer.NewRunner(def, indexer.RunnerOpts{
-		Config:     conf,
-		CachePages: cachePages,
-	})
-	tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
-		Download: true,
-	}}
+		runner := indexer.NewRunner(def, indexer.RunnerOpts{
+			Config:     conf,
+			CachePages: cachePages,
+		})
+		tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
+			Download: true,
+		}}
+		err = tester.Test()
+		if err != nil {
+			return fmt.Errorf("Test failed for %s: %s", def.Site, err.Error())
+		}
 
-	err = tester.Test()
-	if err != nil {
-		return fmt.Errorf("Test failed: %s", err.Error())
+		fmt.Printf("Indexer %s passed ✓\n", def.Site)
 	}
-
-	fmt.Println("Indexer test returned OK")
 	return nil
 }
 
