@@ -52,7 +52,7 @@
         filters:
           - name: regexp
             args: "Uploaded (.+?),"
-      # seeders:
-      #   selector: td.table_seeders a span
-      # leechers:
-      #   selector: td.table_leechers a
+      seeders:
+        selector: td:nth-child(3)
+      leechers:
+        selector: td:nth-child(4)

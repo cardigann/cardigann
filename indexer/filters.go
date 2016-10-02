@@ -256,7 +256,9 @@ func parseFuzzyTime(src string, now time.Time) (time.Time, error) {
 		return t, nil
 	}
 
-	out := todayRegexp.ReplaceAllLiteralString(src, now.Format("Mon, 02 Jan 2006 "))
+	normalized := normalizeSpace(src)
+
+	out := todayRegexp.ReplaceAllLiteralString(normalized, now.Format("Mon, 02 Jan 2006 "))
 	out = tomorrowRegexp.ReplaceAllLiteralString(out, now.AddDate(0, 0, 1).Format("Mon, 02 Jan 2006 "))
 	out = yesterdayRegexp.ReplaceAllLiteralString(out, now.AddDate(0, 0, -1).Format("Mon, 02 Jan 2006 "))
 
