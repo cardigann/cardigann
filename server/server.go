@@ -52,6 +52,18 @@ func New(conf config.Config, version string) (*Server, error) {
 func (s *Server) Listen() error {
 	logger.Logger.Infof("Cardigann %s", s.version)
 
+	path, err := config.GetConfigPath()
+	if err != nil {
+		return err
+	}
+
+	logger.Logger.Debugf("Config path is %s", path)
+	logger.Logger.Debugf("Cache dir is %s", config.GetCachePath("/"))
+
+	for _, dir := range config.GetDefinitionDirs() {
+		logger.Logger.Debugf("Definition load path is %s", dir)
+	}
+
 	listenOn := fmt.Sprintf("%s:%s", s.Bind, s.Port)
 	logger.Logger.Infof("Listening on %s", listenOn)
 
