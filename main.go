@@ -260,82 +260,46 @@ func downloadCommand(key, url, file string) error {
 }
 
 func configureServerCommand(app *kingpin.Application) error {
-	var bindPort, bindAddr, password string
-
 	conf, err := newConfig()
 	if err != nil {
 		return err
 	}
 
-	defaultBind, err := config.GetGlobalConfig("bind", "0.0.0.0", conf)
-	if err != nil {
-		return err
-	}
-
-	defaultPort, err := config.GetGlobalConfig("port", "5060", conf)
+	s, err := server.New(conf, Version)
 	if err != nil {
 		return err
 	}
 
 	cmd := app.Command("server", "Run the proxy (and web) server")
 	cmd.Flag("port", "The port to listen on").
-		OverrideDefaultFromEnvar("PORT").
-		Default(defaultPort).
-		StringVar(&bindPort)
+		Default(s.Port).
+		StringVar(&s.Port)
 
 	cmd.Flag("bind", "The address to bind to").
-		Default(defaultBind).
-		StringVar(&bindAddr)
+		Default(s.Bind).
+		StringVar(&s.Bind)
 
 	cmd.Flag("passphrase", "Require a passphrase to view web interface").
 		Short('p').
-		StringVar(&password)
+		StringVar(&s.Passphrase)
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		applyGlobalFlags()
-		return serverCommand(bindAddr, bindPort, password)
+		return serverCommand(s)
 	})
 
 	return nil
 }
 
-func serverCommand(addr, port string, password string) error {
+func serverCommand(s *server.Server) error {
 	if globals.Debug {
 		go func() {
 			log.Println(http.ListenAndServe("localhost:6060", nil))
 		}()
 	}
 
-	v := Version
-	if v == "" {
-		v = "dev"
-	}
-
-	log.Infof("Cardigann %s", v)
-
-	conf, err := newConfig()
-	if err != nil {
-		return err
-	}
-
-	for _, dir := range config.GetDefinitionDirs() {
-		log.WithField("dir", dir).Debug("Adding dir to definition load path")
-	}
-
-	listenOn := fmt.Sprintf("%s:%s", addr, port)
-	log.Infof("Listening on %s", listenOn)
-
-	h, err := server.NewHandler(server.Params{
-		Passphrase: password,
-		Config:     conf,
-		Version:    Version,
-	})
-	if err != nil {
-		return err
-	}
-
-	return http.ListenAndServe(listenOn, h)
+	return s.Listen()
 }
 
 func configureTestDefinitionCommand(app *kingpin.Application) {
@@ -407,14 +371,8 @@ func configureServiceCommand(app *kingpin.Application) {
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
 
-		conf, err := newConfig()
-		if err != nil {
-			return err
-		}
-
 		prg, err := newProgram(programOpts{
 			UserService: userService,
-			Config:      conf,
 		})
 		if err != nil {
 			return err

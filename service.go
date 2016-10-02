@@ -4,25 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	_ "log"
-	"net/http"
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/server"
 	"github.com/kardianos/service"
 )
 
 type programOpts struct {
 	UserService bool
-	Config      config.Config
 }
 
 type program struct {
 	exit    chan struct{}
 	service service.Service
 	logger  service.Logger
-	cfg     config.Config
 }
 
 func newProgram(opts programOpts) (*program, error) {
@@ -39,7 +35,7 @@ func newProgram(opts programOpts) (*program, error) {
 		},
 	}
 
-	prg := &program{cfg: opts.Config}
+	prg := &program{}
 	s, err := service.New(prg, svcConfig)
 	if err != nil {
 		return nil, err
@@ -58,36 +54,21 @@ func (p *program) Start(s service.Service) error {
 	go p.run()
 	return nil
 }
+
 func (p *program) run() error {
 	p.logger.Infof("Running service via %v.", service.Platform())
 
-	bind, err := config.GetGlobalConfig("bind", "0.0.0.0", p.cfg)
+	conf, err := newConfig()
 	if err != nil {
 		return err
 	}
 
-	// support tools like gin that expect to set a PORT env
-	defaultPort := os.Getenv("PORT")
-	if defaultPort == "" {
-		defaultPort = "5060"
-	}
-
-	port, err := config.GetGlobalConfig("port", defaultPort, p.cfg)
+	s, err := server.New(conf, Version)
 	if err != nil {
 		return err
 	}
 
-	listenOn := fmt.Sprintf("%s:%s", bind, port)
-	p.logger.Infof("Listening on %s", listenOn)
-
-	h, err := server.NewHandler(server.Params{
-		Config: p.cfg,
-	})
-	if err != nil {
-		return err
-	}
-
-	go http.ListenAndServe(listenOn, h)
+	go s.Listen()
 
 	// block until exit
 	<-p.exit
