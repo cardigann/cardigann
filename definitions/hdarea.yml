@@ -9,8 +9,8 @@
     categories:
       402:  TV  #TV Series
       403:  TV  #TV Shows
-      410:  Movies/HD  #FullHD 
-      410:  TV/HD  #FullHD 
+      410:  Movies/HD  #FullHD
+      410:  TV/HD  #FullHD
       411:  Movies/HD  #HD
       411:  TV/HD  #HD
       413:  Movies/HD  #HDTV
@@ -62,7 +62,7 @@
           - name: regexp
             args: "\\?cat=(\\d+)"
       title:
-        selector: td:nth-child(2) table.torrentname tbody td a
+        selector: td:nth-child(2) table.torrentname tbody td a b
       details:
         selector: td:nth-child(1) > a:nth-child(1)
         attribute: href
@@ -77,4 +77,4 @@
       seeders:
         selector: td:nth-child(6)
       leechers:
-        selector: td:nth-child(7) 
+        selector: td:nth-child(7)
