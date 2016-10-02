@@ -107,6 +107,10 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Torrentleech
 * TorrentDay
 * Speed.CD
+* HDArea
+* PrivateHD
+* CinemaZ
+* AvistaZ
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 
