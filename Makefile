@@ -10,15 +10,13 @@ test:
 	go test -v $(shell go list ./... | grep -v /vendor/)
 
 build: server/static.go indexer/definitions.go
-	go build -o $(BIN) -ldflags="$(FLAGS)" *.go
+	CGO_ENABLED=0 go build -o cardigann -ldflags="$(FLAGS)" *.go
 
 $(BIN)-linux-amd64: $(SRC)
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ -ldflags="$(FLAGS)" *.go
 
 test-defs:
 	find definitions -name '*.yml' -print -exec go run *.go test {} \;
-
-build: server/static.go indexer/definitions.go $(BIN)-$(OS)-$(ARCH)
 
 indexer/definitions.go: $(shell find definitions)
 	esc -o indexer/definitions.go -prefix templates -pkg indexer definitions/
