@@ -68,7 +68,6 @@ func (f *redactedLogFormatter) updateRegexp() error {
 		quoted = append(quoted, regexp.QuoteMeta(secret))
 	}
 
-	fmt.Printf("Found %d redacted terms\n", len(quoted))
 	re, err := regexp.Compile(fmt.Sprintf("(?i)(%s)", strings.Join(quoted, "|")))
 	if err != nil {
 		return err
