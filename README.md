@@ -44,6 +44,20 @@ cardigann service install
 cardigann service start
 ```
 
+## Updating
+
+Cardigann has an experimental upgrade-in-place feature using equinox.io:
+
+```
+cardigann update --channel=stable
+```
+
+If you like to live dangerously, you can update to the edge channel:
+
+```
+cardigann update --channel=edge
+```
+
 ## Configuration
 
 Configuration is stored in a `config.json` file. It's searched for in a few different locations, in order of priority:
