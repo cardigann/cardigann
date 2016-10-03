@@ -74,6 +74,20 @@ func (s *Server) Listen() error {
 
 	logger.Logger.Debugf("Found %d built-in definitions", len(builtins))
 
+	defs, err := indexer.DefaultDefinitionLoader.List()
+	if err != nil {
+		return err
+	}
+
+	active := 0
+	for _, key := range defs {
+		if config.IsSectionEnabled(key, s.config) {
+			active++
+		}
+	}
+
+	logger.Logger.Debugf("Found %d indexers enabled via config", active)
+
 	listenOn := fmt.Sprintf("%s:%s", s.Bind, s.Port)
 	logger.Logger.Infof("Listening on %s", listenOn)
 
