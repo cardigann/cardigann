@@ -114,6 +114,28 @@ Cardigann simply provides a format for describing how to log into and scrape the
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 
+## Reporting bugs
+
+Cardigann is new software, and relies on scraping indexers, so is inherently prone to breaking. We try and reply as quickly as possible, but please make sure before you report a bug that you've update to the latest version.
+
+If the issue persists, [file a bug][bug_report_template].
+
+## Requests
+
+* Start an issue on GitHub following one of these templates:
+  * [Feature request][feature_request_template]
+  * [Indexer/Tracker request][indexer_request_template]
+
+## Questions? Wanna chat?
+
+* If none of the templates above is appropriate, [open an issue](https://github.com/cardigann/cardigann/issues/new)
+* Join us on [Gitter](https://gitter.im/cardigann/cardigann)
+
 ## Credits
 
 Inspired by Jackett, or at least born of frustration with it always crashing and requiring a mono runtime.
+
+[bug_report_template]: https://github.com/cardigann/cardigann/issues/new?title=Bug%20report%3A%20%5Bsummarise%20the%20issue%20here%5D&body=%23%23%23%20Issue%20experienced%0A%0A%23%23%23%20Steps%20to%20reproduce%0A%0A%23%23%23%20Cardigann%20version%20(in%20the%20footer%2C%20or%20via%20%60cardigann%20--version%60)%0A%0A%0A
+[feature_request_template]: https://github.com/cardigann/cardigann/issues/new?title=Feature%20request%3A%20summarize%20the%20feature%20here&body=%0A%23%23%23%20Description%20of%20feature%2Fenhancement%0A%0A%23%23%23%20Justification%0A%0A%23%23%23%20Example%20use%20case
+[indexer_request_template]: https://github.com/cardigann/cardigann/issues/new?title=Indexer%20Request%3A%20indexer%20title%20here&body=%23%23%23%20Indexer%20Name%0A%0A%23%23%23%20Is%20the%20indexer%20private%20or%20public%3F%20If%20private%2C%20can%20you%20provide%20an%20invite%3F%0A%0A%23%23%23%20Indexer%20URL%0A%0A%23%23%23%20Indexer%20language
+
