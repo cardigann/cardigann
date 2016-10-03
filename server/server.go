@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/cardigann/cardigann/config"
+	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/logger"
 )
 
@@ -61,8 +62,17 @@ func (s *Server) Listen() error {
 	logger.Logger.Debugf("Cache dir is %s", config.GetCachePath("/"))
 
 	for _, dir := range config.GetDefinitionDirs() {
-		logger.Logger.Debugf("Definition load path is %s", dir)
+		if _, err := os.Stat(dir); os.IsExist(err) {
+			logger.Logger.Debugf("Searching %s for definitions", dir)
+		}
 	}
+
+	builtins, err := indexer.ListBuiltins()
+	if err != nil {
+		return err
+	}
+
+	logger.Logger.Debugf("Found %d built-in definitions", len(builtins))
 
 	listenOn := fmt.Sprintf("%s:%s", s.Bind, s.Port)
 	logger.Logger.Infof("Listening on %s", listenOn)

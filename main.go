@@ -30,23 +30,22 @@ var (
 )
 
 func main() {
-	os.Exit(run(os.Args[1:]...))
+	run(os.Args[1:], os.Exit)
 }
 
-func run(args ...string) (exitCode int) {
+func run(args []string, exit func(code int)) {
 	app := kingpin.New("cardigann",
 		`A torznab proxy for torrent indexer sites`)
 
+	app.Version(Version)
 	app.Writer(os.Stdout)
 	app.DefaultEnvars()
 
-	app.Terminate(func(code int) {
-		exitCode = code
-	})
+	app.Terminate(exit)
 
 	if err := configureServerCommand(app); err != nil {
 		log.Error(err)
-		return 1
+		return
 	}
 
 	configureQueryCommand(app)
@@ -56,13 +55,7 @@ func run(args ...string) (exitCode int) {
 	configureUpdateCommand(app)
 	configureRatiosCommand(app)
 
-	app.Command("version", "Print the application version").Action(func(c *kingpin.ParseContext) error {
-		fmt.Print(Version)
-		return nil
-	})
-
 	kingpin.MustParse(app.Parse(args))
-	return
 }
 
 func newConfig() (config.Config, error) {
@@ -396,7 +389,7 @@ func configureServiceCommand(app *kingpin.Application) {
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
-		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
+		applyGlobalFlags()
 
 		prg, err := newProgram(programOpts{
 			UserService: userService,
@@ -404,6 +397,8 @@ func configureServiceCommand(app *kingpin.Application) {
 		if err != nil {
 			return err
 		}
+
+		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
 
 		if action != "run" {
 			return service.Control(prg.service, action)
