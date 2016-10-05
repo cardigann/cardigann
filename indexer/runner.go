@@ -38,6 +38,7 @@ var (
 type RunnerOpts struct {
 	Config     config.Config
 	CachePages bool
+	Transport  http.RoundTripper
 }
 
 type Runner struct {
@@ -71,11 +72,21 @@ func (r *Runner) createBrowser() {
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
 	bow.SetCookieJar(r.cookies)
 
+	transport := http.DefaultTransport
+
+	if r.opts.Transport != nil {
+		transport = r.opts.Transport
+	}
+
 	switch os.Getenv("DEBUG_HTTP") {
 	case "1", "true", "basic":
-		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Basic)))
+		bow.SetTransport(train.TransportWith(transport, trainlog.New(os.Stderr, trainlog.Basic)))
 	case "body":
-		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Body)))
+		bow.SetTransport(train.TransportWith(transport, trainlog.New(os.Stderr, trainlog.Body)))
+	case "":
+		bow.SetTransport(transport)
+	default:
+		panic("Unknown value for DEBUG_HTTP")
 	}
 
 	r.browser = bow

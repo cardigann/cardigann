@@ -15,6 +15,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
+	"github.com/cardigann/cardigann/har"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/server"
@@ -297,6 +298,7 @@ func serverCommand(s *server.Server) error {
 
 func configureTestDefinitionCommand(app *kingpin.Application) {
 	var f *os.File
+	var savePath, replayPath string
 	var cachePages, verbose bool
 
 	cmd := app.Command("test-definition", "Test a yaml indexer definition file")
@@ -308,6 +310,12 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 	cmd.Flag("cachepages", "Whether to store the output of browser actions for debugging").
 		BoolVar(&cachePages)
 
+	cmd.Flag("save", "Save all requests and responses to a har file").
+		StringVar(&savePath)
+
+	cmd.Flag("replay", "Replay all responses from a har file").
+		StringVar(&replayPath)
+
 	cmd.Arg("file", "The definition yaml file").
 		FileVar(&f)
 
@@ -318,11 +326,11 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 		}
 
 		applyGlobalFlags()
-		return testDefinitionCommand(f, cachePages)
+		return testDefinitionCommand(f, cachePages, savePath, replayPath)
 	})
 }
 
-func testDefinitionCommand(f *os.File, cachePages bool) error {
+func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath string) error {
 	conf, err := newConfig()
 	if err != nil {
 		return err
@@ -353,13 +361,38 @@ func testDefinitionCommand(f *os.File, cachePages bool) error {
 		defs = append(defs, def)
 	}
 
+	var rt http.RoundTripper
+
+	if savePath != "" {
+		recorder := har.NewRecorder()
+		rt = recorder
+		defer func() {
+			fmt.Printf("Saving HAR to %s\n", savePath)
+			b, err := json.Marshal(recorder.Export())
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err = ioutil.WriteFile(savePath, b, 0700); err != nil {
+				log.Fatal(err)
+			}
+		}()
+	} else if replayPath != "" {
+		replayer, err := har.NewReplayerFromFile(replayPath)
+		if err != nil {
+			return err
+		}
+		rt = replayer
+	}
+
 	for _, def := range defs {
 		fmt.Printf("Testing indexer %s\n", def.Site)
 
 		runner := indexer.NewRunner(def, indexer.RunnerOpts{
 			Config:     conf,
 			CachePages: cachePages,
+			Transport:  rt,
 		})
+
 		tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
 			Download: true,
 		}}
