@@ -38,6 +38,7 @@ var (
 type RunnerOpts struct {
 	Config     config.Config
 	CachePages bool
+	Transport  http.RoundTripper
 }
 
 type Runner struct {
@@ -76,6 +77,11 @@ func (r *Runner) createBrowser() {
 		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Basic)))
 	case "body":
 		bow.SetTransport(train.Transport(trainlog.New(os.Stderr, trainlog.Body)))
+	}
+
+	if r.opts.Transport != nil {
+		// TODO make this work with DEBUG_HTTP
+		bow.SetTransport(r.opts.Transport)
 	}
 
 	r.browser = bow

@@ -15,6 +15,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
+	"github.com/cardigann/cardigann/har"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/server"
@@ -297,6 +298,7 @@ func serverCommand(s *server.Server) error {
 
 func configureTestDefinitionCommand(app *kingpin.Application) {
 	var f *os.File
+	var harPath string
 	var cachePages, verbose bool
 
 	cmd := app.Command("test-definition", "Test a yaml indexer definition file")
@@ -308,6 +310,9 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 	cmd.Flag("cachepages", "Whether to store the output of browser actions for debugging").
 		BoolVar(&cachePages)
 
+	cmd.Flag("har", "Save all requests and responses to a har file").
+		StringVar(&harPath)
+
 	cmd.Arg("file", "The definition yaml file").
 		FileVar(&f)
 
@@ -318,11 +323,11 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 		}
 
 		applyGlobalFlags()
-		return testDefinitionCommand(f, cachePages)
+		return testDefinitionCommand(f, cachePages, harPath)
 	})
 }
 
-func testDefinitionCommand(f *os.File, cachePages bool) error {
+func testDefinitionCommand(f *os.File, cachePages bool, harPath string) error {
 	conf, err := newConfig()
 	if err != nil {
 		return err
@@ -353,13 +358,32 @@ func testDefinitionCommand(f *os.File, cachePages bool) error {
 		defs = append(defs, def)
 	}
 
+	var rt http.RoundTripper
+
+	if harPath != "" {
+		recorder := har.NewRecorder()
+		rt = recorder
+		defer func() {
+			fmt.Printf("Saving HAR to %s\n", harPath)
+			b, err := json.Marshal(recorder.Export())
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err = ioutil.WriteFile(harPath, b, 0700); err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
+
 	for _, def := range defs {
 		fmt.Printf("Testing indexer %s\n", def.Site)
 
 		runner := indexer.NewRunner(def, indexer.RunnerOpts{
 			Config:     conf,
 			CachePages: cachePages,
+			Transport:  rt,
 		})
+
 		tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
 			Download: true,
 		}}

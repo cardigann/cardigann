@@ -1,5 +1,5 @@
 hash: 047e096b185c4f4d4ab546c55167f99449c86cedf6bf1b28571c78997920dd3e
-updated: 2016-09-26T19:47:11.544290967+10:00
+updated: 2016-10-05T21:09:20.001843158+11:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -20,10 +20,24 @@ imports:
   version: bd88f87ad3a420f7bcf05e90566fd1ceb351fa7f
 - name: github.com/equinox-io/equinox
   version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
+  subpackages:
+  - internal/go-update
+  - internal/osext
+  - proto
+  - internal/go-update/internal/binarydist
+  - internal/go-update/internal/osext
 - name: github.com/f2prateek/train
   version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
   subpackages:
   - log
+- name: github.com/google/martian
+  version: e749b122c1e4f5763360a6db32982f020d241859
+  subpackages:
+  - har
+  - log
+  - messageview
+  - proxyutil
+  - mitm
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
@@ -52,13 +66,13 @@ imports:
 - name: github.com/yosssi/gohtml
   version: ccf383eafddde21dfe37c6191343813822b30e6b
 - name: golang.org/x/net
-  version: f09c4662a0bd6bd8943ac7b4931e185df9471da4
+  version: ffe101cce3477a6c6d8f0754d103bb0a84ec1266
   subpackages:
   - html
   - context
   - html/atom
 - name: golang.org/x/sync
-  version: 316e794f7b5e3df4e95175a45a5fb8b12f85cb4f
+  version: 1ae7c7b29e06598039be46c5083819ba6fd7a97e
   subpackages:
   - errgroup
 - name: golang.org/x/sys
@@ -73,5 +87,5 @@ imports:
 - name: gopkg.in/alecthomas/kingpin.v2
   version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 - name: gopkg.in/yaml.v2
-  version: 31c299268d302dd0aa9a0dcf765a3d58971ac83f
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 devImports: []
