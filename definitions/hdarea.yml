@@ -9,8 +9,8 @@
     categories:
       402:  TV  #TV Series
       403:  TV  #TV Shows
-      410:  Movies/HD  #FullHD
-      410:  TV/HD  #FullHD
+      410:  Movies/HD  #FullHD 
+      410:  TV/HD  #FullHD 
       411:  Movies/HD  #HD
       411:  TV/HD  #HD
       413:  Movies/HD  #HDTV
@@ -34,6 +34,7 @@
 
     modes:
       search: [q]
+      tv-search: [q, season, ep]
 
   login:
     path: /takelogin.php
@@ -49,9 +50,7 @@
       path: /messages.php
 
   search:
-    path: /torrents.php
-    inputs:
-       $raw: "search={{ .Query.Keywords }}"
+    path: "/torrents.php?search={{ .Query.Keywords}}"
     rows:
       selector: table.torrents tbody tr.nonstick_outer_bg
     fields:
@@ -77,4 +76,4 @@
       seeders:
         selector: td:nth-child(6)
       leechers:
-        selector: td:nth-child(7)
+        selector: td:nth-child(7) 
