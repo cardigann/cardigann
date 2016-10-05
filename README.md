@@ -108,10 +108,12 @@ Cardigann simply provides a format for describing how to log into and scrape the
 
 * AlphaRatio
 * BIT-HDTV
+* BitMeTV
 * IPTorrents
 * Freshon
 * Demonoid
 * HD-Torrents
+* HDME
 * BeyondHD 
 * FileList
 * MoreThanTV
