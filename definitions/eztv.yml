@@ -34,3 +34,5 @@
         filters:
           - name: append
             args: " ago"
+      seeders:
+        selector: td:nth-child(6)

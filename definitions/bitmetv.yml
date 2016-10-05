@@ -1,0 +1,65 @@
+---
+  site: bitmetv
+  name: BitMeTV
+  language: en-us
+  links:
+    - http://www.bitmetv.org/
+
+  settings:
+    - name: cookie
+      type: text
+      label: Cookie
+
+  caps:
+    categories:
+      1: TV
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    method: cookie
+    inputs:
+      cookie: "{{ .Config.cookie }}"
+    test:
+      path: https://www.bitmetv.org/messages.php
+
+  ratio:
+    path: https://www.bitmetv.org/browse.php
+    selector: span.smallfont > font[color="#000000"]
+
+  search:
+    path: https://www.bitmetv.org/browse.php
+    inputs:
+      search: "{{ .Keywords }}"
+      incldead: "1"
+    rows:
+      selector: table[cellpadding="5"] > tbody > tr:has(td.latest)
+    fields:
+      category:
+        text: 1
+      title:
+        selector: td:nth-child(2) > a
+        attribute: title
+      details:
+        selector: td:nth-child(2) > a
+        attribute: href
+      download:
+        selector: td:nth-child(3) > a
+        attribute: href
+      size:
+        selector: td:nth-child(7)
+        remove: br
+      date:
+        selector: td:nth-child(2) > font[size="1"]
+        remove: br
+        ffilters:
+          - name: split
+            args: [ "|", 1 ]
+          - name: trim
+            args: "."
+      seeders:
+        selector: td:nth-child(9)
+      leechers:
+        selector: td:nth-child(10)

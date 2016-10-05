@@ -23,6 +23,7 @@ type IndexerDefinition struct {
 	Links        stringorslice     `yaml:"links"`
 	Capabilities capabilitiesBlock `yaml:"caps"`
 	Login        loginBlock        `yaml:"login"`
+	Ratio        ratioBlock        `yaml:"ratio"`
 	Search       searchBlock       `yaml:"search"`
 }
 
@@ -297,4 +298,27 @@ func (s *stringorslice) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	return errors.New("Failed to unmarshal stringorslice")
+}
+
+type ratioBlock struct {
+	selectorBlock
+	Path string `yaml:"path"`
+}
+
+func (r *ratioBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var sb selectorBlock
+	if err := unmarshal(&sb); err != nil {
+		return errors.New("Failed to unmarshal ratioBlock")
+	}
+
+	var rb struct {
+		Path string `yaml:"path"`
+	}
+	if err := unmarshal(&rb); err != nil {
+		return errors.New("Failed to unmarshal ratioBlock")
+	}
+
+	r.selectorBlock = sb
+	r.Path = rb.Path
+	return nil
 }

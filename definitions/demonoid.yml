@@ -4,7 +4,7 @@
   description: Demonoid
   language: en-us
   links:
-    - http://www.demonoid.pw/
+    - http://www.demonoid.cc/
 
   caps:
     categories:
@@ -39,6 +39,14 @@
       message:
         selector: form[id='bb_code_form'] + tbody font[class='red']:nth-child(1)
         remove: style, b
+
+  ratio:
+    path: /user_control_panel.php
+    selector: a.user img
+    attribute: title
+    filters:
+      - name: regexp
+        args: "Ratio: (.+)$"
 
   search:
     path: /files

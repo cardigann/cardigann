@@ -19,6 +19,11 @@ var (
 	DefaultDefinitionLoader DefinitionLoader
 )
 
+func ListBuiltins() ([]string, error) {
+	l := escLoader{Dir(false, "")}
+	return l.List()
+}
+
 type DefinitionLoader interface {
 	List() ([]string, error)
 	Load(key string) (*IndexerDefinition, error)

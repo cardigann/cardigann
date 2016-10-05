@@ -35,6 +35,10 @@
       search: [q]
       tv-search: [q, season, ep]
 
+  ratio:
+    path: /index.php
+    selector: "#stats_ratio .stat"
+
   login:
     path: /login.php
     form: form

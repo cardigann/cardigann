@@ -1,0 +1,80 @@
+---
+  site: hdarea
+  name: HDArea
+  language: en-us
+  links:
+    - http://www.hdarea.co/
+
+  caps:
+    categories:
+      402:  TV  #TV Series
+      403:  TV  #TV Shows
+      410:  Movies/HD  #FullHD
+      410:  TV/HD  #FullHD
+      411:  Movies/HD  #HD
+      411:  TV/HD  #HD
+      413:  Movies/HD  #HDTV
+      413:  TV/HD  #HDTV
+      401:  Movies/HD #BluRay
+      401:  TV/HD #BluRay
+      414:  TV/SD     #DVD
+      414:  Movies/DVD     #DVD
+      415:  Movies/BluRay #Movies/TV Remux
+      416:  Movies/3D
+      412:  TV/WEB-DL      #Web-dl
+      412:  Movies/WEBDL #Web-dl
+      417:  TV/OTHER #iPad
+      417:  Movies/Other #iPad
+      404:  TV/Documentary
+      405:  TV/Anime
+      406:  Audio/Video #Music Videos
+      407:  TV/Sport
+      409:  Other/Misc
+      408:  Audio/Lossless
+
+    modes:
+      search: [q]
+
+  login:
+    path: /takelogin.php
+    method: post
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      path: /takelogin.php
+      message:
+        selector: td.text
+    test:
+      path: /messages.php
+
+  search:
+    path: /torrents.php
+    inputs:
+       $raw: "search={{ .Query.Keywords }}"
+    rows:
+      selector: table.torrents tbody tr.nonstick_outer_bg
+    fields:
+      category:
+        selector: td:nth-child(1) > a:nth-child(1)
+        attribute: href
+        filters:
+          - name: regexp
+            args: "\\?cat=(\\d+)"
+      title:
+        selector: td:nth-child(2) table.torrentname tbody td a b
+      details:
+        selector: td:nth-child(1) > a:nth-child(1)
+        attribute: href
+      download:
+        selector: td:nth-child(4) > a:nth-child(1)
+        attribute: href
+      size:
+        selector: td:nth-child(5)
+      date:
+        selector: td:nth-child(4) > span:nth-child(1)
+        attribute: title
+      seeders:
+        selector: td:nth-child(6)
+      leechers:
+        selector: td:nth-child(7)

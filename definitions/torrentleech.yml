@@ -55,6 +55,13 @@
       path: /torrents/browse
       selector: .memberbar_alt
 
+  ratio:
+    path: /
+    selector: "#memberBar"
+    filters:
+      - name: regexp
+        args: "Ratio:.(\\d+\\.\\d+)"
+
   search:
     path: "/torrents/browse/{{if .Query.Keywords}}index/query/{{ .Query.Keywords}}{{end}}"
     inputs:

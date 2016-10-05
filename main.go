@@ -30,23 +30,22 @@ var (
 )
 
 func main() {
-	os.Exit(run(os.Args[1:]...))
+	run(os.Args[1:], os.Exit)
 }
 
-func run(args ...string) (exitCode int) {
+func run(args []string, exit func(code int)) {
 	app := kingpin.New("cardigann",
 		`A torznab proxy for torrent indexer sites`)
 
+	app.Version(Version)
 	app.Writer(os.Stdout)
 	app.DefaultEnvars()
 
-	app.Terminate(func(code int) {
-		exitCode = code
-	})
+	app.Terminate(exit)
 
 	if err := configureServerCommand(app); err != nil {
 		log.Error(err)
-		return 1
+		return
 	}
 
 	configureQueryCommand(app)
@@ -54,14 +53,9 @@ func run(args ...string) (exitCode int) {
 	configureTestDefinitionCommand(app)
 	configureServiceCommand(app)
 	configureUpdateCommand(app)
-
-	app.Command("version", "Print the application version").Action(func(c *kingpin.ParseContext) error {
-		fmt.Print(Version)
-		return nil
-	})
+	configureRatiosCommand(app)
 
 	kingpin.MustParse(app.Parse(args))
-	return
 }
 
 func newConfig() (config.Config, error) {
@@ -259,100 +253,70 @@ func downloadCommand(key, url, file string) error {
 }
 
 func configureServerCommand(app *kingpin.Application) error {
-	var bindPort, bindAddr, password string
-
 	conf, err := newConfig()
 	if err != nil {
 		return err
 	}
 
-	defaultBind, err := config.GetGlobalConfig("bind", "0.0.0.0", conf)
-	if err != nil {
-		return err
-	}
-
-	defaultPort, err := config.GetGlobalConfig("port", "5060", conf)
+	s, err := server.New(conf, Version)
 	if err != nil {
 		return err
 	}
 
 	cmd := app.Command("server", "Run the proxy (and web) server")
 	cmd.Flag("port", "The port to listen on").
-		OverrideDefaultFromEnvar("PORT").
-		Default(defaultPort).
-		StringVar(&bindPort)
+		Default(s.Port).
+		StringVar(&s.Port)
 
 	cmd.Flag("bind", "The address to bind to").
-		Default(defaultBind).
-		StringVar(&bindAddr)
+		Default(s.Bind).
+		StringVar(&s.Bind)
 
 	cmd.Flag("passphrase", "Require a passphrase to view web interface").
 		Short('p').
-		StringVar(&password)
+		StringVar(&s.Passphrase)
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		applyGlobalFlags()
-		return serverCommand(bindAddr, bindPort, password)
+		return serverCommand(s)
 	})
 
 	return nil
 }
 
-func serverCommand(addr, port string, password string) error {
+func serverCommand(s *server.Server) error {
 	if globals.Debug {
 		go func() {
 			log.Println(http.ListenAndServe("localhost:6060", nil))
 		}()
 	}
 
-	v := Version
-	if v == "" {
-		v = "dev"
-	}
-
-	log.Infof("Cardigann %s", v)
-
-	conf, err := newConfig()
-	if err != nil {
-		return err
-	}
-
-	for _, dir := range config.GetDefinitionDirs() {
-		log.WithField("dir", dir).Debug("Adding dir to definition load path")
-	}
-
-	listenOn := fmt.Sprintf("%s:%s", addr, port)
-	log.Infof("Listening on %s", listenOn)
-
-	h, err := server.NewHandler(server.Params{
-		Passphrase: password,
-		Config:     conf,
-		Version:    Version,
-	})
-	if err != nil {
-		return err
-	}
-
-	return http.ListenAndServe(listenOn, h)
+	return s.Listen()
 }
 
 func configureTestDefinitionCommand(app *kingpin.Application) {
 	var f *os.File
-	var cachePages bool
+	var cachePages, verbose bool
 
 	cmd := app.Command("test-definition", "Test a yaml indexer definition file")
 	cmd.Alias("test")
+
+	cmd.Flag("verbose", "Wheter to show info logger output").
+		BoolVar(&verbose)
 
 	cmd.Flag("cachepages", "Whether to store the output of browser actions for debugging").
 		BoolVar(&cachePages)
 
 	cmd.Arg("file", "The definition yaml file").
-		Required().
 		FileVar(&f)
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
+		if !verbose {
+			logger.SetLevel(logrus.WarnLevel)
+		}
+
 		applyGlobalFlags()
 		return testDefinitionCommand(f, cachePages)
 	})
@@ -364,27 +328,48 @@ func testDefinitionCommand(f *os.File, cachePages bool) error {
 		return err
 	}
 
-	def, err := indexer.ParseDefinitionFile(f)
-	if err != nil {
-		return err
+	defs := []*indexer.IndexerDefinition{}
+
+	if f == nil {
+		keys, err := indexer.DefaultDefinitionLoader.List()
+		if err != nil {
+			return err
+		}
+		for _, key := range keys {
+			if config.IsSectionEnabled(key, conf) {
+				def, err := indexer.DefaultDefinitionLoader.Load(key)
+				if err != nil {
+					return err
+				}
+				defs = append(defs, def)
+			}
+		}
+	} else {
+		def, err := indexer.ParseDefinitionFile(f)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Definition file for %s parsed OK ✓\n", def.Site)
+		defs = append(defs, def)
 	}
 
-	fmt.Println("Definition file parsing OK")
+	for _, def := range defs {
+		fmt.Printf("Testing indexer %s\n", def.Site)
 
-	runner := indexer.NewRunner(def, indexer.RunnerOpts{
-		Config:     conf,
-		CachePages: cachePages,
-	})
-	tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
-		Download: true,
-	}}
+		runner := indexer.NewRunner(def, indexer.RunnerOpts{
+			Config:     conf,
+			CachePages: cachePages,
+		})
+		tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
+			Download: true,
+		}}
+		err = tester.Test()
+		if err != nil {
+			return fmt.Errorf("Test failed for %s: %s", def.Site, err.Error())
+		}
 
-	err = tester.Test()
-	if err != nil {
-		return fmt.Errorf("Test failed: %s", err.Error())
+		fmt.Printf("Indexer %s passed ✓\n", def.Site)
 	}
-
-	fmt.Println("Indexer test returned OK")
 	return nil
 }
 
@@ -404,20 +389,16 @@ func configureServiceCommand(app *kingpin.Application) {
 
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
-		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
-
-		conf, err := newConfig()
-		if err != nil {
-			return err
-		}
+		applyGlobalFlags()
 
 		prg, err := newProgram(programOpts{
 			UserService: userService,
-			Config:      conf,
 		})
 		if err != nil {
 			return err
 		}
+
+		log.Debugf("Running service action %s on platform %v.", action, service.Platform())
 
 		if action != "run" {
 			return service.Control(prg.service, action)
@@ -513,5 +494,48 @@ func runUpdateCommand(channel string, dryRun bool) error {
 	}
 
 	log.Infof("Updated to new version: %s!\n", resp.ReleaseVersion)
+	return nil
+}
+
+func configureRatiosCommand(app *kingpin.Application) {
+	cmd := app.Command("ratios", "Find your ratio on all your indexers")
+
+	configureGlobalFlags(cmd)
+	cmd.Action(func(c *kingpin.ParseContext) error {
+		return runRatiosCommand()
+	})
+}
+
+func runRatiosCommand() error {
+	conf, err := newConfig()
+	if err != nil {
+		return err
+	}
+
+	keys, err := indexer.DefaultDefinitionLoader.List()
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if config.IsSectionEnabled(key, conf) {
+			def, err := indexer.DefaultDefinitionLoader.Load(key)
+			if err != nil {
+				return err
+			}
+
+			runner := indexer.NewRunner(def, indexer.RunnerOpts{
+				Config: conf,
+			})
+
+			ratio, err := runner.Ratio()
+			if err != nil {
+				return fmt.Errorf("Failed to get ratio for %s: %v", key, err)
+			}
+
+			fmt.Printf("Ratio for %s is %v\n", key, ratio)
+		}
+	}
+
 	return nil
 }

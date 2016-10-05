@@ -3,7 +3,7 @@
   name: TorrentDay
   language: en-us
   links:
-    - https://www.torrentday.com/
+    - http://td-update.com/
 
   settings:
     - name: cookie
@@ -64,12 +64,16 @@
     test:
       path: /messages.php
 
+  ratio:
+    path: /index.php
+    selector: "#activityDiv span:nth-child(2)"
+
   search:
     path: "/t"
     inputs:
       $raw: "{{range .Categories}}{{.}}&{{end}}q={{ .Query.Keywords }}"
     rows:
-      selector: table#torrentTable > tbody > tr:not(tr:nth-child(1))
+      selector: table#torrentTable > tbody > tr:nth-child(n+2):has(td.t_label)
     fields:
       category:
         selector: td:nth-child(1) > a
