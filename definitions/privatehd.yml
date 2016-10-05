@@ -3,15 +3,17 @@
   name: PrivateHD
   language: en-us
   links:
-    - https://privatehd.to/
+    - https://privatehd.to
 
   caps:
     categories:
         "TV-Show Torrent": TV
         "Movie Torrent": Movies
         "Music Torrent": Audio
+
     modes:
       search: [q]
+      tv-search: [q, season, ep]
 
   login:
     path: /auth/login
@@ -27,15 +29,13 @@
       path: /account
 
   search:
-    path: /torrents
-    inputs:
-       $raw: "search={{ .Query.Keywords }}"
+    path: "/torrents?in=0&search={{ .Query.Keywords}}"
     rows:
       selector: table.table:nth-child(3) > tbody:nth-child(2) > tr
     fields:
       category:
-        selector: td:nth-child(1) > i:nth-child(1)
-        attribute: title
+       selector: td:nth-child(1) > i:nth-child(1)
+       attribute: title
       title:
         selector: td .torrent-file .torrent-filename
       details:

@@ -12,6 +12,7 @@
         "Music Torrent": Audio
     modes:
       search: [q]
+      tv-search: [q, season, ep]
 
   login:
     path: /auth/login
@@ -27,9 +28,7 @@
       path: /account
 
   search:
-    path: /torrents
-    inputs:
-       $raw: "search={{ .Query.Keywords }}"
+    path: "/torrents?in=0&search={{ .Query.Keywords}}"
     rows:
       selector: table.table:nth-child(3) > tbody:nth-child(2) > tr
     fields:
