@@ -328,7 +328,7 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 			return nil, err
 		}
 
-		feed.Items[idx].Link = fmt.Sprintf("%s/%s/%s.torrent", baseURL.String(), te, item.Title)
+		feed.Items[idx].Link = fmt.Sprintf("%s/%s/%s.torrent", baseURL.String(), te, url.QueryEscape(item.Title))
 	}
 
 	return feed, err
