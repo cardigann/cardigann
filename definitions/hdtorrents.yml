@@ -59,7 +59,7 @@
       search: "{{ .Keywords }}"
       active: 1
     rows:
-      selector: table.mainblockcontenttt tr:nth-child(n+3)
+      selector: table.mainblockcontenttt tr:nth-child(n+3):has(td.mainblockcontent)
       remove: tr:has(td.listas)
     fields:
       category:

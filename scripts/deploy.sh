@@ -15,7 +15,7 @@ docker_build() {
   file cardigann-linux-amd64
   download_cacert
   docker build -t "${DOCKER_TAG}" .
-  docker run --rm -it "${DOCKER_TAG}" version
+  docker run --rm -it "${DOCKER_TAG}" --version
   docker tag "${DOCKER_TAG}" "${DOCKER_IMAGE}:latest"
 }
 

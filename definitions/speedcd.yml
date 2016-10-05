@@ -28,7 +28,7 @@
       39: Console/Wii
       45: Console/PS3
       35: Console
-      33: Console/Xbox 360
+      33: Console/Xbox360
       46: PC/Phone-Other
       24: PC/0day
       51: PC/Mac
@@ -39,6 +39,13 @@
 
     modes:
       tv-search: [q, season, ep]
+
+  ratio:
+    path: /browse.php
+    selector: body > div.cHead > table.sts > tbody > tr > td:nth-child(1) > div:nth-child(2)
+    filters:
+      - name: regexp
+        args: (\ \d{1,2}\.\d{2}\ )
 
   login:
     path: /takeElogin.php
@@ -60,7 +67,7 @@
       selector: "#torrentTable .boxContent > table tbody tr"
     fields:
       title:
-        selector: b:nth-child(1)
+        selector: td.lft > div > a > b
       category:
         selector: td:nth-child(1) > div:nth-child(1) > a:nth-child(2)
         attribute: href

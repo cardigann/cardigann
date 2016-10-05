@@ -15,6 +15,7 @@ func init() {
 	Logger = logrus.New()
 	Logger.(*logrus.Logger).Level = logrus.InfoLevel
 	Logger.(*logrus.Logger).Out = os.Stderr
+	Logger.(*logrus.Logger).Formatter = &redactedLogFormatter{Formatter: &logrus.TextFormatter{}}
 
 	if os.Getenv("DEBUG") != "" || os.Getenv("CARDIGANN_DEBUG") != "" {
 		Logger.(*logrus.Logger).Level = logrus.DebugLevel
