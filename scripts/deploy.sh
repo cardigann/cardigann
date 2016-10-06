@@ -65,6 +65,7 @@ echo "Releasing version ${VERSION#v} to equinox.io edge"
 equinox_release "${VERSION#v}"
 
 if [[ "$TRAVIS_TAG" =~ ^v ]] ; then
+  sleep 10
   echo "Publishing version ${VERSION#v} to equinox.io stable"
   equinox_publish "${VERSION#v}"
 fi
