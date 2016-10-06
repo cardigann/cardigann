@@ -57,6 +57,11 @@ if [[ -n "$TRAVIS_TAG" ]] && [[ ! "$TRAVIS_TAG" =~ ^v ]] ; then
   exit 0
 fi
 
+if git describe --exact-match --tags HEAD && [[ -z "$TRAVIS_TAG" ]] ; then
+  echo "Skipping exact match tag"
+  exit 0
+fi
+
 echo "Building docker image ${DOCKER_TAG}"
 docker_build
 docker_login
