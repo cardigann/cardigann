@@ -499,7 +499,10 @@ x0cFjxMjM+8k+dQFEfYnemm5TUFQ3Hwz
 `)
 
 func runUpdateCommand(channel string, dryRun bool) error {
-	var opts equinox.Options
+	opts := equinox.Options{
+		Channel: channel,
+	}
+
 	if err := opts.SetPublicKeyPEM(publicKey); err != nil {
 		return err
 	}
@@ -516,7 +519,7 @@ func runUpdateCommand(channel string, dryRun bool) error {
 	}
 
 	if dryRun {
-		log.Info("An update to %v exists, and would be applied at this stage", resp.ReleaseVersion)
+		log.Infof("Update found from %s to %s, would be applied", Version, resp.ReleaseVersion)
 		return nil
 	}
 
