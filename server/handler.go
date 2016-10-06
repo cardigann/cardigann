@@ -313,7 +313,7 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 
 	// rewrite non-magnet links to use the server
 	for idx, item := range feed.Items {
-		if strings.HasPrefix(item.Link, "magnet://") {
+		if strings.HasPrefix(item.Link, "magnet:") {
 			continue
 		}
 

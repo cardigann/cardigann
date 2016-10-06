@@ -150,6 +150,10 @@ func (r *Runner) testURLWorks(u string) bool {
 }
 
 func (r *Runner) resolvePath(urlPath string) (string, error) {
+	if strings.HasPrefix(urlPath, "magnet:") {
+		return urlPath, nil
+	}
+
 	base, err := r.currentURL()
 	if err != nil {
 		return "", err
