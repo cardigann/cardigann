@@ -107,26 +107,27 @@ Definitions are yaml files (see [definitions](definitions/) for their source) th
 Cardigann simply provides a format for describing how to log into and scrape the search results of various forums and sites. It is not endorsed by the various sites, nor is it intended for piracy. You are using Cardigann at your own risk.
 
 * AlphaRatio
+* AvistaZ
 * BIT-HDTV
+* BeyondHD
 * BitMeTV
-* IPTorrents
-* Freshon
+* CinemaZ
 * Demonoid
-* HD-Torrents
-* HDME
-* BeyondHD 
+* EZTV
 * FileList
+* Freshon
+* HD-Torrents
+* HDArea
+* HDME
+* IPTorrents
 * MoreThanTV
 * NCore
-* ThePirateBay (TPB)
-* EZTV
-* Torrentleech
-* TorrentDay
-* Speed.CD
-* HDArea
+* Norbits
 * PrivateHD
-* CinemaZ
-* AvistaZ
+* Speed.CD
+* ThePirateBay (TPB)
+* TorrentDay
+* Torrentleech
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 

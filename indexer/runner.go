@@ -68,7 +68,7 @@ func (r *Runner) createBrowser() {
 
 	bow := surf.NewBrowser()
 	bow.SetUserAgent(agent.Chrome())
-	bow.SetAttribute(browser.SendReferer, false)
+	bow.SetAttribute(browser.SendReferer, true)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
 	bow.SetCookieJar(r.cookies)
 
@@ -900,5 +900,10 @@ func (r *Runner) Ratio() (string, error) {
 		return "error", nil
 	}
 
-	return r.definition.Ratio.MatchText(r.browser.Dom())
+	ratio, err := r.definition.Ratio.MatchText(r.browser.Dom())
+	if err != nil {
+		return ratio, err
+	}
+
+	return strings.Trim(ratio, "- "), nil
 }
