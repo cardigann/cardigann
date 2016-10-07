@@ -164,8 +164,6 @@ class IndexerListRow extends Component {
 
 class IndexerList extends Component {
   render() {
-    console.log(this.props.indexers);
-
     let indexerNodes = this.props.indexers.map((indexer) => {
       return (
         <IndexerListRow

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Modal, Button, Form, FormGroup, FormControl, ControlLabel }  from 'react-bootstrap';
+import { Modal, Button, Form, FormGroup, FormControl, ControlLabel, Label }  from 'react-bootstrap';
 import { BootstrapTable, TableHeaderColumn }  from 'react-bootstrap-table';
+import moment from 'moment';
 import xhrUrl from './xhr';
 import spinner from './spinner.gif';
 import queryString from 'query-string';
@@ -67,7 +68,6 @@ class SearchModal extends Component {
       return response.json()
     })
     .then((results) => {
-      console.log(results);
       this.setState({
         searching: false,
         results: results.Items,
@@ -92,6 +92,21 @@ class SearchModal extends Component {
       return ( cell / Math.pow(1024, i) ).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
     };
 
+    let ageFormatter = (cell, row) => {
+      return moment(cell).fromNow();
+    };
+
+    let peersFormatter = (cell, row) => {
+      var seeders = row.Seeders;
+      var style = "default";
+      if (seeders < 5) {
+        style = "warning";
+      } else if (seeders === 0) {
+        style = "danger"
+      }
+      return <Label bsStyle={style} title={seeders + " seeders, " + cell + " peers"}>{seeders}/{cell}</Label>
+    };
+
     return (
       <Modal show={this.state.show} onHide={this.handleClose} dialogClassName="App__SearchModal">
         <Modal.Header closeButton>
@@ -107,11 +122,11 @@ class SearchModal extends Component {
               hover={true}
               pagination={true}
               >
-              <TableHeaderColumn dataField="Title" isKey={true} dataSort={true} dataFormat={titleLinkFormatter} width="800px">Title</TableHeaderColumn>
+              <TableHeaderColumn dataField="Title" isKey={true} dataSort={true} dataFormat={titleLinkFormatter} width="700px">Title</TableHeaderColumn>
               <TableHeaderColumn dataField="Size" dataSort={true} dataFormat={fileSizeFormatter} width="80px">Size</TableHeaderColumn>
-              <TableHeaderColumn dataField="Category" dataSort={true} width="200px">Category</TableHeaderColumn>
-              <TableHeaderColumn dataField="Seeders" dataSort={true} width="100px">Seeders</TableHeaderColumn>
-              <TableHeaderColumn dataField="Peers" dataSort={true} width="100px">Peers</TableHeaderColumn>
+              <TableHeaderColumn dataField="Category" dataSort={true} width="80px">Category</TableHeaderColumn>
+              <TableHeaderColumn dataField="PublishDate" dataSort={true} dataFormat={ageFormatter} width="120px">Age</TableHeaderColumn>
+              <TableHeaderColumn dataField="Peers" dataSort={true} dataFormat={peersFormatter} width="100px">Peers</TableHeaderColumn>
               <TableHeaderColumn dataField="Site" dataSort={true} width="100px">Site</TableHeaderColumn>
             </BootstrapTable>
           </div>
