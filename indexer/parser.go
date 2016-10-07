@@ -34,6 +34,7 @@ type IndexerDefinitionStats struct {
 	Size    int64
 	ModTime time.Time
 	Hash    string
+	Source  string
 }
 
 func (id *IndexerDefinition) Stats() IndexerDefinitionStats {

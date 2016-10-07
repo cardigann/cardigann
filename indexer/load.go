@@ -97,7 +97,13 @@ func (fs *fsLoader) Load(key string) (*IndexerDefinition, error) {
 		return nil, err
 	}
 
-	return ParseDefinitionFile(f)
+	def, err := ParseDefinitionFile(f)
+	if err != nil {
+		return def, err
+	}
+
+	def.stats.Source = "file:" + fileName
+	return def, err
 }
 
 type multiLoader []DefinitionLoader
@@ -126,13 +132,23 @@ func (ml multiLoader) List() ([]string, error) {
 }
 
 func (ml multiLoader) Load(key string) (*IndexerDefinition, error) {
+	var def *IndexerDefinition
+
 	for _, loader := range ml {
-		def, err := loader.Load(key)
-		if err == nil {
-			return def, nil
+		loaded, err := loader.Load(key)
+		if err != nil {
+			continue
+		}
+		if def == nil || loaded.Stats().ModTime.After(def.Stats().ModTime) {
+			def = loaded
 		}
 	}
-	return nil, ErrUnknownIndexer
+
+	if def == nil {
+		return nil, ErrUnknownIndexer
+	}
+
+	return def, nil
 }
 
 var escFilenameRegex = regexp.MustCompile(`^/definitions/(.+?)\.yml$`)
@@ -154,7 +170,8 @@ func (el escLoader) List() ([]string, error) {
 }
 
 func (el escLoader) Load(key string) (*IndexerDefinition, error) {
-	f, err := el.Open(fmt.Sprintf("/definitions/%s.yml", key))
+	fname := fmt.Sprintf("/definitions/%s.yml", key)
+	f, err := el.Open(fname)
 	if os.IsNotExist(err) {
 		return nil, ErrUnknownIndexer
 	} else if err != nil {
@@ -167,5 +184,11 @@ func (el escLoader) Load(key string) (*IndexerDefinition, error) {
 		return nil, err
 	}
 
-	return ParseDefinition(data)
+	def, err := ParseDefinition(data)
+	if err != nil {
+		return def, err
+	}
+
+	def.stats.Source = "builtin:" + fname
+	return def, nil
 }

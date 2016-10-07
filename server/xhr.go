@@ -29,6 +29,7 @@ type indexerStatsView struct {
 	Size    int64  `json:"size"`
 	ModTime string `json:"modtime"`
 	Hash    string `json:"hash"`
+	Source  string `json:"source"`
 }
 
 type indexerView struct {
@@ -84,6 +85,8 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 		}
 
 		info := runner.Info()
+		stats := def.Stats()
+
 		reply = append(reply, indexerView{
 			ID:      info.ID,
 			Name:    info.Title,
@@ -93,9 +96,10 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 			},
 			Settings: settings,
 			Stats: indexerStatsView{
-				Hash:    def.Stats().Hash,
-				ModTime: def.Stats().ModTime.Format(time.RFC1123Z),
-				Size:    def.Stats().Size,
+				Hash:    stats.Hash,
+				ModTime: stats.ModTime.Format(time.RFC1123Z),
+				Size:    stats.Size,
+				Source:  stats.Source,
 			},
 		})
 	}

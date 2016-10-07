@@ -148,7 +148,8 @@ class IndexerListRow extends Component {
 
     let tooltip = (
       <Tooltip id="tooltip">
-        <b>Modified</b>: {this.props.indexer.stats ? this.props.indexer.stats.modtime : "n/a"}
+        {this.props.indexer.stats ? this.props.indexer.stats.source : "unknown"}<br />
+        {this.props.indexer.stats ? this.props.indexer.stats.modtime : "n/a"}
       </Tooltip>
     );
 
