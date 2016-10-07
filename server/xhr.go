@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
@@ -19,9 +20,15 @@ type indexerFeedsView struct {
 }
 
 type indexerSettingsView struct {
-	Name  string `yaml:"name"`
-	Type  string `yaml:"type"`
-	Label string `yaml:"label"`
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Label string `json:"label"`
+}
+
+type indexerStatsView struct {
+	Size    int64  `json:"size"`
+	ModTime string `json:"modtime"`
+	Hash    string `json:"hash"`
 }
 
 type indexerView struct {
@@ -30,6 +37,7 @@ type indexerView struct {
 	Enabled  bool                  `json:"enabled"`
 	Feeds    indexerFeedsView      `json:"feeds"`
 	Settings []indexerSettingsView `json:"settings"`
+	Stats    indexerStatsView      `json:"stats"`
 }
 
 type indexerViewByName []indexerView
@@ -84,6 +92,11 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 				Torznab: fmt.Sprintf("%storznab/%s", baseURL, info.ID),
 			},
 			Settings: settings,
+			Stats: indexerStatsView{
+				Hash:    def.Stats().Hash,
+				ModTime: def.Stats().ModTime.Format(time.RFC1123Z),
+				Size:    def.Stats().Size,
+			},
 		})
 	}
 

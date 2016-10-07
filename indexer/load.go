@@ -92,11 +92,12 @@ func (fs *fsLoader) Load(key string) (*IndexerDefinition, error) {
 		return nil, ErrUnknownIndexer
 	}
 
-	data, err := ioutil.ReadFile(fileName)
+	f, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDefinition(data)
+
+	return ParseDefinitionFile(f)
 }
 
 type multiLoader []DefinitionLoader

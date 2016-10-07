@@ -1,11 +1,13 @@
 package indexer
 
 import (
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/cardigann/cardigann/torznab"
@@ -15,16 +17,27 @@ import (
 )
 
 type IndexerDefinition struct {
-	Site         string            `yaml:"site"`
-	Settings     []settingsField   `yaml:"settings"`
-	Name         string            `yaml:"name"`
-	Description  string            `yaml:"description"`
-	Language     string            `yaml:"language"`
-	Links        stringorslice     `yaml:"links"`
-	Capabilities capabilitiesBlock `yaml:"caps"`
-	Login        loginBlock        `yaml:"login"`
-	Ratio        ratioBlock        `yaml:"ratio"`
-	Search       searchBlock       `yaml:"search"`
+	Site         string                 `yaml:"site"`
+	Settings     []settingsField        `yaml:"settings"`
+	Name         string                 `yaml:"name"`
+	Description  string                 `yaml:"description"`
+	Language     string                 `yaml:"language"`
+	Links        stringorslice          `yaml:"links"`
+	Capabilities capabilitiesBlock      `yaml:"caps"`
+	Login        loginBlock             `yaml:"login"`
+	Ratio        ratioBlock             `yaml:"ratio"`
+	Search       searchBlock            `yaml:"search"`
+	stats        IndexerDefinitionStats `yaml:"-"`
+}
+
+type IndexerDefinitionStats struct {
+	Size    int64
+	ModTime time.Time
+	Hash    string
+}
+
+func (id *IndexerDefinition) Stats() IndexerDefinitionStats {
+	return id.stats
 }
 
 type settingsField struct {
@@ -39,7 +52,18 @@ func ParseDefinitionFile(f *os.File) (*IndexerDefinition, error) {
 		return nil, err
 	}
 
-	return ParseDefinition(b)
+	def, err := ParseDefinition(b)
+	if err != nil {
+		return nil, err
+	}
+
+	fi, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	def.stats.ModTime = fi.ModTime()
+	return def, err
 }
 
 func ParseDefinition(src []byte) (*IndexerDefinition, error) {
@@ -59,6 +83,12 @@ func ParseDefinition(src []byte) (*IndexerDefinition, error) {
 
 	if len(def.Settings) == 0 {
 		def.Settings = defaultSettingsFields()
+	}
+
+	def.stats = IndexerDefinitionStats{
+		Size:    int64(len(src)),
+		ModTime: time.Now(),
+		Hash:    fmt.Sprintf("%x", sha1.Sum(src)),
 	}
 
 	return &def, nil

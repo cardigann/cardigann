@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Table, ButtonToolbar, Button, Panel } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import xhrUrl from './xhr';
 
 class StatefulButton extends Component {
@@ -145,9 +146,19 @@ class IndexerListRow extends Component {
       );
     }
 
+    let tooltip = (
+      <Tooltip id="tooltip">
+        <b>Modified</b>: {this.props.indexer.stats ? this.props.indexer.stats.modtime : "n/a"}
+      </Tooltip>
+    );
+
     return (
       <tr className={this.props.className}>
-        <td className="col-md-2">{this.props.indexer.name}</td>
+        <td className="col-md-2">
+          <OverlayTrigger trigger="click" placement="right" overlay={tooltip} rootClose={true}>
+            <span>{this.props.indexer.name}</span>
+          </OverlayTrigger>
+        </td>
         <td className="col-md-6">
           <FeedLink
             feedHref={xhrUrl(this.props.indexer.feeds.torznab)}
