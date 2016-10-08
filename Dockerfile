@@ -12,7 +12,7 @@ RUN mkdir /lib64 && ln -s /lib/ld-musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 # unpack
 RUN tar xfz /${CARDIGANN_PKG} -C /bin/
 # cleanup
-rm -fr /${CARDIGANN_PKG} /root/.cache /tmp/*
+RUN rm -fr /${CARDIGANN_PKG} /root/.cache /tmp/*
 
 EXPOSE 5060
 VOLUME [ "/etc/cardigann" ]
