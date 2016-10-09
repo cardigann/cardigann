@@ -19,14 +19,14 @@ class ConfigForm extends Component {
   render() {
     let fields = this.props.fields.map((field) => {
       return (
-        <FormGroup controlId={"formHorizontal" + field.Name} key={field.Name}>
-          <Col componentClass={ControlLabel} sm={2}>{field.Label}</Col>
+        <FormGroup controlId={"formHorizontal" + field.name} key={field.name}>
+          <Col componentClass={ControlLabel} sm={2}>{field.label}</Col>
             <Col sm={10}>
               <FormControl
-                type={field.Type}
-                placeholder={field.Placeholder}
-                defaultValue={field.Value}
-                ref={field.Name} />
+                type={field.type}
+                placeholder={field.placeholder}
+                defaultValue={field.value}
+                ref={field.name} />
           </Col>
         </FormGroup>
       );
