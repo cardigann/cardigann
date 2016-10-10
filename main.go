@@ -366,7 +366,7 @@ func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath str
 		recorder := har.NewRecorder()
 		rt = recorder
 		defer func() {
-			fmt.Printf("Saving HAR to %s\n", savePath)
+			fmt.Printf("→ Saving HAR to %s\n", savePath)
 			b, err := json.Marshal(recorder.Export())
 			if err != nil {
 				log.Fatal(err)
@@ -399,7 +399,7 @@ func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath str
 			Download: true,
 		}}
 		if err = tester.Test(); err != nil {
-			fmt.Printf("Indexer %s failed! %v\n", def.Site, err)
+			return fmt.Errorf("One or more tests failed")
 		}
 	}
 	return nil

@@ -255,10 +255,15 @@ func (r *Runner) cachePage() error {
 
 	body := strings.NewReader(r.browser.Body())
 	io.Copy(tmpfile, body)
-	defer tmpfile.Close()
+	if err = tmpfile.Close(); err != nil {
+		return err
+	}
+
+	newFile := tmpfile.Name() + ".html"
+	os.Rename(tmpfile.Name(), newFile)
 
 	r.logger.
-		WithFields(logrus.Fields{"file": "file://" + tmpfile.Name()}).
+		WithFields(logrus.Fields{"file": "file://" + newFile}).
 		Debugf("Wrote page output to cache")
 
 	return nil

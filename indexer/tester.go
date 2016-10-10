@@ -42,11 +42,11 @@ func (t *Tester) printfWithResult(format string, args []interface{}, f func() er
 
 	err := f()
 	if err == nil {
-		t.printf(" %s %s\n",
+		t.printf("%s %s\n",
 			ansi.Color("SUCCESS ✓", "green"),
 			ansi.Color("in "+time.Now().Sub(timer).String(), "white"))
 	} else {
-		t.printf(" %s %s\n",
+		t.printf("%s %s\n",
 			ansi.Color("FAILURE ✗", "red"),
 			ansi.Color("in "+time.Now().Sub(timer).String(), "white"))
 	}
@@ -130,12 +130,12 @@ func (t *Tester) assertValidTorrent(result torznab.ResultItem) error {
 
 func (t *Tester) Test() error {
 	info := t.Runner.Info()
-	t.printf("→ Testing indexer %s (%s)\n", info.ID, info.Link)
+	t.printf("→ Testing indexer %s at %s\n", info.ID, info.Link)
 	var err error
 
 	defer func() {
 		if err != nil {
-			t.printf("→ Indexer %s %s\n", info.ID, ansi.Color("FAILED", "red"))
+			t.printf("→ Indexer %s %s with %s\n", info.ID, ansi.Color("FAILED", "red"), ansi.Color(err.Error(), "red"))
 		} else {
 			t.printf("→ Indexer %s is %s\n", info.ID, ansi.Color("OK", "green"))
 		}
@@ -147,7 +147,7 @@ func (t *Tester) Test() error {
 
 	for _, mode := range t.Runner.Capabilities().SearchModes {
 		mode := mode
-		err = t.printfWithResult("  Testing search mode %s", []interface{}{mode.Key}, func() error {
+		err = t.printfWithResult("  Testing search mode %q", []interface{}{mode.Key}, func() error {
 			return t.testSearchMode(mode)
 		})
 		if err != nil {
