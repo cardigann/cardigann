@@ -119,6 +119,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * HD-Torrents
 * HDArea
 * HDME
+* Immortalseed
 * IPTorrents
 * MoreThanTV
 * NCore

@@ -1,0 +1,84 @@
+---
+  site: immortalseed
+  name: Immortalseed
+  description: "a general tracker"
+  language: en-us
+  links:
+    - https://immortalseed.me/
+
+  caps:
+    categories:
+      3: Other            # All Nuked
+      32: TV/Anime        # Anime
+      23: PC              # Apps
+      35: Audio/Audiobook # Audiobooks
+      31: Books           # Childrens/Cartoons
+      22: Books/Ebook     # Ebooks
+      25: PC/Games        # Games
+      16: Movies/HD       # Movies-HD
+      17: Movies/SD       # Movies-Low Def
+      14: Movies/SD       # Movies-SD
+      30: Audio           # Music
+      45: Other           # Other
+      7: TV/Sport         # Sports Tv
+      47: TV/SD           # TV - 480p
+      8: TV/HD            # TV - High Definition
+      48: TV/SD           # TV SD - x264
+      9: TV/SD            # TV SD - XviD
+      4: TV/HD            # TV Season Packs - HD
+      6: TV/SD            # TV Season Packs - SD
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  ratio:
+    path: /browse.php
+    selector: div#top > div.padding > span:nth-child(2)
+    filters:
+      - name: regexp
+        args: "Ratio: ([\\d\\.,]+)"
+
+  login:
+    path: /takelogin.php
+    method: post
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    test:
+      path: /usercp.php
+      selector: div#header > div.zepclass
+
+  search:
+    path: /browse.php?do=search
+    inputs:
+      keywords: "{{ .Query.Keywords }}"
+      include_dead_torrents: yes
+      category: 0
+      search_type: t_name
+
+    rows:
+      selector: table#sortabletable > tbody > tr:has(div[class="tooltip-content"])
+    fields:
+      title:
+        selector: div[class="tooltip-content"] > div:nth-child(1)
+      category:
+        selector: td.unsortable2 > a
+        attribute: href
+        filters:
+          - name: querystring
+            args: category
+      comments:
+        selector: a[title="Comments"]
+        attribute: href
+      download:
+        selector: td:nth-child(3) > a:nth-child(2)
+        attribute: href
+      size:
+        selector: td:nth-child(5)
+      seeders:
+        selector: td:nth-child(7)
+      leechers:
+        selector: td:nth-child(8)
+      date:
+        selector: "td:nth-child(n) > div:has(span[style=\"float: right;\"])"
