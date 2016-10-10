@@ -74,11 +74,12 @@
         selector: td.big_info span a:nth-child(1)
         attribute: href
       size:
-        selector: td:nth-child(5)
+        selector: td:nth-child(6)
       date:
-        selector: td:nth-child(4) .time
+        selector: td:nth-child(5) .time
         attribute: title
       seeders:
-        selector: td:nth-child(7)
-      leechers:
         selector: td:nth-child(8)
+      leechers:
+        selector: td:nth-child(9)
+
