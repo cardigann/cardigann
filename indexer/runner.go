@@ -779,14 +779,14 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 			r.logger.Debugf("After parsing, size is %v", bytes)
 			item.Size = bytes
 		case "leechers":
-			leechers, err := strconv.Atoi(val)
+			leechers, err := strconv.Atoi(normalizeNumber(val))
 			if err != nil {
 				r.logger.Warnf("Row #%d has unparseable leechers value %q in %s", rowIdx, val, key)
 				continue
 			}
 			item.Peers += leechers
 		case "seeders":
-			seeders, err := strconv.Atoi(val)
+			seeders, err := strconv.Atoi(normalizeNumber(val))
 			if err != nil {
 				r.logger.Warnf("Row #%d has unparseable seeders value %q in %s", rowIdx, val, key)
 				continue

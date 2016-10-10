@@ -165,6 +165,18 @@ var (
 	missingYearRegexp = regexp.MustCompile(`^\d{1,2}-\d{1,2}\b`)
 )
 
+func normalizeNumber(s string) string {
+	normalized := normalizeSpace(s)
+	normalized = strings.Trim(s, "-")
+	normalized = strings.Replace(s, ",", "", -1)
+
+	if normalized == "" {
+		normalized = "0"
+	}
+
+	return normalized
+}
+
 func normalizeSpace(s string) string {
 	return strings.TrimSpace(strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
