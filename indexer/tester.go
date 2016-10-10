@@ -133,6 +133,14 @@ func (t *Tester) Test() error {
 	t.printf("→ Testing indexer %s (%s)\n", info.ID, info.Link)
 	var err error
 
+	defer func() {
+		if err != nil {
+			t.printf("→ Indexer %s %s\n", info.ID, ansi.Color("FAILED", "red"))
+		} else {
+			t.printf("→ Indexer %s is %s\n", info.ID, ansi.Color("OK", "green"))
+		}
+	}()
+
 	err = t.printfWithResult("  Testing login with valid credentials", nil, func() error {
 		return t.testLogin()
 	})
@@ -143,7 +151,7 @@ func (t *Tester) Test() error {
 			return t.testSearchMode(mode)
 		})
 		if err != nil {
-			break
+			return err
 		}
 	}
 
@@ -160,15 +168,17 @@ func (t *Tester) Test() error {
 		return nil
 	})
 
+	if err != nil {
+		return err
+	}
+
 	err = t.printfWithResult("  Testing ratio", nil, func() error {
 		_, err := t.Runner.Ratio()
 		return err
 	})
 
 	if err != nil {
-		t.printf("→ Indexer %s %s\n", info.ID, ansi.Color("FAILED", "red"))
-	} else {
-		t.printf("→ Indexer %s is %s\n", info.ID, ansi.Color("OK", "green"))
+		return err
 	}
 
 	// log.Infof("Ratio returned %s", ratio)
