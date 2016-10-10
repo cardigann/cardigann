@@ -58,12 +58,12 @@ func (s *Server) Listen() error {
 		return err
 	}
 
-	logger.Logger.Debugf("Config path is %s", path)
+	logger.Logger.Infof("Reading config from %s", path)
 	logger.Logger.Debugf("Cache dir is %s", config.GetCachePath("/"))
 
 	for _, dir := range config.GetDefinitionDirs() {
 		if _, err := os.Stat(dir); os.IsExist(err) {
-			logger.Logger.Debugf("Searching %s for definitions", dir)
+			logger.Logger.Infof("Loading definitions from %s", dir)
 		}
 	}
 
@@ -86,7 +86,7 @@ func (s *Server) Listen() error {
 		}
 	}
 
-	logger.Logger.Debugf("Found %d indexers enabled via config", active)
+	logger.Logger.Infof("Found %d indexers enabled in configuration", active)
 
 	listenOn := fmt.Sprintf("%s:%s", s.Bind, s.Port)
 	logger.Logger.Infof("Listening on %s", listenOn)
