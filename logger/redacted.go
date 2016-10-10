@@ -63,6 +63,12 @@ func (f *redactedLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 func (f *redactedLogFormatter) updateRegexp() error {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Recovered a panic %#v, secret stack is %#v", r, f.secrets)
+		}
+	}()
+
 	quoted := []string{}
 	for secret := range f.secrets {
 		quoted = append(quoted, regexp.QuoteMeta(secret))
