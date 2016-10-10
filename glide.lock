@@ -1,25 +1,25 @@
-hash: 047e096b185c4f4d4ab546c55167f99449c86cedf6bf1b28571c78997920dd3e
-updated: 2016-10-05T21:09:20.001843158+11:00
+hash: fbd143cea94767d2bf55de6d5211ee9f0c048f7d5bf8e090241ca26068359f7b
+updated: 2016-10-10T15:37:26.701263155+11:00
 imports:
 - name: github.com/alecthomas/template
-  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   subpackages:
   - parse
 - name: github.com/alecthomas/units
-  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/andybalholm/cascadia
-  version: 1c31af6f6c1a7b101ed05aacc7d8a738b43ae86e
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/bcampbell/fuzzytime
-  version: 39f1cd4b72489d771d9407a46ec1c6a5cf3d1c73
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/casimir/xdg-go
-  version: 3b31ec681f20e43bee5697d18b4686f1bfa24e12
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   repo: git@github.com:cardigann/xdg-go.git
 - name: github.com/dgrijalva/jwt-go
-  version: 24c63f56522a87ec5339cc3567883f1039378fdb
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/dustin/go-humanize
-  version: bd88f87ad3a420f7bcf05e90566fd1ceb351fa7f
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/equinox-io/equinox
-  version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   subpackages:
   - internal/go-update
   - internal/osext
@@ -27,11 +27,11 @@ imports:
   - internal/go-update/internal/binarydist
   - internal/go-update/internal/osext
 - name: github.com/f2prateek/train
-  version: 83e8b4eee7d1a64d2f053423f532f5ea722cf312
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   subpackages:
   - log
 - name: github.com/google/martian
-  version: e749b122c1e4f5763360a6db32982f020d241859
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   subpackages:
   - har
   - log
@@ -39,11 +39,11 @@ imports:
   - proxyutil
   - mitm
 - name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/gorilla/mux
-  version: 757bef944d0f21880861c2dd9c871ca543023cba
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/headzoo/surf
-  version: 1cb8c19456546da4be54c897a35e174117e21441
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   repo: git@github.com:cardigann/surf.git
   subpackages:
   - agent
@@ -52,31 +52,33 @@ imports:
   - errors
   - util
 - name: github.com/jarcoal/httpmock
-  version: 145b10d659265440f062c31ea15326166bae56ee
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/kardianos/osext
-  version: c2c54e542fb797ad986b31721e1baedf214ca413
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/kardianos/service
-  version: 7a88211485df5d3da6ec68f4f8a5ff9bec297327
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
+- name: github.com/mgutz/ansi
+  version: c286dcecd19ff979eeb73ea444e479b903f2cfcb
 - name: github.com/PuerkitoBio/goquery
-  version: 152b1a2c8f5d0340f658bb656032a39b94e52958
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/Sirupsen/logrus
-  version: 3ec0642a7fb6488f65b06f9040adc67e3990296a
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/vaughan0/go-ini
-  version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: github.com/yosssi/gohtml
-  version: ccf383eafddde21dfe37c6191343813822b30e6b
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: golang.org/x/net
-  version: ffe101cce3477a6c6d8f0754d103bb0a84ec1266
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   subpackages:
   - html
   - context
   - html/atom
 - name: golang.org/x/sync
-  version: 1ae7c7b29e06598039be46c5083819ba6fd7a97e
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   subpackages:
   - errgroup
 - name: golang.org/x/sys
-  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
   subpackages:
   - unix
   - windows/registry
@@ -85,7 +87,7 @@ imports:
   - windows/svc/mgr
   - windows
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 - name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+  version: 228082d238a90e87487ce7f14096a8aa83f8686f
 devImports: []

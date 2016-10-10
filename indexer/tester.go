@@ -5,9 +5,12 @@ import (
 	"io"
 	"io/ioutil"
 	"net/url"
+	"os"
+	"time"
 
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
+	"github.com/mgutz/ansi"
 )
 
 var (
@@ -21,97 +24,153 @@ type TesterOpts struct {
 type Tester struct {
 	Runner *Runner
 	Opts   TesterOpts
+	Output io.Writer
 }
 
-func (t *Tester) Test() error {
-	for _, mode := range t.Runner.Capabilities().SearchModes {
-		query := torznab.Query{
-			Type:  mode.Key,
-			Limit: 5,
-		}
+func (t *Tester) printf(format string, args ...interface{}) {
+	w := t.Output
+	if w == nil {
+		w = os.Stdout
+	}
 
-		switch mode.Key {
-		case "tv-search":
-			query.Categories = []int{
-				torznab.CategoryTV_HD.ID,
-				torznab.CategoryTV_SD.ID,
-			}
-		}
+	fmt.Fprintf(w, format, args...)
+}
 
-		log.Infof("Testing search mode %q", mode.Key)
-		results, err := t.Runner.Search(query)
-		if err != nil {
-			return err
-		}
-		if len(results) == 0 {
-			return fmt.Errorf("Search returned no results, check logs for details")
-		}
+func (t *Tester) printfWithResult(format string, args []interface{}, f func() error) error {
+	timer := time.Now()
+	t.printf(format+" ", args...)
 
-		for idx, result := range results {
-			if result.Title == "" {
-				return fmt.Errorf("Result row %d has empty title", idx+1)
-			}
-			if result.Size == 0 {
-				return fmt.Errorf("Result row %d has zero size", idx+1)
-			}
-			if result.Link == "" {
-				return fmt.Errorf("Result row %d has blank link", idx+1)
-			}
-			if result.Site == "" {
-				return fmt.Errorf("Result row %d has blank site", idx+1)
-			}
-			if result.Link == "" {
-				return fmt.Errorf("Result row %d has empty link", idx+1)
-			}
-		}
+	err := f()
+	if err == nil {
+		t.printf(" %s %s\n",
+			ansi.Color("SUCCESS ✓", "green"),
+			ansi.Color("in "+time.Now().Sub(timer).String(), "white"))
+	} else {
+		t.printf(" %s %s\n",
+			ansi.Color("FAILURE ✗", "red"),
+			ansi.Color("in "+time.Now().Sub(timer).String(), "white"))
+	}
 
-		if t.Opts.Download {
-			u, err := url.Parse(results[0].Link)
-			if err != nil {
-				return err
-			}
+	return err
+}
 
-			if u.Scheme == "magnet" {
-				log.WithField("url", results[0].Link).Infof("Skipping downloading magnet torrent")
-				return nil
-			}
+func (t *Tester) testSearchMode(mode torznab.SearchMode) error {
+	query := torznab.Query{
+		Type:  mode.Key,
+		Limit: 3,
+	}
 
-			log.WithField("url", results[0].Link).Infof("Testing downloading torrent")
-			rc, _, err := t.Runner.Download(results[0].Link)
-			if err != nil {
-				return err
-			}
-			defer rc.Close()
-
-			n, err := io.Copy(ioutil.Discard, rc)
-			if err != nil {
-				return err
-			}
-
-			log.Infof("Downloaded %d bytes from linked torrent", n)
-		}
-
-		if mode.Key == "tv-search" {
-			query.Q = "Rbsv8PdxikCzJMo6hJXMbbYnoDxEVb"
-
-			log.Infof("Testing searching where there are no results in mode %q", mode.Key)
-
-			results, err := t.Runner.Search(query)
-			if err != nil {
-				return err
-			}
-
-			if len(results) > 0 {
-				return fmt.Errorf("Expected no results, got %d", len(results))
-			}
+	switch mode.Key {
+	case "tv-search":
+		query.Categories = []int{
+			torznab.CategoryTV_HD.ID,
+			torznab.CategoryTV_SD.ID,
 		}
 	}
 
-	ratio, err := t.Runner.Ratio()
+	results, err := t.Runner.Search(query)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("Ratio returned %s", ratio)
+	return t.assertValidResults(results)
+}
+
+func (t *Tester) testLogin() error {
+	return t.Runner.login()
+}
+
+func (t *Tester) assertValidResults(results []torznab.ResultItem) error {
+	for idx, result := range results {
+		if result.Title == "" {
+			return fmt.Errorf("Result row %d has empty title", idx+1)
+		}
+		if result.Size == 0 {
+			return fmt.Errorf("Result row %d has zero size", idx+1)
+		}
+		if result.Link == "" {
+			return fmt.Errorf("Result row %d has blank link", idx+1)
+		}
+		if result.Site == "" {
+			return fmt.Errorf("Result row %d has blank site", idx+1)
+		}
+		if result.Link == "" {
+			return fmt.Errorf("Result row %d has empty link", idx+1)
+		}
+
+		if t.Opts.Download {
+			if err := t.assertValidTorrent(result); err != nil {
+				return err
+			}
+		}
+
+	}
+	return nil
+}
+
+func (t *Tester) assertValidTorrent(result torznab.ResultItem) error {
+	u, err := url.Parse(result.Link)
+	if err != nil {
+		return err
+	}
+
+	if u.Scheme == "magnet" {
+		return nil
+	}
+
+	rc, _, err := t.Runner.Download(result.Link)
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+
+	_, err = io.Copy(ioutil.Discard, rc)
+	return err
+}
+
+func (t *Tester) Test() error {
+	info := t.Runner.Info()
+	t.printf("→ Testing indexer %s (%s)\n", info.ID, info.Link)
+	var err error
+
+	err = t.printfWithResult("  Testing login with valid credentials", nil, func() error {
+		return t.testLogin()
+	})
+
+	for _, mode := range t.Runner.Capabilities().SearchModes {
+		mode := mode
+		err = t.printfWithResult("  Testing search mode %s", []interface{}{mode.Key}, func() error {
+			return t.testSearchMode(mode)
+		})
+		if err != nil {
+			break
+		}
+	}
+
+	err = t.printfWithResult("  Testing empty results are handled", nil, func() error {
+		results, err := t.Runner.Search(torznab.Query{
+			Q: "nothingshouldmatchtheseresults",
+		})
+		if err != nil {
+			return err
+		}
+		if len(results) > 0 {
+			return fmt.Errorf("Expected no results, got %d", len(results))
+		}
+		return nil
+	})
+
+	err = t.printfWithResult("  Testing ratio", nil, func() error {
+		_, err := t.Runner.Ratio()
+		return err
+	})
+
+	if err != nil {
+		t.printf("→ Indexer %s %s\n", info.ID, ansi.Color("FAILED", "red"))
+	} else {
+		t.printf("→ Indexer %s is %s\n", info.ID, ansi.Color("OK", "green"))
+	}
+
+	// log.Infof("Ratio returned %s", ratio)
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
 
 	_ "net/http/pprof"
@@ -30,6 +31,13 @@ var (
 	log     = logger.Logger
 )
 
+func version() string {
+	if Version == "" {
+		return "dev"
+	}
+	return Version
+}
+
 func main() {
 	run(os.Args[1:], os.Exit)
 }
@@ -38,7 +46,7 @@ func run(args []string, exit func(code int)) {
 	app := kingpin.New("cardigann",
 		`A torznab proxy for torrent indexer sites`)
 
-	app.Version(Version)
+	app.Version(version())
 	app.Writer(os.Stdout)
 	app.DefaultEnvars()
 
@@ -259,7 +267,7 @@ func configureServerCommand(app *kingpin.Application) error {
 		return err
 	}
 
-	s, err := server.New(conf, Version)
+	s, err := server.New(conf, version())
 	if err != nil {
 		return err
 	}
@@ -339,25 +347,16 @@ func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath str
 	defs := []*indexer.IndexerDefinition{}
 
 	if f == nil {
-		keys, err := indexer.DefaultDefinitionLoader.List()
+		var err error
+		defs, err = indexer.LoadEnabledDefinitions(conf)
 		if err != nil {
-			return err
-		}
-		for _, key := range keys {
-			if config.IsSectionEnabled(key, conf) {
-				def, err := indexer.DefaultDefinitionLoader.Load(key)
-				if err != nil {
-					return err
-				}
-				defs = append(defs, def)
-			}
+			log.Fatal(err)
 		}
 	} else {
 		def, err := indexer.ParseDefinitionFile(f)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Definition file for %s parsed OK ✓\n", def.Site)
 		defs = append(defs, def)
 	}
 
@@ -384,24 +383,24 @@ func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath str
 		rt = replayer
 	}
 
-	for _, def := range defs {
-		fmt.Printf("Testing indexer %s\n", def.Site)
+	fmt.Printf("→ Testing %d definition(s) (%s/%s/%s)\n",
+		len(defs),
+		version(),
+		runtime.GOOS, runtime.GOARCH,
+	)
 
+	for _, def := range defs {
 		runner := indexer.NewRunner(def, indexer.RunnerOpts{
 			Config:     conf,
 			CachePages: cachePages,
 			Transport:  rt,
 		})
-
 		tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
 			Download: true,
 		}}
-		err = tester.Test()
-		if err != nil {
-			return fmt.Errorf("Test failed for %s: %s", def.Site, err.Error())
+		if err = tester.Test(); err != nil {
+			fmt.Printf("Indexer %s failed! %v\n", def.Site, err)
 		}
-
-		fmt.Printf("Indexer %s passed ✓\n", def.Site)
 	}
 	return nil
 }

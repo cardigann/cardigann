@@ -24,6 +24,24 @@ func ListBuiltins() ([]string, error) {
 	return l.List()
 }
 
+func LoadEnabledDefinitions(conf config.Config) ([]*IndexerDefinition, error) {
+	keys, err := DefaultDefinitionLoader.List()
+	if err != nil {
+		return nil, err
+	}
+	defs := []*IndexerDefinition{}
+	for _, key := range keys {
+		if config.IsSectionEnabled(key, conf) {
+			def, err := DefaultDefinitionLoader.Load(key)
+			if err != nil {
+				return nil, err
+			}
+			defs = append(defs, def)
+		}
+	}
+	return defs, nil
+}
+
 type DefinitionLoader interface {
 	List() ([]string, error)
 	Load(key string) (*IndexerDefinition, error)
