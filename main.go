@@ -547,29 +547,22 @@ func runRatiosCommand() error {
 		return err
 	}
 
-	keys, err := indexer.DefaultDefinitionLoader.List()
+	defs, err := indexer.LoadEnabledDefinitions(conf)
 	if err != nil {
 		return err
 	}
 
-	for _, key := range keys {
-		if config.IsSectionEnabled(key, conf) {
-			def, err := indexer.DefaultDefinitionLoader.Load(key)
-			if err != nil {
-				return err
-			}
+	for _, def := range defs {
+		runner := indexer.NewRunner(def, indexer.RunnerOpts{
+			Config: conf,
+		})
 
-			runner := indexer.NewRunner(def, indexer.RunnerOpts{
-				Config: conf,
-			})
-
-			ratio, err := runner.Ratio()
-			if err != nil {
-				return fmt.Errorf("Failed to get ratio for %s: %v", key, err)
-			}
-
-			fmt.Printf("Ratio for %s is %v\n", key, ratio)
+		ratio, err := runner.Ratio()
+		if err != nil {
+			return fmt.Errorf("Failed to get ratio for %s: %v", def.Site, err)
 		}
+
+		fmt.Printf("Ratio for %s is %v\n", def.Site, ratio)
 	}
 
 	return nil
