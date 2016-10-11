@@ -1,0 +1,98 @@
+---
+  site: torrentbytes
+  name: TorrentBytes
+  language: en-us
+  links:
+    - http://www.torrentbytes.net/
+
+  caps:
+    categories:
+      41:  TV  #TV Pack
+      33:  TV/SD  #TV SD
+      38:  TV/HD  #TV HD 
+      32:  TV/SD  #TV/DVDRip
+      40:  Movies #Movies Pack
+      44:  Movies #NonScene/Xvid
+      44:  TV  #NonScene/Xvid
+      19:  Movies/SD  #Movies/SD
+      5:  Movies/HD  #Movies/HD
+      20:  Movies/SD  #Movies/DVD-R
+      12:  Movies/BluRay #Movies/Full BluRay
+      45:  TV #NonScene/BRip
+      45:  Movies #NonScene/BRip
+      43:  Audio     #Music/Pack
+      48:  Audio/Lossless #Music/Flac
+      6:   Audio/MP3
+      25:  Audio/Video # Music/DVDR
+      34:  Audio/Video # Music/Videos
+      46:  TV #NonScene/x264
+      46:  Movies #NonScene/x264
+      42:  PC/Games # Games/Pack
+      42:  Console # Games/Pack
+      42:  PC/Mac # Games/Pack
+      4:   PC/Games # Games/PC
+      47: Console/PS3 #Games/PS3
+      30: Console/Xbox #Games/Xbox
+      27: Console/Wii  #Games/Wii
+      26: PC/Games     #Games/other
+      26: PC/Mac       #Games/other
+      26: Console      #Games/other
+      21: XXX/Packs    #Games/Pack
+      9:  XXX          #XXX/SD
+      39: XXX          #XXX/HD
+      29: XXX #XXX/Web
+      24: XXX/Imageset  #XXX/IMGSE
+      1:  PC
+      22: PC
+      23: TV/Anime
+      28: TV/Foreign
+      28: Movies/Foreign
+      31: Other/Misc
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    method: form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      path: /takelogin.php
+      message:
+        selector: td.text
+    test:
+      path: /inbox.php
+
+  search:
+    path: /browse.php
+    inputs:
+       $raw: "search={{ .Query.Keywords }}"
+       # $raw: "{{range .Categories}}filter_cat[]={{.}}&{{end}}searchstr={{ .Query.Keywords }}"
+    rows:
+      selector: html body div#innerwrapper div#mainframe div#content div table:nth-of-type(2) tbody tr:not(:first-child)
+    fields:
+      category:
+        selector: td:nth-child(1) a,td:nth-child(2) a
+        attribute: href
+        filters:
+          - name: regexp
+            args: "browse\\.php\\?cat=(\\d+)|(.*)"
+      title:
+        selector: td:nth-child(2) a:nth-child(2)
+      details:
+        selector: td:nth-child(2) a:nth-child(2)
+        attribute: href
+      download:
+        selector: td:nth-child(2) a
+        attribute: href
+      size:
+        selector: td:nth-child(7)
+      date:
+        selector: td:nth-child(5)
+      seeders:
+        selector: td:nth-child(9)
+      leechers:
+        selector: td:nth-child(10)
