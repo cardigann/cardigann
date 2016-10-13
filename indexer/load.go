@@ -207,6 +207,12 @@ func (el escLoader) Load(key string) (*IndexerDefinition, error) {
 		return def, err
 	}
 
+	fi, err := f.Stat()
+	if err != nil {
+		return def, err
+	}
+
+	def.stats.ModTime = fi.ModTime()
 	def.stats.Source = "builtin:" + fname
 	return def, nil
 }
