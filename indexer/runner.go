@@ -757,6 +757,11 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 				continue
 			}
 			item.GUID = u
+
+			// comments is used by Sonarr for linking to
+			if item.Comments == "" {
+				item.Comments = u
+			}
 		case "comments":
 			u, err := r.resolvePath(val)
 			if err != nil {
