@@ -188,29 +188,30 @@ var _escData = map[string]*_escFile{
 
 	"/definitions/alpharatio.yml": {
 		local:   "definitions/alpharatio.yml",
-		size:    1941,
-		modtime: 1475375088,
+		size:    1955,
+		modtime: 1476329823,
 		compressed: `
-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
+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
+vqMHAAA=
 `,
 	},
 
 	"/definitions/avistaz.yml": {
 		local:   "definitions/avistaz.yml",
 		size:    1252,
-		modtime: 1475754160,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6RSTYvbMBC951eIHEoDa7tftMWwLUuPpYfSsIeWpSjSJB6qSK5mlJBd9r9XcmxHLllS
 qA9G8+bN09OTiqKYCUHIUAu5Q2J5H2srt7G+6ervsTbSboLcRAxsESghaH9RHRdCFKJhbqmuql6gZFfN
@@ -227,7 +228,7 @@ Zn8CAAD////Fua3kBAAA
 	"/definitions/beyondhd.yml": {
 		local:   "definitions/beyondhd.yml",
 		size:    2359,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/5SV327yNhjGz7kKi50MjRAo4V/O1tKJ6fuQKsrYJ32qJpO8EKuOndpOIe16vqvYxe1K
 5vxxAoMGdpY8+T2PX/t1bMuyGghJosBFa0g48wNfCwyHWrjNhNlUCxSzbYy3WgRmxTJVCHuWrn5AyEKB
@@ -248,7 +249,7 @@ GVGizvTmO2r+2WyjHno6Y9JTD894mp1muVfBPxrws/3VNWtBAbzgKkuv1Wg0/g0AAP//TebINDcJAAA=
 	"/definitions/bithdtv.yml": {
 		local:   "definitions/bithdtv.yml",
 		size:    1559,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/5xUT0/bThC951OMwiFYP5w//Aq0lnqAcqCqeqEIISEOG+/EXmHvmt1xQor47h2v107S
 glL14mTevPdmdnbsOI4HAE4RJjBXlEtacqxFyfHF15v46vLmlgGJLrWqImV0AlemRDALuFJZDpe4UFo1
@@ -267,7 +268,7 @@ vWYRVHvdnPq5/4Rn0R8rPrddO3xpew1Oo35fUO5cyjuCT52gQEzzv1HMptFgMPgVAAD//8qu79gXBgAA
 	"/definitions/bitmetv.yml": {
 		local:   "definitions/bitmetv.yml",
 		size:    1342,
-		modtime: 1475754160,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6RUwW7bMAy99ysI79IAtdNsGIYZyA7rcdht2CXwQbYYW6gseRITL+v676Pk2E6AdM2w
 Xlw+8T2ST4zSNL0B8Iowh1JRi7Tn2IiW48+KvuK37xxrYeqdqBlDk+58QJR59Dn/A5BCQ9Tly2Xf99lR
@@ -284,7 +285,7 @@ tyQzLYLDiyixVajlfDnDihzGGOJq5bAa10CRxvnwpLrMDTVp1Sgtb98uuJyYsgSRU+Uu/Eoi/3ggkYTS
 	"/definitions/cinemaz.yml": {
 		local:   "definitions/cinemaz.yml",
 		size:    1252,
-		modtime: 1475754160,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6RSTWsbMRC951cIH0oN0W6/aMtCWkqOpYdSk0NLKLI09g6Vpa1mFOOE/PdK6921XBxc
 6B4WzZs3T09PklJeCEHI0AiNDjbqPtVObVJ93dffU22VW0e1Thg4GSkj6H5RkxZCSNEyd9TU9SBQsa8v
@@ -300,45 +301,45 @@ uPgTAAD//7b7vjLkBAAA
 
 	"/definitions/demonoid.yml": {
 		local:   "definitions/demonoid.yml",
-		size:    1969,
-		modtime: 1475375088,
+		size:    1966,
+		modtime: 1476327553,
 		compressed: `
-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
+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
 AAA=
 `,
 	},
 
 	"/definitions/eztv.yml": {
 		local:   "definitions/eztv.yml",
-		size:    801,
-		modtime: 1475396593,
+		size:    820,
+		modtime: 1476339286,
 		compressed: `
-H4sIAAAJbogA/5SSy86bMBCF93mKUTZ/kQIovS2Quuyqq0pVF42iaIIHsGpsag9JE8S7d0iApGor1B3H
-5/hjLo7jeAUQNFMGdOWTCIu1iI/fvnwVYdCWLZaDa+M2DCfafg+ZfADEUDE3IUvT4WqCZbqS8xyb0c+R
-qXRe06gBthkI9iZqpx7nfIoDoc+rDHY/NiDfwdkNULMfwqN1yzbIElp3nS4g+dySvySf6HJ2XoW+vwfT
-rvvT6joygfpeTLKq79c3mnfnuYZAhnJ2XuiMR0NJ4XxbHypCRf5wFAx5YL8b5vPhpXIn8i/7v4Xu6EKT
-UTN8HMVl0tIy/eQMttMANBt6mI9aWGWWqzivtFGvXkeAY0YRozbhf64AILPXx3ZYduWpmFDubI1Dtch6
-I6ykxtISLyCDvi538zaaCpDhLKbfRXOi0IbJP/U+PMX7s8WmkfU+GVKhL4PsFLB063nVpH4D/OOf76PV
-rwAAAP//KY7dniEDAAA=
+H4sIAAAJbogA/5SSza7aMBCF9zzFiM1tJJKI/i0iddlVV5WqLooQGuJJYtWxU3sChSjv3gkkgaq9Qux8
+fI4/j2ccx/ECIGimDOjMBxEWaxGff3z7LsKgLVssB9fGbRh2tP0ZMlkAxFAxNyFL0+FogmW6kP0cm9HP
+kal0XtOoAdYZCPYiaqdu+3yIA6HPqww2v1Yg6+DsCqjZDuHRumQbZAktu04XkHxtyZ+SL3Q6Oq9C31+D
+adf9a3UdmUB9LyZZ1ffLC82741xDIEM5Oy90xr2hpHC+rXcVoSK/2wuGPLDfDP359FK5A/mX7f9CV3Sh
+yagZPrbiNGl5Mv3mDNZTAzQbupm3Wlhllqs4r7RRb95GgGNGEaM24ZkjAMjs9b4dhl15KiaUO1rjUD1k
+vRNWUmNpiVdP3xL0+fED30dTTdKvh+kP0ZwotGHyd+0Yfuf1J2PTyMTvDKnQl0HGDFi65Tx9Un8BXrnz
+Y7T4EwAA//8NsQ5ENAMAAA==
 `,
 	},
 
 	"/definitions/filelist.yml": {
 		local:   "definitions/filelist.yml",
 		size:    1766,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6yU8WrbMBDG/89TiG7QmtVxnXTrahija+kK22C0oxRKB4p9sUUUyZXkdFnpu+xZ9mQ7
 K5Jid3RbYP+Y+Hffff7uLCeO4wEhmhnIyJRx4EwbBILOEZwi+LgCnIqyoSVCEHGjW8LETGf4g5CYVMbU
@@ -357,7 +358,7 @@ oUPBXC6gPXU+LB6BTQxf9Qw1QNF7xX83OIycmAPk1YbN6V40GAx+BQAA//+adzOF5gYAAA==
 	"/definitions/freshon.yml": {
 		local:   "definitions/freshon.yml",
 		size:    1347,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6xTTW/UMBC991eM0ksrNVmtuPkABwQXDghR9YJQ5Y1n1xaObTyTllD1v2N787VooQc4
 7Cbz5s3z+M2krusLADKMAvYRSXuXYie7FL/P8Ud3e5cQhdRGE9h4J6C6vYPPGA0SSDd4h2+qRLHSHXp5
@@ -375,7 +376,7 @@ AP//ODev5kMFAAA=
 	"/definitions/hdarea.yml": {
 		local:   "definitions/hdarea.yml",
 		size:    1926,
-		modtime: 1475754160,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/7RU3U77NhS/71NY9IZqJGn53CIxBAtTpYHYoCoXK0JufJpYuHZmO5QO8e5zYsdpCgh2
 8b+pen5fOT4ncRAEPYQU1RCjnGAJ2JQcL005Ts5tyTDPSpwZCHhQqgqh/EnF5g9CAcq1LuIoWq1WoU0I
@@ -395,7 +396,7 @@ Ff336wkcNSnE7PV7TagC8y/7qOfvXzwgna1+kn7cJDGANP+O42SAev8FAAD//4ozdm2GBwAA
 	"/definitions/hdme.yml": {
 		local:   "definitions/hdme.yml",
 		size:    2540,
-		modtime: 1475754160,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6RV/U/rNhT9vX+FFbaJavT7gxKJTQzexrTXN1YGqsTQkxNfEo/EzrMdSl/V/32OEzst
 CwNp/EDj63Ovzz3HH51Op4WQpAp8FJMU9IDhVA8uL+Yf9CDBLMpxpAPAOrksIpQ9Sl9/INRBsVKZ9Hu9
@@ -420,7 +421,7 @@ SFJc7AkAAA==
 	"/definitions/hdtorrents.yml": {
 		local:   "definitions/hdtorrents.yml",
 		size:    1869,
-		modtime: 1475399794,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/5RUXU8bOxB9z6+wuFcXVrAf+djAXYlKtAghVVVVihAS4sFZD7sWjr3Y3qRplP9er+P9
 CqDQPEQ5x2c8M2c88X1/gJCiGhKUEy2kBK6VoTieG+r60r9tOYZ5VuLM8MD90jKUP6vE/EDIR7nWhUrC
@@ -437,10 +438,34 @@ oHVV9SpRzWBvhWMPzRB2KgIaU6b+Lui9TohYciYw2Xtb7O29S9Hf+1s5q70lxoi96lPvI45XVxVYKnjD
 `,
 	},
 
+	"/definitions/immortalseed.yml": {
+		local:   "definitions/immortalseed.yml",
+		size:    2354,
+		modtime: 1476327553,
+		compressed: `
+H4sIAAAJbogA/4xV72/bNhD9XqD/w0H5EmORlTjOj3HIhswulmHr1i1BMcA2Alq8SIRlkiUpp27R/32k
+fiu2s+WDI57fPb17dzyHYfj2DYDhFgnw9VpqSzODyHxU0LWL/voiytDEmivLpSAQUEhQoKYZWE3jFerA
+YzIqkpwmLhtFmJsixMXKEP8EEEJqrTIkirqvHK4xevvGI2KqamhMLSZSc6wDAOcE/rQpauj8HcFtlsEf
++arUWMBGBB4+RreCr7ED88caMnJUHyYAL5iUMg3JBYHbnHEZFZ9LKVceUT+3uDMCP/tAj2mS8oxpFCaa
+UG2lFA1+NKrw0buCs8S/63GOLry66BfXBdNyFscacnZJ4L3cOHeiu2kDKSPh3bSBXTWw+x3Y7/IZpvjU
+YMevYO8byvPTyphewe9zw+MaMr7YbdRRGakhV0WL7pWbgQ6kOBt42DRMFW7aY3r46AZpfH2qath1gbqb
+wi7sjiepr5IL7ge3Ib4+QOwiIXweXY5r5Pe7wA7ynw1vnBkfUnGP1EgBH9w1MV5Sk3F5kLuf4d0vc9aS
+dS6EQarjlMDs06IO2U3YRk88whGdAKpFSaGps6EiUNQ6WLTU8tngUKWVnwYzjK3UBBjfHFmp4Ef/NFSU
+MS4SdzKKCiJsGsZ+zo9HgzLxiWcWdSsvrBaJxgQ/N80CoDoxboP8XUiB49l8zubz4cniu0FQisxkwkVf
+pKUrLMKtzjXaVDICShpbRrhQuW3fnxvUpYLg61cYTqR44smwjsK3b0GNVNSYZ6lZH1lHW6RFY0mbVCjz
+fLFqZb00MEXK3FUoPfyCKs4cbVln1akD3fiJyZsSsbe6FW69OFNp/itHvR3+VgW7xXERZznDR+aEPDpZ
+bi85Gti226TatVsCp/3RerRb5eyzj96wega9QLJbq6XLDI+M3+ruofhwRdulZFv/X5OUmmPnwaww4CZw
+azGzXIWxFNYpChbNFGHG2hdYbjMk7fD0zD3IVdrdmdGzwU6x+zgtG+airmHkWGhnbK3VfJn7H8xUt3tz
+d+67s//Jt8W4RJF0v64vQS2mESfX66I9+8TRWWHGTTCpUMHiP9Ux+SwySdmBajsOnQ98uXuu9Svshn/Z
+35se88WgnRZkfacOpFw1KRlinP6vnOsmhzlX9+KDXoIYVGPiJ9PvtJmxW+fvPHhyllm3uNyPh/1h7kbT
+XaZ/AwAA//+uZYmOMgkAAA==
+`,
+	},
+
 	"/definitions/iptorrents.yml": {
 		local:   "definitions/iptorrents.yml",
 		size:    2463,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/5RVbW/bNhD+3l9BKMUQo5FfVL/IArah8zZs2ApkWDAEaLKCFs8WEYpUSdqp5/m/7ySL
 erO7uF9k33P33B3vkY6+778ixHALEeGZVVqDtAYhSVOEfr29qyEGJtYYxJWMiHc1Ireab6kFcqdp/ATa
@@ -463,7 +488,7 @@ ALBW8S80HrpjCoA4uYQx7/0XAAD//ydNe46fCQAA
 	"/definitions/morethantv.yml": {
 		local:   "definitions/morethantv.yml",
 		size:    1281,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6RTwY7TMBC99ytG5UKljUuLQJArR4S4rLigVeUm08Qisc14krCs9s5X8HF8CbbjpC10
 VSR6qOw3773xPDtZli0AnGLMoTWEXEvNvYe0bD30wUO3HhK3nzzWSF11svI46qxzAVH6i8v9AiCDmtm6
@@ -480,7 +505,7 @@ BKsWL3WOcc8vBUukJ0I78XszdW8Qi/pfFG9XvwMAAP//W1yqZwEFAAA=
 	"/definitions/ncore.yml": {
 		local:   "definitions/ncore.yml",
 		size:    2101,
-		modtime: 1474349693,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/7RU3crjNhC9z1OItGRvEn80uxRqcKHsUgrt9oeW3oQQFHtii8iSV5KdH9fv3pEtK0rW
 +XrTvTHSzDlHM8cjrVarGSGaGYiJSKUC3Ala4u7X98OOU5HXNMcIiFWtbYSJo45xQciKFMZUOn556clR
@@ -501,7 +526,7 @@ sPYIBaVssE62JHvlxxayu3YeZPTae8IB0uI1LLfY2ezfAAAA//85UY/FNQgAAA==
 	"/definitions/norbits.yml": {
 		local:   "definitions/norbits.yml",
 		size:    1734,
-		modtime: 1475790994,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/5RUTW/bOBC9+1cMlMUmwcbS2vkEgSywDZoe2hQpGuQSuAElji3CNKmSlB3X0H8vKVOK
 3VpwepE5M+8NHx+H7vf7PQDDLRKQSqfcGhdLOnPx5zYWVE5KOvGYtC+Vz3A5NcQtAPqQW1uQJAn8WKJN
@@ -521,7 +546,7 @@ qsYGAAA=
 	"/definitions/privatehd.yml": {
 		local:   "definitions/privatehd.yml",
 		size:    1256,
-		modtime: 1475754160,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/6RTXYsTMRR9768IfRALO1O/UBlYRfRBEEGx7Isskk5uOxfTZMy9aanL/neTmck0I10q
 2IchOffcc09O0qIoZkIQMlSidbiXDI0KiJG7gHzpkY8fAqKl2Xq5DSiYwlNE0PykKiyEKETD3FK1XI4i
@@ -538,7 +563,7 @@ zb90vF6I2Z8AAAD//9NWYd7oBAAA
 	"/definitions/speedcd.yml": {
 		local:   "definitions/speedcd.yml",
 		size:    1961,
-		modtime: 1475754160,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/4xVXW/bNhR9z68g1JcYiCRbttNVDxuaukWGoqtXB96AZQ+0eC0RkUmVpJJ6Qf77LimR
 st2vPMS6POfcy/slJY7jM0I0N5AT3QCwguFZ0J0/Jw5goAvFG8OlyEl0syYrUBw0oWIvBfwWoaSmomxp
@@ -560,7 +585,7 @@ TLRHmXwQtaTspylPT/Ob/Cw/ht14RgN1Q0Vitb39rahuGH7C/L/vhD1Ibj4K+wDsqEXfcbj0DjVAUT3H
 	"/definitions/thepiratebay.yml": {
 		local:   "definitions/thepiratebay.yml",
 		size:    1391,
-		modtime: 1475396077,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/7xTX2/aPhR976e4Sl9AP5Lwp79tRJqmTTxU2qr963ipmGTiS2LNjTP7BsoivvvsEAxt
 QeVpPOWce+7xyYkJw/ACwAjCBCjHUmhGOGdrSxbs3pK3OcKXhoUPDS1ZkVUssyMswso4RhS/TGIfAELI
@@ -575,10 +600,35 @@ qvs3AAD//zrY6S9vBQAA
 `,
 	},
 
+	"/definitions/torrentbytes.yml": {
+		local:   "definitions/torrentbytes.yml",
+		size:    2621,
+		modtime: 1476329823,
+		compressed: `
+H4sIAAAJbogA/5xWa2/bNhf+7l9B1C9e2FtkJb6kiYBiaJKlKTZvWVykBupgoKVji4hMaiQVx/P833dI
+ibqkdlMsHyLxeZ5zJ0V7ntciRDENAdFCSuB6vtGgEOR0heCnHLwowITyZUaXSAD3Mosw/qgCfCHEI7HW
+aeD76/W6V/fW46D9FmpCmhbakGpYCsmgWBMyPAkI+XRPSBv/3dLwscAHA4v7k6ucmlw54iwnbgoCn47p
+N0z8q/urO5a6OMdIjsUThibt4lkLNxzW6N8En4TAwZ8+sagusHnuY0/OS/M8fPleCEYVf1PjbxzfP97v
+AGvw7lyQfqW5SLI7uill11mSkBxz+Y7yfKt0L2rNGO2rti4w3X+fRUzYZXucKRb69X6dOYH/q1AqAaWc
+6jqhYaE6RVGhGt8OXKmj0vSeRSBIm+SGZl5ulMMDGrtSLonTlzU+90+HdfKrGusC087bS/8D7niUEPts
+1GgEl4IrkcBBHh2MabiXNsV/7f/S0W8D59y/nQxIu+Anrk+D40ownYtnpzDvrpU1H58ZI06C706BXShz
+sKPMFULHIJsaUwb5lsa14qAGj/J0OrU9UDVNrSfmmKCElH9tY1Cd7fNgD10dkoK26GeYO3iYx/24wk+U
+Al2YfRx/mPzsjo6dlNP3g9oCdzp+K95ztgIHnVnoWkhgS14D3WFrEAP0/bvpgj9mKmxZdCWi6gungMow
+DsiXvx4KRD95FXhkBErwIwLpgzFPxJLx3DilGjW+RXppnJ/OFehYRAFZCLmyAONppstwmQKZf8TfbLek
+h0NbsGXPoWS3e1MIU6rUWsioKXRoKQQphQxKG5uQpo/QTMqkpZS5IlpudgoSCPE+wCsm6ml41pbBe0G/
+8MY47mjrqVV2q17+XIq1gjJUs1zyP0nXWEJu985U8kcGctP7BTamDlWrGA9hod5uJV5pgFWXF9Jut2CJ
+Bvkn3lFfHtBRb7f7/3YLPNrtcudKy2/5N1lWM3e1x3qVkLmINiRiT23GOci1pGkK0gIryvhCmsGYVSi4
+xtvTvBNN5wkEXMeeWHh6k0Kn3yXaetIy4EJ3ggWTSnthzJKoawMvGCRRmURx2W72j8S6tradky6hRw0E
+Q9HSimot2TwzPxZiCYsSz/tVTYKY3wL51pOwhOe0RqAXuVTY+XyYs5kZ52z2E+b4rjObRT92/+n0fui6
+SWmmkwNb6UWWjWVhEIGmLFH/2f5QyZFY80TQ6Lscv+JLsb9fL/BtWRGO8lX1qFvuPogagzlgcO4MEoAw
+/h6Lk+Nu698AAAD//9bN7vg9CgAA
+`,
+	},
+
 	"/definitions/torrentday.yml": {
 		local:   "definitions/torrentday.yml",
 		size:    2975,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/5SW3W7bNhTH7/sUhFMMMRpZseS4qYBtaONlBTYP3hJkBZpsoEXGIkKTqkg5dj2/+44o
 UaIay0l1kYhHP/7PF2nS87xXCCmmaYS0zDIqNMEbMAm8BNN1aZoYE8dikeMFmKnwclVYmHhQEbwg5KFE
@@ -603,7 +653,7 @@ xNN6nqKUtJx3BD62aXJK4+QlM972/w8AAP//0xltjp8LAAA=
 	"/definitions/torrentleech.yml": {
 		local:   "definitions/torrentleech.yml",
 		size:    2314,
-		modtime: 1475375088,
+		modtime: 1476327553,
 		compressed: `
 H4sIAAAJbogA/5xW/W/iNhj+nb/Coqfp0Jq4QHsfkTbp2mof2m7Xjeo2qVSTiV+C1cTO2U6Bofzvs42d
 BI4ONH4o9fM+74efx3GIoqiHkGIaEqSFlMB1DpAuDMhJYcD7LfirB3PCs4pkJgA8qpRFGH9SifkHoQgt
