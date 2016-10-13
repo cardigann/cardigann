@@ -224,7 +224,7 @@ func parseTimeAgo(src string, now time.Time) (time.Time, error) {
 			if fraction > 0 {
 				now = now.Add(time.Duration(float64(now.AddDate(-1, 0, 0).Sub(now)) * fraction))
 			}
-		case "month", "mnth":
+		case "month", "mnth", "mo":
 			now = now.AddDate(0, -v, 0)
 			if fraction > 0 {
 				now = now.Add(time.Duration(float64(now.AddDate(0, -1, 0).Sub(now)) * fraction))
