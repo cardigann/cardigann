@@ -1,0 +1,101 @@
+---
+  site: sceneaccess
+  name: sceneaccess
+  language: en-us
+  links:
+    - https://sceneaccess.eu/
+
+  caps:
+    categories:
+        8:  Movies/SD  #Movies/DVD-R
+        22:  Movies #Movies/x264
+        7:  Movies #Movies/Xvid
+        4:  Movies #Movies/Packs
+        17:  TV/SD  #TV/SD-x264
+        27:  TV/HD  #TV/HD-x264
+        11:  TV  #TV/Xvid
+        26:  TV  #TV/Packs
+        3:   PC/Games # Games/PC
+        5: Console/PS3 #Games/PS3
+        20: Console/PSP  #Games/PSP
+        28: Console/Wii  #Games/Wii
+        23: Console/Xbox360 #Games/Xbox360
+        29:  PC/Games # Games/Packs
+        29:  Console # Games/Packs
+        29:  PC/Mac # Games/Packs
+        40:  Audio/Lossless #Music/Flac
+        13:  Audio/MP3      #Music/MP3
+        15:  Audio/Video # Music/MVID
+        38:  Audio       #Music/Packs
+        1:   PC/ISO # Apps/ISO
+        2:   PC/0day # Apps/0DAY
+        14:  Other/Misc #DOX
+        21:  Other/Misc #Misc
+        41:  Movies/HD #P2P/Movies/HD-x264
+        42:  Movies/SD #P2P/Movies/SD-x264
+        43:  Movies/SD  #P2P/Movies/Xvid
+        44:  TV/SD  #P2P/TV/SD
+        45:  TV/HD  #P2P/TV/HD
+        34:  TV/HD
+        36:  XXX  #XXX/0DAY
+        37:  XXX  #XXX/Packs
+        35:  XXX/x264
+        12:  XXX/XviD
+        31:  Movies/Foreign #Foreign Movies/DVD-R
+        32:  Movies/Foreign #Foreign Movies/x264
+        30:  Movies/Foreign #Foreign Movies/XviD
+        34:  TV/Foreign #Foreign TV/x264
+        33:  TV/Foreign #Foreign TV/XviD
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login
+    method: form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      message:
+        selector: #login_box_desc
+    test:
+      path: /inbox
+
+  search:
+    path: /all
+    inputs:
+       $raw: "search={{ .Query.Keywords }}&method=2"
+    rows:
+      selector: tr.tt_row
+    fields:
+      category:
+        selector: td.ttr_type a[href^="?cat="]
+        attribute: href
+        filters:
+          - name: regexp
+            args: "\\?cat=(\\d+)"
+      title:
+        selector: td.ttr_name a
+        attribute: title
+      details:
+        selector: td.ttr_name a
+        attribute: href
+      comments:
+        selector: td.ttr_name a
+        attribute: href
+      download:
+        selector: td.td_dl a
+        attribute: href
+      size:
+        selector: td.ttr_size
+        filters:
+          - name: regexp
+            args: "(\\d*.\\d*\\s..).*"
+      date:
+        selector: td.ttr_added
+      seeders:
+        selector: td.ttr_seeders
+      leechers:
+        selector: td.ttr_leechers
