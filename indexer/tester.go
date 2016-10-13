@@ -128,10 +128,9 @@ func (t *Tester) assertValidTorrent(result torznab.ResultItem) error {
 	return err
 }
 
-func (t *Tester) Test() error {
+func (t *Tester) Test() (err error) {
 	info := t.Runner.Info()
 	t.printf("→ Testing indexer %s at %s\n", info.ID, info.Link)
-	var err error
 
 	defer func() {
 		if err != nil {
@@ -141,17 +140,26 @@ func (t *Tester) Test() error {
 		}
 	}()
 
-	err = t.printfWithResult("  Testing login with valid credentials", nil, func() error {
-		return t.testLogin()
-	})
+	if !t.Runner.definition.Login.IsEmpty() {
+		if err = t.printfWithResult("  Testing required config is available", nil, func() error {
+			return t.Runner.checkHasConfig()
+		}); err != nil {
+			return
+		}
+
+		if err = t.printfWithResult("  Testing login with valid credentials", nil, func() error {
+			return t.testLogin()
+		}); err != nil {
+			return
+		}
+	}
 
 	for _, mode := range t.Runner.Capabilities().SearchModes {
 		mode := mode
-		err = t.printfWithResult("  Testing search mode %q", []interface{}{mode.Key}, func() error {
+		if err = t.printfWithResult("  Testing search mode %q", []interface{}{mode.Key}, func() error {
 			return t.testSearchMode(mode)
-		})
-		if err != nil {
-			return err
+		}); err != nil {
+			return
 		}
 	}
 
@@ -172,15 +180,13 @@ func (t *Tester) Test() error {
 		return err
 	}
 
-	err = t.printfWithResult("  Testing ratio", nil, func() error {
-		_, err := t.Runner.Ratio()
+	if err = t.printfWithResult("  Testing ratio", nil, func() error {
+		ratio, err := t.Runner.Ratio()
+		log.Debugf("Ratio returned %s", ratio)
 		return err
-	})
-
-	if err != nil {
-		return err
+	}); err != nil {
+		return
 	}
 
-	// log.Infof("Ratio returned %s", ratio)
 	return nil
 }

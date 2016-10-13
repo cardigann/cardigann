@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -339,6 +340,16 @@ func configureTestDefinitionCommand(app *kingpin.Application) {
 }
 
 func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath string) error {
+	logOutput := &bytes.Buffer{}
+	logger.SetOutput(logOutput)
+	defer func() {
+		if logOutput.Len() > 0 {
+			fmt.Printf("\nLogging output:\n")
+			io.Copy(os.Stderr, logOutput)
+			fmt.Println()
+		}
+	}()
+
 	conf, err := newConfig()
 	if err != nil {
 		return err

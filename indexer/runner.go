@@ -97,6 +97,20 @@ func (r *Runner) releaseBrowser() {
 	r.browserLock.Unlock()
 }
 
+// checks that the runner has the config values it needs
+func (r *Runner) checkHasConfig() error {
+	for _, setting := range r.definition.Settings {
+		_, ok, err := r.opts.Config.Get(r.definition.Site, setting.Name)
+		if err != nil {
+			return fmt.Errorf("Error reading config for %s: %v", setting.Name, err)
+		}
+		if !ok {
+			return fmt.Errorf("No value for %s.%s in config", r.definition.Site, setting.Name)
+		}
+	}
+	return nil
+}
+
 func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error) {
 	tmpl, err := template.New(name).Parse(tpl)
 	if err != nil {
