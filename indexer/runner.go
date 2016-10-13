@@ -21,6 +21,7 @@ import (
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
+	"github.com/cardigann/releaseinfo"
 	"github.com/dustin/go-humanize"
 	"github.com/f2prateek/train"
 	trainlog "github.com/f2prateek/train/log"
@@ -28,7 +29,12 @@ import (
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
 	"github.com/headzoo/surf/jar"
+	"github.com/tehjojo/go-tvmaze/tvmaze"
 	"github.com/yosssi/gohtml"
+)
+
+const (
+	defaultTVDBKey = "CACE3A94B49F1566"
 )
 
 var (
@@ -545,9 +551,44 @@ func (r *Runner) localCategories(query torznab.Query) []string {
 	return localCats
 }
 
+func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
+	var show *tvmaze.Show
+	var err error
+
+	// convert show identifiers to season parameter
+	switch {
+	case query.TVDBID != "":
+		show, err = tvmaze.DefaultClient.GetShowWithTVDBID(query.TVDBID)
+		query.TVDBID = "0"
+	case query.TVMazeID != "":
+		show, err = tvmaze.DefaultClient.GetShowWithID(query.TVMazeID)
+		query.TVMazeID = "0"
+	case query.TVRageID != "":
+		show, err = tvmaze.DefaultClient.GetShowWithTVRageID(query.TVRageID)
+		query.TVRageID = ""
+	}
+
+	if err != nil {
+		return query, err
+	}
+
+	if show != nil {
+		query.Series = show.Name
+		r.logger.Debugf("Found show %#v", show)
+	}
+
+	return query, nil
+}
+
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	r.createBrowser()
 	defer r.releaseBrowser()
+
+	var err error
+	query, err = r.resolveQuery(query)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: make this concurrency safe
 	filterLogger = r.logger
@@ -562,6 +603,9 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	}
 
 	localCats := r.localCategories(query)
+
+	r.logger.Debugf("Query is %v", query)
+	r.logger.Debugf("Keywords are %q", query.Keywords())
 
 	templateCtx := struct {
 		Query      torznab.Query
@@ -702,6 +746,20 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 			if intCatId, err := strconv.Atoi(item.LocalCategoryID); err == nil {
 				item.Category = intCatId + torznab.CustomCategoryOffset
+			}
+		}
+
+		info, err := releaseinfo.Parse(item.Title)
+		if err != nil {
+			r.logger.Warnf("Failed to parse show title: %v", err)
+		}
+
+		if info != nil {
+			if query.Series != "" && info.SeriesTitleInfo.TitleWithoutYear != query.Series {
+				r.logger.
+					WithFields(logrus.Fields{"got": info.SeriesTitleInfo.TitleWithoutYear, "expected": query.Series}).
+					Debugf("Skipping non-matching series")
+				continue
 			}
 		}
 

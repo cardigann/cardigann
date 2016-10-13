@@ -12,22 +12,29 @@ import (
 
 // Query represents a torznab query
 type Query struct {
-	Type          string
-	Q, Ep, Season string
-	Limit, Offset int
-	Extended      bool
-	Categories    []int
-	APIKey        string
+	Type                  string
+	Q, Series, Ep, Season string
+	Limit, Offset         int
+	Extended              bool
+	Categories            []int
+	APIKey                string
+
+	// identifier types
+	TVDBID   string
+	TVRageID string
+	IMDBID   string
+	TVMazeID string
+	TraktID  string
 }
 
 // Episode returns either the season + episode in the format S00E00 or just the season as S00 if
 // no episode has been specified.
 func (query Query) Episode() (s string) {
 	if query.Season != "" {
-		s += fmt.Sprintf("S%s", padLeft(query.Season, "0", 2))
+		s += fmt.Sprintf("S%02s", query.Season)
 	}
 	if query.Ep != "" {
-		s += fmt.Sprintf("E%s", padLeft(query.Ep, "0", 2))
+		s += fmt.Sprintf("E%02s", query.Ep)
 	}
 	return s
 }
@@ -38,6 +45,10 @@ func (query Query) Keywords() string {
 
 	if query.Q != "" {
 		tokens = append(tokens, query.Q)
+	}
+
+	if query.Series != "" {
+		tokens = append(tokens, query.Series)
 	}
 
 	if query.Season != "" || query.Ep != "" {
@@ -69,6 +80,10 @@ func (query Query) Encode() string {
 		v.Set("season", query.Season)
 	}
 
+	if query.Series != "" {
+		v.Set("series", query.Series)
+	}
+
 	if query.Offset != 0 {
 		v.Set("offset", strconv.Itoa(query.Offset))
 	}
@@ -95,6 +110,26 @@ func (query Query) Encode() string {
 		v.Set("cat", strings.Join(cats, ","))
 	}
 
+	if query.TVDBID != "" {
+		v.Set("tvdbid", query.TVDBID)
+	}
+
+	if query.TVRageID != "" {
+		v.Set("rid", query.TVRageID)
+	}
+
+	if query.TVMazeID != "" {
+		v.Set("tvmazeid", query.TVMazeID)
+	}
+
+	if query.TraktID != "" {
+		v.Set("traktid", query.TraktID)
+	}
+
+	if query.IMDBID != "" {
+		v.Set("imdbid", query.IMDBID)
+	}
+
 	return v.Encode()
 }
 
@@ -116,6 +151,9 @@ func ParseQuery(v url.Values) (Query, error) {
 
 		case "q":
 			query.Q = strings.Join(vals, " ")
+
+		case "series":
+			query.Series = strings.Join(vals, " ")
 
 		case "ep":
 			if len(vals) > 1 {
@@ -177,6 +215,30 @@ func ParseQuery(v url.Values) (Query, error) {
 
 		case "format":
 
+		case "tvdbid":
+			if len(vals) > 1 {
+				return query, errors.New("Multiple tvdbid parameters not allowed")
+			}
+			query.TVDBID = vals[0]
+
+		case "rid":
+			if len(vals) > 1 {
+				return query, errors.New("Multiple rid parameters not allowed")
+			}
+			query.TVRageID = vals[0]
+
+		case "tvmazeid":
+			if len(vals) > 1 {
+				return query, errors.New("Multiple tvmazeid parameters not allowed")
+			}
+			query.TVMazeID = vals[0]
+
+		case "imdbid":
+			if len(vals) > 1 {
+				return query, errors.New("Multiple imdbid parameters not allowed")
+			}
+			query.IMDBID = vals[0]
+
 		default:
 			logger.Logger.Warnf("Unknown torznab request key %q", k)
 		}
@@ -194,11 +256,4 @@ func splitInts(s, delim string) (i []int, err error) {
 		i = append(i, vInt)
 	}
 	return i, err
-}
-
-func padLeft(str, pad string, length int) string {
-	for len(str) < length {
-		str = pad + str
-	}
-	return str
 }
