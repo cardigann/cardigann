@@ -33,10 +33,6 @@ import (
 	"github.com/yosssi/gohtml"
 )
 
-const (
-	defaultTVDBKey = "CACE3A94B49F1566"
-)
-
 var (
 	_ torznab.Indexer = &Runner{}
 )
@@ -574,7 +570,7 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 
 	if show != nil {
 		query.Series = show.Name
-		r.logger.Debugf("Found show %#v", show)
+		r.logger.Debugf("Found show via tvmaze lookup: %s (%d)", show.Name, show.GetFirstAired().Year())
 	}
 
 	return query, nil
@@ -751,7 +747,11 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 		info, err := releaseinfo.Parse(item.Title)
 		if err != nil {
-			r.logger.Warnf("Failed to parse show title: %v", err)
+			r.logger.
+				WithFields(logrus.Fields{"title": item.Title}).
+				WithError(err).
+				Warn("Failed to parse show title, skipping")
+			continue
 		}
 
 		if info != nil {

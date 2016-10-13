@@ -110,7 +110,7 @@ const exampleSearchPage = `
     <tbody>
       <tr>
         <td><a href="category.php?id=2">Sound</a></td>
-        <td><a href="details.php?mma_llama_309960_archive">Llama llama</a></td>
+        <td><a href="details.php?mma_llama_309960_archive">Llama llama S01E01 [LlamaGroup]</a></td>
         <td><a href="/download/mma_llama_309960/mma_llama_309960_archive.torrent">Download</a></td>
         <td>4GB</td>
         <td>2006-01-02 15:04:05</td>
@@ -191,7 +191,7 @@ const exampleSearchPageWithDateHeadersAndMultiRow = `
         <td rowspan="2"><a href="category.php?id=2">Sound</a></td>
       </tr>
       <tr>
-        <td><a href="details.php?1_archive">Llama llama 1</a></td>
+        <td><a href="details.php?1_archive">Llama llama S01E01</a></td>
         <td><a href="/download/1_archive.torrent">Download</a></td>
         <td>4GB</td>
         <td>2006-01-02 15:04:05</td>
@@ -203,7 +203,7 @@ const exampleSearchPageWithDateHeadersAndMultiRow = `
         <td rowspan="2"><a href="category.php?id=2">Sound</a></td>
       </tr>
       <tr>
-        <td><a href="details.php?2_archive">Llama llama 2</a></td>
+        <td><a href="details.php?2_archive">Llama llama S01E02</a></td>
         <td><a href="/download/2_archive.torrent">Download</a></td>
         <td>4GB</td>
         <td>2006-01-02 15:04:05</td>
@@ -212,7 +212,7 @@ const exampleSearchPageWithDateHeadersAndMultiRow = `
         <td rowspan="2"><a href="category.php?id=3">Other</a></td>
       </tr>
       <tr>
-        <td><a href="details.php?3_archive">Llama llama 3</a></td>
+        <td><a href="details.php?3_archive">Llama llama S01E03</a></td>
         <td><a href="/download/3_archive.torrent">Download</a></td>
         <td>4GB</td>
         <td>2006-01-02 15:04:05</td>
@@ -430,9 +430,9 @@ func TestIndexerDefinitionRunner_MultiRowSearch(t *testing.T) {
 		t.Fatalf("Expected 2 result, got %d", len(results))
 	}
 
-	if results[1].Title != "Llama llama 2" {
+	if results[1].Title != "Llama llama S01E02" {
 		t.Fatalf("Expected row 2 to have title of %q, got %q",
-			"Llama llama 2",
+			"Llama llama S01E02",
 			results[1].Title)
 	}
 
