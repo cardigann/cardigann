@@ -745,17 +745,17 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 			}
 		}
 
-		info, err := releaseinfo.Parse(item.Title)
-		if err != nil {
-			r.logger.
-				WithFields(logrus.Fields{"title": item.Title}).
-				WithError(err).
-				Warn("Failed to parse show title, skipping")
-			continue
-		}
+		if query.Series != "" {
+			info, err := releaseinfo.Parse(item.Title)
+			if err != nil {
+				r.logger.
+					WithFields(logrus.Fields{"title": item.Title}).
+					WithError(err).
+					Warn("Failed to parse show title, skipping")
+				continue
+			}
 
-		if info != nil {
-			if query.Series != "" && info.SeriesTitleInfo.TitleWithoutYear != query.Series {
+			if info != nil && info.SeriesTitleInfo.TitleWithoutYear != query.Series {
 				r.logger.
 					WithFields(logrus.Fields{"got": info.SeriesTitleInfo.TitleWithoutYear, "expected": query.Series}).
 					Debugf("Skipping non-matching series")
