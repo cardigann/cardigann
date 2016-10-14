@@ -59,7 +59,7 @@
       password: "{{ .Config.password }}"
     error:
       message:
-        selector: #login_box_desc
+        selector: "#login_box_desc"
     test:
       path: /inbox
 
