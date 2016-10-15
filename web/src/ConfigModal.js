@@ -77,10 +77,10 @@ class ConfigModal extends Component {
   }
   buildFields = () => {
     return this.props.indexer.settings.map((s) => {
-      if (typeof(this.state.config[s.Name]) !== undefined) {
-        s.Value = this.state.config[s.Name];
+      if (typeof(this.state.config[s.name]) !== undefined) {
+        s.value = this.state.config[s.name];
       }
-      s.Placeholder = s.Placeholder || s.Label
+      s.placeholder = s.placeholder || s.label
       return s;
     });
   }
