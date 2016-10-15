@@ -126,6 +126,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Norbits
 * PrivateHD
 * Speed.CD
+* Sceneaccess
 * ThePirateBay (TPB)
 * Torrentbytes
 * TorrentDay
