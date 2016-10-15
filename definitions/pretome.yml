@@ -1,0 +1,90 @@
+---
+  site: pretome
+  name: PreToMe
+  description: "a general tracker"
+  language: en-us
+  links:
+    - https://pretome.info/
+
+  caps:
+    categories:
+      22: PC              # Applications
+      27: Books           # Ebooks
+      4: PC/Games         # Games
+      31: Other           # Miscellaneous
+      19: Movies          # Movies
+      6: Audio            # Music
+      7: TV               # TV
+      51: XXX             # XXX
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  settings:
+    - name: pin
+      type: text
+      label: Pin
+    - name: username
+      type: text
+      label: Username
+    - name: password
+      type: password
+      label: Password
+
+  login:
+    path: /takelogin.php
+    method: post
+    form: form
+    inputs:
+      returnto: "/"
+      login_pin: "{{ .Config.pin }}"
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+      login: "Login"
+    error:
+      - selector: font[color="red"]:has(h1)
+        message:
+          selector: font[color="red"]
+    test:
+      path: /my.php
+  ratio:
+    text: "8"
+
+  search:
+    path: /browse.php
+    inputs:
+      $raw: "{{range .Categories}}cat[]={{.}}&{{end}}"
+      search: "{{ .Query.Keywords }}"
+      tags: 
+      st: 1
+      tf: all
+    rows:
+      selector: table > tbody > tr.browse
+    fields:
+      title:
+        selector: a[title][href^="details.php"]
+        attribute: title
+      category:
+        selector: a[href^="browse.php?cat[]="]
+        attribute: href
+        filters:
+          - name: querystring
+            args: cat[]
+      comments:
+        selector: a[href*="#comments"]
+        attribute: href
+      download:
+        selector: a[href^="download.php"]
+        attribute: href
+      size:
+        selector: td:nth-child(8)
+      seeders:
+        selector: td:nth-child(10)
+      leechers:
+        selector: td:nth-child(11)
+      date:
+        selector: td:nth-child(6)
+        filters:
+          - name: append
+            args: " ago"

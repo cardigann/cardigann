@@ -140,6 +140,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * MoreThanTV
 * NCore
 * Norbits
+* PreToMe
 * PrivateHD
 * Speed.CD
 * Sceneaccess
