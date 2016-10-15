@@ -32,9 +32,13 @@ download_equinox() {
   tar -vxf release-tool-stable-linux-amd64.tgz
 }
 
+download_github_release() {
+  wget -N https://github.com/c4milo/github-release/releases/download/v1.0.8/github-release_v1.0.8_linux_amd64.tar.gz
+  tar -vxf github-release_v1.0.8_linux_amd64.tar.gz
+}
+
 equinox_release() {
   local version="$1"
-  download_equinox
   ./equinox release \
     --version="${version}" \
     --config ./equinox.yml \
@@ -45,11 +49,16 @@ equinox_release() {
 
 equinox_publish() {
   local version="$1"
-  download_equinox
   ./equinox publish \
     --release="${version}" \
     --config ./equinox.yml \
     --channel stable
+}
+
+github_release() {
+  local version="$1"
+  local description=$(git cat-file -p $version | tail -n +6)
+  ./github-release cardigann/cardigann "$version" "$TRAVIS_COMMIT" "$description"
 }
 
 if [[ -n "$TRAVIS_TAG" ]] && [[ ! "$TRAVIS_TAG" =~ ^v ]] ; then
@@ -66,11 +75,17 @@ echo "Building docker image ${DOCKER_TAG}"
 docker_build
 docker_login
 
+download_equinox
+
 echo "Releasing version ${VERSION#v} to equinox.io edge"
 equinox_release "${VERSION#v}"
 
 if [[ "$TRAVIS_TAG" =~ ^v ]] ; then
-  sleep 10
+  download_github_release
+
+  echo "Releasing version ${VERSION} on github.com"
+  github_release "${VERSION}"
+
   echo "Publishing version ${VERSION#v} to equinox.io stable"
   equinox_publish "${VERSION#v}"
 fi

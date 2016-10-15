@@ -53,3 +53,9 @@ publish:
 	--release=$(shell echo $(VERSION) | sed -e "s/^v//") \
 	--config=equinox.yml \
 	--channel stable
+
+github-release:
+	go get github.com/c4milo/github-release
+	description=$$(git cat-file -p $(VERSION) | tail -n +6); \
+	commit=$$(git rev-list -n 1 $(VERSION)); \
+	DEBUG=1 github-release cardigann/cardigann $(VERSION) "$$commit" "$$description" ""
