@@ -465,7 +465,7 @@ XaZ/AwAA//+uZYmOMgkAAA==
 	"/definitions/iptorrents.yml": {
 		local:   "definitions/iptorrents.yml",
 		size:    2218,
-		modtime: 1476396139,
+		modtime: 1476421078,
 		compressed: `
 H4sIAAAJbogA/5RVf2/bNhD9v5+CUIshRmPLUf1DFrANnYdhw1Ygw4IhQJMVtHiRiFCkStJJPE/ffSfJ
 1C+njftPknv33rtHSrqMx+NXhBhuISI8t0prkNYgJGmG0G+XVy3EwMQaSVzJiHivL8il5g/UArnSNL4H
@@ -556,6 +556,29 @@ OiYD8d/SdW294ZjGEFQWx3zJfeb0Fs31k0c94zra/+rBHctPcIzmKZl39pBdRrLEcq2h7L6Zp+eLYJLX
 Vh0nRiPo+vARtBrlhmd1HM+c6atM4WlUwAmQOiSzw7WP/wFG1pDeSFyfi5KVKIcAig1qmO7i9Q5NCjg8
 BfovjYm9xsEmaduD0VaqS+KJV2BtzQVNwt8PHDjL7WXKTYXkL7JfxNiplWdH52kTgAL3QFaZ4Ks0XgPU
 zb90vF6I2Z8AAAD//9NWYd7oBAAA
+`,
+	},
+
+	"/definitions/sceneaccess.yml": {
+		local:   "definitions/sceneaccess.yml",
+		size:    2622,
+		modtime: 1476499265,
+		compressed: `
+H4sIAAAJbogA/6SVbW/bNhDH3+dTEPYwrF1t2ZKTZgKCIYjRpdiCaMuQeagzgxXPNlFZ1EgqiVf0u+8o
+UaRkOwnQ5oUj3f93jyTFwWBwRIjiGmKiUsiBpikohbacbvZsGc1XJV2hHfJBWVl4/knF+EDIgKy1LlQc
+BC2nIZTBEcopLSyWUg0rITnYd/N3GhNyJe7RFtxMCenb5+ntdPCHg8LQUY54DE8mDni7r8/uOXP6ZF9P
+aPpJOWBsIvx5W9dQ/R90EoRWv7T65Y4+Hld6LXZShyctpZs0QoUkF8EvOG8sjFT/g+TCAccxuRC5EhkE
+yU1E+ha4iXz0URtJiGcSz5x65i/OHYPPnok8M/soHqOTUYPZV4/+FB+qutNZxdh4zyEY5oqmTxAT7I2c
+l4yL4DehVIZ7ClevVDwN3mU09bOPHHeVRLXNcvjusWOH3XIGArNa6Pb91K/JaUORTqSd7WJX7v3NNYY5
+LwplHn1vVh4xum300fT8b+9vNuS1XoMMrrjCAUyvZ957vCOaXz+VsT8xuBv7SZgE7rW7KSdh53C10d39
+PYl2zmGL7Z6kSeugGKh69vJx65xY+bI13Ukje5M5H7PZDHn87Y4petvRdk7PcS12vwTj0Fqx6laS1tDe
+CQl8lZN+83DwkxOFL3t0Ekejlx26NdlZ7MFo60aOngariBW5Ecx/VxVQma5j8uHfO2vR9wNvfGMAJfI3
+BIo7456JFc9r54JqZILKUgcGvRYsJkshN5WB50WpXapSgawvjN7nz2SIh37JV8PGSr586VmwoEo9CMm6
+YGN1IEgpZBMcPwrKXDpuFgoySDUCpNevSlzg12mBnae1twalY5ew6oTniJgmbf/tLmmWHWiJfCfpA2ao
+Hc5Mtb+XILfDX2FralVY7Pf1WM7COq8UD63hNzVqOdR6gVqlLDlkzFH2Mtwe6k0z9JMLvS2A0A9rCct/
+zno/o8dZ787hFBH+sTTXtyGcfckzDbJ1xZr7uV4hCSt4LFoCRpErha3O51X4H+Zz9uOrZsU019nB2dv6
+qgWmhwqqPK3AQFOeqa+K02osFZsN5Pqb4zDxkGeCsqfisAXLXgyi+H/PDcbI37YeZiFeD83PfK6Gw1fD
+182iMNw3z6SmjAFzGxFYJ/N+oTVhgQwgXT/v0CBH/wcAAP//+zpVrz4KAAA=
 `,
 	},
 
