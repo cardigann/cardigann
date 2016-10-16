@@ -9,10 +9,12 @@ SRC=$(shell find ./indexer ./server ./config ./torznab)
 test:
 	go test -v $(shell go list ./... | grep -v /vendor/)
 
-build: server/static.go indexer/definitions.go
+statics: server/static.go indexer/definitions.go
+
+build: $(SRC) statics
 	CGO_ENABLED=0 go build -o cardigann -ldflags="$(FLAGS)" *.go
 
-$(BIN)-linux-amd64: $(SRC)
+$(BIN)-linux-amd64: $(SRC) statics
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ -ldflags="$(FLAGS)" *.go
 
 test-defs:
@@ -58,4 +60,4 @@ github-release:
 	go get github.com/c4milo/github-release
 	description=$$(git cat-file -p $(VERSION) | tail -n +6); \
 	commit=$$(git rev-list -n 1 $(VERSION)); \
-	DEBUG=1 github-release cardigann/cardigann $(VERSION) "$$commit" "$$description" ""
+	github-release cardigann/cardigann $(VERSION) "$$commit" "$$description" ""
