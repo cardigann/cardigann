@@ -3,10 +3,10 @@
 	"ignore": "",
 	"package": [
 		{
-			"checksumSHA1": "9P9PRO1DZhCoi+dgf7zRmSaJMoI=",
+			"checksumSHA1": "x/QHsJu66FXS6j0HBos7+FFslzc=",
 			"path": "github.com/cardigann/releaseinfo",
-			"revision": "e669b1be61e189a8b56ee4fe22e2f656acd242a0",
-			"revisionTime": "2016-10-13T21:46:29Z"
+			"revision": "01f6c28996d51e210d376aa4446d22e993112161",
+			"revisionTime": "2016-10-16T22:32:51Z"
 		},
 		{
 			"checksumSHA1": "jqSVRDK7dGg6E/NikVq1Kw6gdbA=",
