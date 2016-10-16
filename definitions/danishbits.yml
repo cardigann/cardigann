@@ -1,0 +1,93 @@
+---
+  site: danishbits
+  name: DanishBits
+  language: da-dk
+  links:
+    - https://danishbits.org
+
+  caps:
+    categories:
+      8:  Movies/HD       # Blu-ray Film
+      3:  Movies          # Danske Film
+      4:  TV              # Dansk TV
+      5:  Audio           # Dansk Musik
+      32: Other/Misc      # Diverse
+      11: Movies/HD       # DVD Film
+      28: Movies/HD       # DVD Film (UNiTY)
+      12: Books/Ebook     # E-bøger
+      9:  Movies          # Film Bokssæt
+      22: Movies/HD       # HD x264 Film
+      2:  Movies/HD       # HD Film (DanishBits)
+      29: Movies/HD       # HD Film (UNiTY)
+      1:  TV/HD           # HD TV (DanishBits)
+      6:  Other/Misc      # Lydbøger
+      13: PC/Mac          # Mac Apps
+      14: PC/Phone-Other  # Mobil Apps
+      15: Audio           # Musik
+      16: Audio/Video     # Musikvideoer
+      17: Console         # Nintendo Spil
+      10: Movies/HD       # Nordiske DVD Film
+      7:  PC              # PC Apps
+      18: PC/Games        # PC Spil
+      19: Console/PS3     # PlayStation Spil
+      24: Movies/SD       # SD Film
+      31: Movies          # Tablet Film/TV
+      20: TV              # TV
+      #21:                # TV Bokssæt
+      #30:                # TV (Substance)
+      23: Console/Xbox    # Xbox Spil
+      25: XXX             # XXX
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  ratio:
+    path: /index.php
+    selector: "#stats_ratio .stat"
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      path: /login.php
+      message:
+        selector: .warning:not(.hidden)
+    test:
+      path: /inbox.php
+
+  search:
+    path: /torrents.php
+    inputs:
+       $raw: "action=newbrowse&search={{ .Query.Keywords }}&pre_type=torrents&type="
+    rows:
+      selector: table#torrent_table tr.torrent
+    fields:
+      category:
+        selector: td:nth-child(1) a
+        attribute: href
+        filters:
+          - name: regexp
+            args: "filter_(\\d+)=on"
+      title:
+        selector: td:nth-child(2) .croptorrenttext a
+        attribute: title
+      details:
+        selector: td:nth-child(2) .croptorrenttext a
+        attribute: href
+      download:
+        selector: a[title="Direkte download link"]
+        attribute: href
+      size:
+        selector: td:nth-child(3)
+        remove: br,div
+      date:
+        selector: td:nth-child(5) .time
+        attribute: title
+      seeders:
+        selector: td:nth-child(7)
+      leechers:
+        selector: td:nth-child(8)
