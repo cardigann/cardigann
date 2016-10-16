@@ -17,7 +17,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
-	"github.com/cardigann/cardigann/har"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/server"
@@ -371,29 +370,6 @@ func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath str
 		defs = append(defs, def)
 	}
 
-	var rt http.RoundTripper
-
-	if savePath != "" {
-		recorder := har.NewRecorder()
-		rt = recorder
-		defer func() {
-			fmt.Printf("→ Saving HAR to %s\n", savePath)
-			b, err := json.Marshal(recorder.Export())
-			if err != nil {
-				log.Fatal(err)
-			}
-			if err = ioutil.WriteFile(savePath, b, 0700); err != nil {
-				log.Fatal(err)
-			}
-		}()
-	} else if replayPath != "" {
-		replayer, err := har.NewReplayerFromFile(replayPath)
-		if err != nil {
-			return err
-		}
-		rt = replayer
-	}
-
 	fmt.Printf("→ Testing %d definition(s) (%s/%s/%s)\n",
 		len(defs),
 		version(),
@@ -404,7 +380,6 @@ func testDefinitionCommand(f *os.File, cachePages bool, savePath, replayPath str
 		runner := indexer.NewRunner(def, indexer.RunnerOpts{
 			Config:     conf,
 			CachePages: cachePages,
-			Transport:  rt,
 		})
 		tester := indexer.Tester{Runner: runner, Opts: indexer.TesterOpts{
 			Download: true,
