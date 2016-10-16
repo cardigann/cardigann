@@ -519,7 +519,18 @@ func (r *Runner) Info() torznab.Info {
 }
 
 func (r *Runner) Capabilities() torznab.Capabilities {
-	return r.definition.Capabilities.ToTorznab()
+	caps := r.definition.Capabilities.ToTorznab()
+
+	for idx, mode := range caps.SearchModes {
+		switch mode.Key {
+		case "tv-search":
+			caps.SearchModes[idx].SupportedParams = append(
+				caps.SearchModes[idx].SupportedParams,
+				"tvdbid", "tvmazeid", "rid")
+		}
+	}
+
+	return caps
 }
 
 type extractedItem struct {
