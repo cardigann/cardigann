@@ -58,7 +58,7 @@ equinox_publish() {
 github_release() {
   local version="$1"
   local description="$(git cat-file -p "$version" | tail -n +6)\n\nDownload from https://dl.equinox.io/cardigann/cardigann/stable"
-  ./github-release cardigann/cardigann "$version" "$TRAVIS_COMMIT" "$description"
+  ./github-release cardigann/cardigann "$version" "$TRAVIS_COMMIT" "$description" ""
 }
 
 if [[ -n "$TRAVIS_TAG" ]] && [[ ! "$TRAVIS_TAG" =~ ^v ]] ; then
