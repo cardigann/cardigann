@@ -3,6 +3,13 @@
 	"ignore": "",
 	"package": [
 		{
+			"checksumSHA1": "jqSVRDK7dGg6E/NikVq1Kw6gdbA=",
+			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "9f9027faeb0dad515336ed2f28317f9f8f527ab4",
+			"revisionTime": "2016-01-29T19:31:06Z"
+		},
+		{
 			"checksumSHA1": "L+SH9/QPBEpTYmBnDGBXmI7VYIw=",
 			"origin": "github.com/cardigann/surf",
 			"path": "github.com/headzoo/surf",
@@ -14,6 +21,44 @@
 			"path": "github.com/headzoo/ut",
 			"revision": "5657594ccf1d57af95374cc26701196a441deccc",
 			"revisionTime": "2014-08-28T02:59:07Z"
+		},
+		{
+			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",
+			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "9f9027faeb0dad515336ed2f28317f9f8f527ab4",
+			"revisionTime": "2016-01-29T19:31:06Z"
+		},
+		{
+			"checksumSHA1": "EO+jcRet/AJ6IY3lBO8l8BLsZWg=",
+			"origin": "github.com/stretchr/testify/vendor/github.com/stretchr/objx",
+			"path": "github.com/stretchr/objx",
+			"revision": "9f9027faeb0dad515336ed2f28317f9f8f527ab4",
+			"revisionTime": "2016-01-29T19:31:06Z"
+		},
+		{
+			"checksumSHA1": "9x9U6gHs3Rd8ENYSIHXgTazYiEA=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "9f9027faeb0dad515336ed2f28317f9f8f527ab4",
+			"revisionTime": "2016-01-29T19:31:06Z"
+		},
+		{
+			"checksumSHA1": "FinjWlIRyd44CfeSiJwvzpBfnDY=",
+			"path": "github.com/stretchr/testify/mock",
+			"revision": "9f9027faeb0dad515336ed2f28317f9f8f527ab4",
+			"revisionTime": "2016-01-29T19:31:06Z"
+		},
+		{
+			"checksumSHA1": "r6WTJyDUKCuA7ICt8cRLjoJpdoY=",
+			"path": "github.com/stretchr/testify/require",
+			"revision": "9f9027faeb0dad515336ed2f28317f9f8f527ab4",
+			"revisionTime": "2016-01-29T19:31:06Z"
+		},
+		{
+			"checksumSHA1": "19L79pZEczlmOekQtaCRrtDTGKI=",
+			"path": "gopkg.in/check.v1",
+			"revision": "871360013c92e1c715c2de6d06b54899468a8a2d",
+			"revisionTime": "2014-04-01T16:00:02Z"
 		}
 	],
 	"rootPath": "github.com/cardigann/cardigann"
