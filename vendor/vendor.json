@@ -1,6 +1,20 @@
 {
 	"comment": "",
 	"ignore": "",
-	"package": [],
+	"package": [
+		{
+			"checksumSHA1": "L+SH9/QPBEpTYmBnDGBXmI7VYIw=",
+			"origin": "github.com/cardigann/surf",
+			"path": "github.com/headzoo/surf",
+			"revision": "40151144dcb8eb3fce7599cf59f7d2f50d1cf690",
+			"revisionTime": "2016-09-05T08:01:30Z"
+		},
+		{
+			"checksumSHA1": "mH8b+MotDKxCJKnrw+R1tivENGI=",
+			"path": "github.com/headzoo/ut",
+			"revision": "5657594ccf1d57af95374cc26701196a441deccc",
+			"revisionTime": "2014-08-28T02:59:07Z"
+		}
+	],
 	"rootPath": "github.com/cardigann/cardigann"
 }
