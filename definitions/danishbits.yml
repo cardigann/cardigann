@@ -33,8 +33,8 @@
       24: Movies/SD       # SD Film
       31: Movies          # Tablet Film/TV
       20: TV              # TV
-      #21:                # TV Bokssæt
-      #30:                # TV (Substance)
+      21: TV              # TV Bokssæt
+      30: TV              # TV (Substance)
       23: Console/Xbox    # Xbox Spil
       25: XXX             # XXX
 
