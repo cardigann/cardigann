@@ -755,7 +755,7 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 				continue
 			}
 
-			if info != nil && info.SeriesTitleInfo.TitleWithoutYear != query.Series {
+			if info != nil && !info.SeriesTitleInfo.Equal(query.Series) {
 				r.logger.
 					WithFields(logrus.Fields{"got": info.SeriesTitleInfo.TitleWithoutYear, "expected": query.Series}).
 					Debugf("Skipping non-matching series")
