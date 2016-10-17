@@ -165,7 +165,7 @@ func (t *Tester) Test() (err error) {
 
 	err = t.printfWithResult("  Testing empty results are handled", nil, func() error {
 		results, err := t.Runner.Search(torznab.Query{
-			Q: "nothingshouldmatchtheseresults",
+			Series: "nothingshouldmatchtheseresults",
 		})
 		if err != nil {
 			return err
