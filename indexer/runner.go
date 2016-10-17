@@ -16,6 +16,8 @@ import (
 	"text/template"
 	"time"
 
+	"golang.org/x/net/proxy"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
@@ -61,6 +63,25 @@ func NewRunner(def *IndexerDefinition, opts RunnerOpts) *Runner {
 	}
 }
 
+func (r *Runner) createTransport() (http.RoundTripper, error) {
+	var t http.Transport
+
+	if proxyAddr, isset := os.LookupEnv("SOCKS_PROXY"); isset {
+		r.logger.
+			WithFields(logrus.Fields{"addr": proxyAddr}).
+			Debugf("Using SOCKS5 proxy")
+
+		dialer, err := proxy.SOCKS5("tcp", proxyAddr, nil, proxy.Direct)
+		if err != nil {
+			return nil, fmt.Errorf("can't connect to the proxy %s: %v", proxyAddr, err)
+		}
+
+		t.Dial = dialer.Dial
+	}
+
+	return &t, nil
+}
+
 func (r *Runner) createBrowser() {
 	r.browserLock.Lock()
 
@@ -74,7 +95,10 @@ func (r *Runner) createBrowser() {
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
 	bow.SetCookieJar(r.cookies)
 
-	transport := http.DefaultTransport
+	transport, err := r.createTransport()
+	if err != nil {
+		panic(err)
+	}
 
 	if r.opts.Transport != nil {
 		transport = r.opts.Transport
