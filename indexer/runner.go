@@ -21,6 +21,7 @@ import (
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
+	"github.com/cardigann/releaseinfo"
 	"github.com/dustin/go-humanize"
 	"github.com/f2prateek/train"
 	trainlog "github.com/f2prateek/train/log"
@@ -28,6 +29,7 @@ import (
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
 	"github.com/headzoo/surf/jar"
+	"github.com/tehjojo/go-tvmaze/tvmaze"
 	"github.com/yosssi/gohtml"
 )
 
@@ -517,7 +519,18 @@ func (r *Runner) Info() torznab.Info {
 }
 
 func (r *Runner) Capabilities() torznab.Capabilities {
-	return r.definition.Capabilities.ToTorznab()
+	caps := r.definition.Capabilities.ToTorznab()
+
+	for idx, mode := range caps.SearchModes {
+		switch mode.Key {
+		case "tv-search":
+			caps.SearchModes[idx].SupportedParams = append(
+				caps.SearchModes[idx].SupportedParams,
+				"tvdbid", "tvmazeid", "rid")
+		}
+	}
+
+	return caps
 }
 
 type extractedItem struct {
@@ -545,9 +558,44 @@ func (r *Runner) localCategories(query torznab.Query) []string {
 	return localCats
 }
 
+func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
+	var show *tvmaze.Show
+	var err error
+
+	// convert show identifiers to season parameter
+	switch {
+	case query.TVDBID != "":
+		show, err = tvmaze.DefaultClient.GetShowWithTVDBID(query.TVDBID)
+		query.TVDBID = "0"
+	case query.TVMazeID != "":
+		show, err = tvmaze.DefaultClient.GetShowWithID(query.TVMazeID)
+		query.TVMazeID = "0"
+	case query.TVRageID != "":
+		show, err = tvmaze.DefaultClient.GetShowWithTVRageID(query.TVRageID)
+		query.TVRageID = ""
+	}
+
+	if err != nil {
+		return query, err
+	}
+
+	if show != nil {
+		query.Series = show.Name
+		r.logger.Debugf("Found show via tvmaze lookup: %s (%d)", show.Name, show.GetFirstAired().Year())
+	}
+
+	return query, nil
+}
+
 func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	r.createBrowser()
 	defer r.releaseBrowser()
+
+	var err error
+	query, err = r.resolveQuery(query)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: make this concurrency safe
 	filterLogger = r.logger
@@ -562,6 +610,9 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	}
 
 	localCats := r.localCategories(query)
+
+	r.logger.Debugf("Query is %v", query)
+	r.logger.Debugf("Keywords are %q", query.Keywords())
 
 	templateCtx := struct {
 		Query      torznab.Query
@@ -702,6 +753,24 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 
 			if intCatId, err := strconv.Atoi(item.LocalCategoryID); err == nil {
 				item.Category = intCatId + torznab.CustomCategoryOffset
+			}
+		}
+
+		if query.Series != "" {
+			info, err := releaseinfo.Parse(item.Title)
+			if err != nil {
+				r.logger.
+					WithFields(logrus.Fields{"title": item.Title}).
+					WithError(err).
+					Warn("Failed to parse show title, skipping")
+				continue
+			}
+
+			if info != nil && !info.SeriesTitleInfo.Equal(query.Series) {
+				r.logger.
+					WithFields(logrus.Fields{"got": info.SeriesTitleInfo.TitleWithoutYear, "expected": query.Series}).
+					Debugf("Skipping non-matching series")
+				continue
 			}
 		}
 
