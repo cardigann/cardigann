@@ -74,6 +74,10 @@
         remove: br
       date:
         selector: .torrenttable:nth-child(6) font
+        remove: br
+        filters:
+          - name: dateparse
+            args: 15:04:0502/01/2006
       seeders:
         selector: .torrenttable:nth-child(9)
       leechers:
