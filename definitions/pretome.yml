@@ -1,4 +1,4 @@
----
+﻿---
   site: pretome
   name: PreToMe
   description: "a general tracker"
@@ -49,7 +49,7 @@
     test:
       path: /my.php
   ratio:
-    text: "8"
+    text: "∞"
 
   search:
     path: /browse.php
