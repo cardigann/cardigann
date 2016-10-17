@@ -77,9 +77,10 @@ func (r *Runner) createTransport() (http.RoundTripper, error) {
 		}
 
 		t.Dial = dialer.Dial
+		return &t, nil
 	}
 
-	return &t, nil
+	return http.DefaultTransport, nil
 }
 
 func (r *Runner) createBrowser() {
