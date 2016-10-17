@@ -102,6 +102,22 @@ Definitions are yaml files (see [definitions](definitions/) for their source) th
   * `%APPDATA%\cardigann\definitions\`
   * `%LOCALAPPDATA%\cardigann\definitions\`
 
+## Using with a Proxy
+
+Currently either a SOCKS5 proxy like Privoxy or Tor can be used:
+
+```
+SOCKS_PROXY=localhost:1080 cardigann server
+```
+
+Or, an http proxy works too:
+
+```
+HTTP_PROXY=localhost:8080 cardigann server
+```
+
+If you are running as a service, you will need to manually edit the service files to set the environment.
+
 ## Supported Indexers
 
 Cardigann simply provides a format for describing how to log into and scrape the search results of various forums and sites. It is not endorsed by the various sites, nor is it intended for piracy. You are using Cardigann at your own risk.
