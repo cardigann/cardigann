@@ -5,6 +5,8 @@ services:
     build: .
     volumes:
     - .:/.config/cardigann
+    environment:
+      - CARDIGANN_PASSPHRASE
     command: ["server", "--debug"]
     ports:
     - 5060:5060

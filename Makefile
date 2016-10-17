@@ -41,6 +41,9 @@ run-dev:
 	cd web/; npm start &
 	rerun $(PREFIX) server --debug --passphrase "llamasrock"
 
+docker: $(BIN)-linux-amd64
+	docker-compose build
+
 CHANNEL ?= edge
 release:
 	equinox release \
