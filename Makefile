@@ -3,7 +3,7 @@ PREFIX=github.com/cardigann/cardigann
 GOVERSION=$(shell go version)
 GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
-FLAGS=-X main.Version=$(VERSION) -s -w
+FLAGS=-X main.Version=$(VERSION) -w
 SRC=$(shell find ./indexer ./server ./config ./torznab)
 
 test:
@@ -12,10 +12,10 @@ test:
 statics: server/static.go indexer/definitions.go
 
 build: $(SRC) statics
-	CGO_ENABLED=0 go build -o cardigann -ldflags="$(FLAGS)" *.go
+	go build -o cardigann -ldflags="$(FLAGS)" *.go
 
 $(BIN)-linux-amd64: $(SRC) statics
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ -ldflags="$(FLAGS)" *.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ -ldflags="$(FLAGS) -s" *.go
 
 test-defs:
 	find definitions -name '*.yml' -print -exec go run *.go test {} \;

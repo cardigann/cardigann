@@ -2,6 +2,7 @@ package indexer
 
 import (
 	"bytes"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -65,6 +66,7 @@ func NewRunner(def *IndexerDefinition, opts RunnerOpts) *Runner {
 
 func (r *Runner) createTransport() (http.RoundTripper, error) {
 	var t http.Transport
+	var custom bool
 
 	if proxyAddr, isset := os.LookupEnv("SOCKS_PROXY"); isset {
 		r.logger.
@@ -77,10 +79,19 @@ func (r *Runner) createTransport() (http.RoundTripper, error) {
 		}
 
 		t.Dial = dialer.Dial
-		return &t, nil
+		custom = true
 	}
 
-	return http.DefaultTransport, nil
+	if _, isset := os.LookupEnv("TLS_INSECURE"); isset {
+		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		custom = true
+	}
+
+	if !custom {
+		return http.DefaultTransport, nil
+	}
+
+	return &t, nil
 }
 
 func (r *Runner) createBrowser() {
