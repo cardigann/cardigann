@@ -28,6 +28,12 @@
 			"revisionTime": "2016-08-12T03:20:51Z"
 		},
 		{
+			"checksumSHA1": "7F7WVBMSboDjXdObVc3NRGftIPI=",
+			"path": "github.com/eefret/gomdb",
+			"revision": "561e54fa87cc2baecff3abba834b3dac5b1245c1",
+			"revisionTime": "2016-06-20T18:19:23Z"
+		},
+		{
 			"checksumSHA1": "L+SH9/QPBEpTYmBnDGBXmI7VYIw=",
 			"origin": "github.com/cardigann/surf",
 			"path": "github.com/headzoo/surf",

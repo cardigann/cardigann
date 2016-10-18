@@ -21,6 +21,24 @@ func (c Capabilities) HasSearchMode(key string) (bool, []string) {
 	return false, nil
 }
 
+func (c Capabilities) HasTVShows() bool {
+	for _, cat := range c.Categories {
+		if cat.ID >= 5000 && cat.ID < 6000 {
+			return true
+		}
+	}
+	return false
+}
+
+func (c Capabilities) HasMovies() bool {
+	for _, cat := range c.Categories {
+		if cat.ID >= 2000 && cat.ID < 3000 {
+			return true
+		}
+	}
+	return false
+}
+
 type SearchMode struct {
 	Key             string
 	Available       bool

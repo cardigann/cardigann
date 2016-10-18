@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import { Table, ButtonToolbar, Button, Panel } from 'react-bootstrap';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import CopyToClipboard from 'react-copy-to-clipboard';
 import xhrUrl from './xhr';
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 class StatefulButton extends Component {
   static defaultProps = {
@@ -40,7 +45,11 @@ class StatefulButton extends Component {
 class FeedLink extends Component {
   render() {
     return (
-      <span className="FeedLink">{this.props.feedHref}</span>
+      <span className="FeedLink">
+        <CopyToClipboard text={this.props.feedHref}>
+          <Button bsStyle="default" bsSize="xsmall" title={this.props.feedHref}>Copy {capitalizeFirstLetter(this.props.label)} Feed</Button>
+        </CopyToClipboard>{' '}
+      </span>
     );
   }
 }
@@ -161,9 +170,12 @@ class IndexerListRow extends Component {
           </OverlayTrigger>
         </td>
         <td className="col-md-6">
-          <FeedLink
-            feedHref={xhrUrl(this.props.indexer.feeds.torznab)}
-            label="torznab" />
+            {this.props.indexer.feeds.torznab ? <FeedLink
+              feedHref={xhrUrl(this.props.indexer.feeds.torznab)}
+              label="torznab" /> : ''}
+            {this.props.indexer.feeds.potatotorrent ? <FeedLink
+              feedHref={xhrUrl(this.props.indexer.feeds.potatotorrent)}
+              label="potato" /> : ''}
         </td>
         <td className="col-md-1">{this.state.status}</td>
         <td className="col-md-3">

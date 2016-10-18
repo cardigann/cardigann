@@ -4,6 +4,7 @@ package server
 import (
 	"encoding/hex"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/logger"
+	"github.com/cardigann/cardigann/torrentpotato"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/gorilla/mux"
 )
@@ -26,6 +28,7 @@ var (
 	log              = logger.Logger
 	apiRoutePrefixes = []string{
 		"/torznab/",
+		"/torrentpotato/",
 		"/download/",
 		"/xhr/",
 		"/debug/",
@@ -59,6 +62,11 @@ func NewHandler(p Params) (http.Handler, error) {
 	// torznab routes
 	router.HandleFunc("/torznab/{indexer}", h.torznabHandler).Methods("GET")
 	router.HandleFunc("/torznab/{indexer}/api", h.torznabHandler).Methods("GET")
+
+	// torrentpotato routes
+	router.HandleFunc("/torrentpotato/{indexer}", h.torrentPotatoHandler).Methods("GET")
+
+	// download routes
 	router.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("HEAD")
 	router.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("GET")
 	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("HEAD")
@@ -223,7 +231,7 @@ func (h *handler) torznabHandler(w http.ResponseWriter, r *http.Request) {
 		indexer.Capabilities().ServeHTTP(w, r)
 
 	case "search", "tvsearch", "tv-search":
-		feed, err := h.search(r, indexer, indexerID)
+		feed, err := h.torznabSearch(r, indexer, indexerID)
 		if err != nil {
 			torznab.Error(w, err.Error(), torznab.ErrUnknownError)
 			return
@@ -244,6 +252,57 @@ func (h *handler) torznabHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		torznab.Error(w, "Unknown type parameter", torznab.ErrIncorrectParameter)
 	}
+}
+
+func (h *handler) torrentPotatoHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	indexerID := params["indexer"]
+
+	apiKey := r.URL.Query().Get("passkey")
+	if !h.checkAPIKey(apiKey) {
+		torrentpotato.Error(w, errors.New("Invalid passkey"))
+		return
+	}
+
+	indexer, err := h.lookupIndexer(indexerID)
+	if err != nil {
+		torrentpotato.Error(w, err)
+		return
+	}
+
+	query := torznab.Query{
+		Type: "movie",
+		Categories: []int{
+			torznab.CategoryMovies.ID,
+			torznab.CategoryMovies_SD.ID,
+			torznab.CategoryMovies_HD.ID,
+			torznab.CategoryMovies_Foreign.ID,
+		},
+	}
+
+	qs := r.URL.Query()
+
+	if search := qs.Get("search"); search != "" {
+		query.Q = search
+	}
+
+	if imdbid := qs.Get("imdbid"); imdbid != "" {
+		query.IMDBID = imdbid
+	}
+
+	items, err := indexer.Search(query)
+	if err != nil {
+		torrentpotato.Error(w, err)
+		return
+	}
+
+	rewritten, err := h.rewriteLinks(r, items)
+	if err != nil {
+		torrentpotato.Error(w, err)
+		return
+	}
+
+	torrentpotato.Output(w, rewritten)
 }
 
 func (h *handler) downloadHandler(w http.ResponseWriter, r *http.Request) {
@@ -285,12 +344,7 @@ func (h *handler) downloadHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, rc)
 }
 
-func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey string) (*torznab.ResultFeed, error) {
-	baseURL, err := h.baseURL(r, "/download")
-	if err != nil {
-		return nil, err
-	}
-
+func (h *handler) torznabSearch(r *http.Request, indexer torznab.Indexer, siteKey string) (*torznab.ResultFeed, error) {
 	query, err := torznab.ParseQuery(r.URL.Query())
 	if err != nil {
 		return nil, err
@@ -306,13 +360,28 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 		Items: items,
 	}
 
+	rewritten, err := h.rewriteLinks(r, items)
+	if err != nil {
+		return nil, err
+	}
+
+	feed.Items = rewritten
+	return feed, err
+}
+
+func (h *handler) rewriteLinks(r *http.Request, items []torznab.ResultItem) ([]torznab.ResultItem, error) {
+	baseURL, err := h.baseURL(r, "/download")
+	if err != nil {
+		return nil, err
+	}
+
 	k, err := h.sharedKey()
 	if err != nil {
 		return nil, err
 	}
 
 	// rewrite non-magnet links to use the server
-	for idx, item := range feed.Items {
+	for idx, item := range items {
 		if strings.HasPrefix(item.Link, "magnet:") {
 			continue
 		}
@@ -328,8 +397,8 @@ func (h *handler) search(r *http.Request, indexer torznab.Indexer, siteKey strin
 			return nil, err
 		}
 
-		feed.Items[idx].Link = fmt.Sprintf("%s/%s/%s.torrent", baseURL.String(), te, url.QueryEscape(item.Title))
+		items[idx].Link = fmt.Sprintf("%s/%s/%s.torrent", baseURL.String(), te, url.QueryEscape(item.Title))
 	}
 
-	return feed, err
+	return items, nil
 }

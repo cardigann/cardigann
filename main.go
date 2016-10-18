@@ -285,6 +285,9 @@ func configureServerCommand(app *kingpin.Application) error {
 		Short('p').
 		StringVar(&s.Passphrase)
 
+	cmd.Flag("hostname", "The hostname to use for the links back to the server").
+		StringVar(&s.Hostname)
+
 	configureGlobalFlags(cmd)
 	cmd.Action(func(c *kingpin.ParseContext) error {
 		applyGlobalFlags()

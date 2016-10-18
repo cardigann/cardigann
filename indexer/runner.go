@@ -26,6 +26,7 @@ import (
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/cardigann/releaseinfo"
 	"github.com/dustin/go-humanize"
+	"github.com/eefret/gomdb"
 	"github.com/f2prateek/train"
 	trainlog "github.com/f2prateek/train/log"
 	"github.com/headzoo/surf"
@@ -596,6 +597,7 @@ func (r *Runner) localCategories(query torznab.Query) []string {
 
 func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 	var show *tvmaze.Show
+	var movie *gomdb.MovieResult
 	var err error
 
 	// convert show identifiers to season parameter
@@ -609,6 +611,9 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 	case query.TVRageID != "":
 		show, err = tvmaze.DefaultClient.GetShowWithTVRageID(query.TVRageID)
 		query.TVRageID = ""
+	case query.IMDBID != "":
+		movie, err = gomdb.MovieByImdbID(query.IMDBID)
+		query.IMDBID = ""
 	}
 
 	if err != nil {
@@ -618,6 +623,12 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 	if show != nil {
 		query.Series = show.Name
 		r.logger.Debugf("Found show via tvmaze lookup: %s (%d)", show.Name, show.GetFirstAired().Year())
+	}
+
+	if movie != nil {
+		query.Movie = movie.Title
+		query.Year = movie.Year
+		r.logger.Debugf("Found movie via gomdb lookup: %s (%s)", movie.Title, movie.Year)
 	}
 
 	return query, nil

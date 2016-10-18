@@ -16,7 +16,8 @@ import (
 )
 
 type indexerFeedsView struct {
-	Torznab string `json:"torznab"`
+	Torznab       string `json:"torznab,omitempty"`
+	PotatoTorrent string `json:"potatotorrent,omitempty"`
 }
 
 type indexerSettingsView struct {
@@ -85,15 +86,24 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 		}
 
 		info := runner.Info()
+		caps := runner.Capabilities()
 		stats := def.Stats()
+		feeds := indexerFeedsView{}
+
+		if caps.HasTVShows() {
+			feeds.Torznab = fmt.Sprintf("%storznab/%s", baseURL, info.ID)
+		}
+
+		if caps.HasMovies() {
+			feeds.Torznab = fmt.Sprintf("%storznab/%s", baseURL, info.ID)
+			feeds.PotatoTorrent = fmt.Sprintf("%spotatotorrent/%s", baseURL, info.ID)
+		}
 
 		reply = append(reply, indexerView{
-			ID:      info.ID,
-			Name:    info.Title,
-			Enabled: config.IsSectionEnabled(info.ID, h.Params.Config),
-			Feeds: indexerFeedsView{
-				Torznab: fmt.Sprintf("%storznab/%s", baseURL, info.ID),
-			},
+			ID:       info.ID,
+			Name:     info.Title,
+			Enabled:  config.IsSectionEnabled(info.ID, h.Params.Config),
+			Feeds:    feeds,
 			Settings: settings,
 			Stats: indexerStatsView{
 				Hash:    stats.Hash,
