@@ -12,12 +12,12 @@ import (
 
 // Query represents a torznab query
 type Query struct {
-	Type                  string
-	Q, Series, Ep, Season string
-	Limit, Offset         int
-	Extended              bool
-	Categories            []int
-	APIKey                string
+	Type                               string
+	Q, Series, Ep, Season, Movie, Year string
+	Limit, Offset                      int
+	Extended                           bool
+	Categories                         []int
+	APIKey                             string
 
 	// identifier types
 	TVDBID   string
@@ -51,6 +51,14 @@ func (query Query) Keywords() string {
 		tokens = append(tokens, query.Series)
 	}
 
+	if query.Movie != "" {
+		tokens = append(tokens, query.Movie)
+	}
+
+	if query.Year != "" {
+		tokens = append(tokens, query.Year)
+	}
+
 	if query.Season != "" || query.Ep != "" {
 		tokens = append(tokens, query.Episode())
 	}
@@ -78,6 +86,14 @@ func (query Query) Encode() string {
 
 	if query.Season != "" {
 		v.Set("season", query.Season)
+	}
+
+	if query.Movie != "" {
+		v.Set("movie", query.Movie)
+	}
+
+	if query.Year != "" {
+		v.Set("year", query.Year)
 	}
 
 	if query.Series != "" {
@@ -154,6 +170,15 @@ func ParseQuery(v url.Values) (Query, error) {
 
 		case "series":
 			query.Series = strings.Join(vals, " ")
+
+		case "movie":
+			query.Movie = strings.Join(vals, " ")
+
+		case "year":
+			if len(vals) > 1 {
+				return query, errors.New("Multiple year parameters not allowed")
+			}
+			query.Year = vals[0]
 
 		case "ep":
 			if len(vals) > 1 {

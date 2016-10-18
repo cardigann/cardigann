@@ -7,17 +7,19 @@ services:
     - .:/.config/cardigann
     environment:
       - CARDIGANN_PASSPHRASE
+      - CARDIGANN_HOSTNAME=cardigann
     command: ["server", "--debug"]
     ports:
     - 5060:5060
 
-  # couchpotato:
-  #   image: linuxserver/couchpotato
-  #   environment:
-  #     - PUID=0
-  #     - PGID=0
-  #   ports:
-  #     - 5050:5050
+  couchpotato:
+    image: linuxserver/couchpotato
+    environment:
+      - ADVANCED_DISABLEUPDATES=1
+      - PUID=0
+      - PGID=0
+    ports:
+      - 5050:5050
 
   sonarr:
     image: linuxserver/sonarr

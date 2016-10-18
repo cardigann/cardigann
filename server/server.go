@@ -13,6 +13,7 @@ import (
 // Server is an http server which wraps the Handler
 type Server struct {
 	Bind, Port, Passphrase string
+	Hostname               string
 	version                string
 	config                 config.Config
 }
@@ -42,6 +43,7 @@ func New(conf config.Config, version string) (*Server, error) {
 	}
 
 	return &Server{
+		Hostname:   "localhost",
 		Bind:       bind,
 		Port:       port,
 		Passphrase: passphrase,
@@ -92,6 +94,7 @@ func (s *Server) Listen() error {
 	logger.Logger.Infof("Listening on %s", listenOn)
 
 	h, err := NewHandler(Params{
+		BaseURL:    fmt.Sprintf("http://%s:%s/", s.Hostname, s.Port),
 		Passphrase: s.Passphrase,
 		Config:     s.config,
 		Version:    s.version,
