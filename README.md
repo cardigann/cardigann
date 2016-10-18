@@ -128,6 +128,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * BeyondHD
 * BitMeTV
 * CinemaZ
+* DanishBits
 * Demonoid
 * EZTV
 * FileList
