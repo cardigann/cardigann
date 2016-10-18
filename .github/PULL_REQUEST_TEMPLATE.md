@@ -10,7 +10,6 @@ Testing indexer alpharatio
 Indexer alpharatio passed ✓
 ``` 
 
-- [ ] Post the version of cardigann you tested this with (from the footer of the web interface or `cardigann --version`)
 - [ ] Make sure to add the indexer to the list in the README
 
 If you run into issues with testing, remember you can run a debug test with `cardigann test --debug --cachepages definitions/trackername.yml`. 
