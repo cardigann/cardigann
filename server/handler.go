@@ -112,9 +112,6 @@ func (h *handler) initialize() error {
 }
 
 func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
-	if h.Params.BaseURL != "" {
-		return url.Parse(h.Params.BaseURL)
-	}
 	proto := "http"
 	if r.TLS != nil {
 		proto = "https"
