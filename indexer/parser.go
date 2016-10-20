@@ -307,9 +307,14 @@ func (c *capabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) err
 }
 
 func (c *capabilitiesBlock) ToTorznab() torznab.Capabilities {
+	var searchModes = make([]torznab.SearchMode, len(c.SearchModes))
+	for idx, mode := range c.SearchModes {
+		searchModes[idx] = mode
+	}
+
 	return torznab.Capabilities{
 		Categories:  c.CategoryMap.Categories(),
-		SearchModes: c.SearchModes,
+		SearchModes: searchModes,
 	}
 }
 
