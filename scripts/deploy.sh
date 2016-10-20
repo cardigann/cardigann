@@ -49,16 +49,20 @@ equinox_release() {
 
 equinox_publish() {
   local version="$1"
-  ./equinox publish \
-    --release="${version}" \
-    --config ./equinox.yml \
-    --channel stable
+  local next_wait_time=10
+  local max_wait_time=20
+
+  until ./equinox publish --release="${version}" --config ./equinox.yml --channel stable || [ $next_wait_time -eq $max_wait_time ]; do
+    echo "command failed, trying again in $next_wait_time seconds"
+    sleep $(( next_wait_time++ ))
+  done
 }
 
 github_release() {
   local version="$1"
-  local description="$(git cat-file -p "$version" | tail -n +6)\n\nDownload from https://dl.equinox.io/cardigann/cardigann/stable"
-  ./github-release cardigann/cardigann "$version" "$TRAVIS_COMMIT" "$description" ""
+  ./github-release cardigann/cardigann "$version" "$TRAVIS_COMMIT" "$(git cat-file -p "$version" | tail -n +6)
+
+Download from https://dl.equinox.io/cardigann/cardigann/stable" ""
 }
 
 if [[ -n "$TRAVIS_TAG" ]] && [[ ! "$TRAVIS_TAG" =~ ^v ]] ; then
