@@ -27,6 +27,10 @@ server/static.go: $(shell find web/src)
 	cd web; npm run build
 	go generate -v ./server
 
+setup:
+	go get -u github.com/mjibson/esc
+	go get -u github.com/c4milo/github-release
+
 install:
 	go install -ldflags="$(FLAGS)" $(PREFIX)
 
@@ -60,7 +64,6 @@ publish:
 	--channel stable
 
 github-release:
-	go get github.com/c4milo/github-release
 	description=$$(git cat-file -p $(VERSION) | tail -n +6); \
 	commit=$$(git rev-list -n 1 $(VERSION)); \
 	github-release cardigann/cardigann $(VERSION) "$$commit" "$$description" ""
