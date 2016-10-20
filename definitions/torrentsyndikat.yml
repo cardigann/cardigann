@@ -1,0 +1,112 @@
+---
+  site: torrentsyndikat
+  name: Torrent-Syndikat
+  description: "A German general tracker"
+  language: de-de
+  links:
+    - https://torrent-syndikat.org/
+
+  caps:
+    categories:
+      2:  PC # Apps / Windows
+      13: PC # Apps / Linux
+      4:  PC/Mac # Apps / Mac
+      6:  PC # Apps / Misc
+      12: PC/Games # Spiele / PC
+      8:  Console/PSP # Spiele / PSX/PSP
+      7:  Console/Wii # Spiele / Wii
+      32: Console/Xbox # Spiele / XBOX
+      41: Console/NDS # Spiele / Nintendo DS
+      22: Movies/3D # Filme / 3D
+      3:  Movies/BluRay # Filme / BluRay
+      11: Movies/Other # Filme / REMUX
+      42: Movies/HD # Filme / 2160p
+      9:  Movies/HD # Filme / 1080p
+      20: Movies/HD # Filme / 720p
+      21: Movies/DVD # Filme / DVD
+      10: Movies/SD # Filme / SD
+      31: Movies/Other # Filme / Anime
+      37: Movies/Foreign # Filme / Englisch
+      16: TV/HD # TV / Serien/HD
+      15: TV/SD # TV / Serien/SD
+      44: TV/HD # TV / Packs/UHD
+      23: TV/HD # TV / Packs/HD
+      27: TV/SD # TV / Packs/SD
+      28: TV/Documentary # TV / Dokus/SD
+      29: TV/Documentary # TV / Dokus/HD
+      30: TV/Sport # TV / Sport
+      40: TV/Anime # TV / Anime
+      36: TV/Foreign # TV / Englisch
+      24: Audio/Lossless # Audio / FLAC
+      25: Audio/MP3 # Audio / MP3
+      35: Audio/Other # Audio / Other
+      26: Audio # Audio / Packs
+      18: Audio/Audiobook # Audio / aBooks
+      33: Audio/Video # Audio / Videos
+      17: Books # Misc / eBooks
+      5:  PC/Phone-Other # Misc / Mobile
+      39: Other # Misc / Bildung
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  settings:
+    - name: cookie
+      type: text
+      label: Cookie
+
+  login:
+    method: cookie
+    inputs:
+      cookie: "{{ .Config.cookie }}"
+    test:
+      path: /ucp.php?action=default
+
+  ratio:
+    path: /browse.php
+    selector: i[title="Gesamtratio"] ~ span
+
+  search:
+    path: /browse.php?do=search
+    inputs:
+      $raw: "{{range .Categories}}cat[]={{.}}&{{end}}"
+      search: "{{ .Query.Keywords }}"
+      searchin: title
+      incldead: 1
+      rel_type: 0
+
+    rows:
+      selector: table.torrent_table > tbody > tr:not(:has(td.colhead))
+    fields:
+      title:
+        selector: a[title][href^="details.php"]
+        attribute: title
+      category:
+        selector: a[href^="browse.php?cat="]
+        attribute: href
+        filters:
+          - name: querystring
+            args: cat
+      comments:
+        selector: a[title][href^="details.php"]
+        attribute: href
+      download:
+        selector: a[href^="download.php"]
+        attribute: href
+      size:
+        selector: td:nth-child(6)
+      seeders:
+        selector: td:nth-child(8)
+      leechers:
+        selector: td:nth-child(9)
+      date:
+        selector: span.torrent_details
+        remove: i, a
+        filters:
+          - name: replace
+            args: ["Heute", "Today"]
+          - name: replace
+            args: ["Gestern", "Yesterday"]
+          - name: replace
+            args: [" von", ""]
