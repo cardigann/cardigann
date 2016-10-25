@@ -56,7 +56,7 @@ func (s *selectorBlock) Text(el *goquery.Selection) (string, error) {
 			WithFields(logrus.Fields{"case": s.Case}).
 			Debugf("Applying case to selection")
 		for pattern, value := range s.Case {
-			if el.Has(pattern).Length() >= 1 {
+			if el.Is(pattern) || el.Has(pattern).Length() >= 1 {
 				return s.applyFilters(value)
 			}
 		}
