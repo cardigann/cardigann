@@ -29,6 +29,9 @@ func (s *selectorBlock) Match(selection *goquery.Selection) bool {
 }
 
 func (s *selectorBlock) MatchText(from *goquery.Selection) (string, error) {
+	if s.TextVal != "" {
+		return s.TextVal, nil
+	}
 	if s.Selector != "" {
 		result := from.Find(s.Selector)
 		if result.Length() == 0 {
