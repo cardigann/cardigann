@@ -133,6 +133,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * EZTV
 * FileList
 * Freshon
+* FunFile
 * HD-Torrents
 * HDArea
 * HDME
