@@ -935,6 +935,34 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 				continue
 			}
 			item.PublishDate = t
+		case "files":
+			files, err := strconv.Atoi(normalizeNumber(val))
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable files value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.Files = files
+		case "grabs":
+			grabs, err := strconv.Atoi(normalizeNumber(val))
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable grabs value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.Grabs = grabs
+		case "downloadvolumefactor":
+			downloadvolumefactor, err := strconv.ParseFloat(normalizeNumber(val), 64)
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable downloadvolumefactor value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.DownloadVolumeFactor = downloadvolumefactor
+		case "uploadvolumefactor":
+			uploadvolumefactor, err := strconv.ParseFloat(normalizeNumber(val), 64)
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable uploadvolumefactor value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.UploadVolumeFactor = uploadvolumefactor
 		default:
 			r.logger.Warnf("Row #%d has unknown field %s", rowIdx, key)
 			continue

@@ -18,12 +18,16 @@ type ResultItem struct {
 	Link        string
 	Category    int
 	Size        uint64
+	Files       int
+	Grabs       int
 	PublishDate time.Time
 
 	Seeders         int
 	Peers           int
 	MinimumRatio    float64
 	MinimumSeedTime time.Duration
+	DownloadVolumeFactor    float64
+	UploadVolumeFactor      float64
 }
 
 func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
@@ -47,6 +51,8 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		Comments    string      `xml:"comments,omitempty"`
 		Link        string      `xml:"link,omitempty"`
 		Category    string      `xml:"category,omitempty"`
+		Files       int         `xml:"files,omitempty"`
+		Grabs       int         `xml:"grabs,omitempty"`
 		PublishDate string      `xml:"pubDate,omitempty"`
 		Enclosure   interface{} `xml:"enclosure,omitempty"`
 
@@ -59,6 +65,8 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		Comments:    ri.Comments,
 		Link:        ri.Link,
 		Category:    strconv.Itoa(ri.Category),
+		Files:       ri.Files,
+		Grabs:       ri.Grabs,
 		PublishDate: ri.PublishDate.Format(rfc822),
 		Enclosure:   enclosure,
 		Attrs: []torznabAttrView{
@@ -68,6 +76,8 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 			{Name: "minimumratio", Value: fmt.Sprintf("%.f", ri.MinimumRatio)},
 			{Name: "minimumseedtime", Value: fmt.Sprintf("%.f", ri.MinimumSeedTime.Seconds())},
 			{Name: "size", Value: fmt.Sprintf("%d", ri.Size)},
+			{Name: "downloadvolumefactor", Value: fmt.Sprintf("%.f", ri.DownloadVolumeFactor)},
+			{Name: "uploadvolumefactor", Value: fmt.Sprintf("%.f", ri.UploadVolumeFactor)},
 		},
 	}
 
