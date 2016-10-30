@@ -151,6 +151,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Torrent-Syndikat
 * Torrentbytes
 * TorrentDay
+* TorrentHeaven
 * Torrentleech
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
