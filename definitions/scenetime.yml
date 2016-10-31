@@ -95,11 +95,18 @@
           - name: append
             args: "/dummy.torrent"
       size:
-        selector: td:nth-child(4)
-      seeders:
-        selector: td:nth-child(5)
-      leechers:
         selector: td:nth-child(6)
+      seeders:
+        selector: td:nth-child(7)
+      leechers:
+        selector: td:nth-child(8)
       date:
         selector: span.elapsedDate
         attribute: title
+      downloadvolumefactor:
+        case:
+          "font > b:contains(\"Freeleech\")": "0"
+          "*": "1"
+      uploadvolumefactor:
+        case:
+          "*": "1"
