@@ -1,4 +1,4 @@
----
+ï»¿---
   site: shareisland
   name: Shareisland
   description: "A general italian tracker"
@@ -133,15 +133,15 @@
           - name: replace
             args: ["Ieri", "Yesterday"]
           - name: replace
-            args: ["lunedì", "Monday"]
+            args: ["lunedÃ¬", "Monday"]
           - name: replace
-            args: ["martedì", "Tuesday"]
+            args: ["martedÃ¬", "Tuesday"]
           - name: replace
-            args: ["Mercoledì", "Wednesday"]
+            args: ["MercoledÃ¬", "Wednesday"]
           - name: replace
-            args: ["Giovedì", "Thursday"]
+            args: ["GiovedÃ¬", "Thursday"]
           - name: replace
-            args: ["Venerdì", "Friday"]
+            args: ["VenerdÃ¬", "Friday"]
           - name: replace
             args: ["Sabato", "Saturday"]
           - name: replace
