@@ -21,7 +21,7 @@ cardigann server
 
 Once the server is running, visit http://localhost:5060 and configure via the web interface.
 
-You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting `global.password` in the [Configuration](#Configuration).
+You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting `global.passphrase` in the [Configuration](#Configuration).
 
 ## Installation
 
