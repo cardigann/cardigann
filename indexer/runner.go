@@ -602,7 +602,7 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 
 	// convert show identifiers to season parameter
 	switch {
-	case query.TVDBID != "":
+	case query.TVDBID != "" && query.TVDBID != "0":
 		show, err = tvmaze.DefaultClient.GetShowWithTVDBID(query.TVDBID)
 		query.TVDBID = "0"
 	case query.TVMazeID != "":
