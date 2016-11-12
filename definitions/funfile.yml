@@ -38,7 +38,7 @@
 
   ratio:
     path: /browse.php
-    selector: div:has(div#clock) > b:last-child
+    selector: div:has(div#clock) > b + b+ b > span
 
   search:
     path: /browse.php
