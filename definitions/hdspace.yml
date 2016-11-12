@@ -49,6 +49,7 @@
       pwd: "{{ .Config.password }}"
     test:
       path: /index.php?page=torrents
+      selector: div#menu
 
   search:
     path: /index.php?page=torrents&active=0&options=0&category=15%3B40
