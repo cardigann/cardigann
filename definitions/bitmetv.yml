@@ -27,7 +27,7 @@
 
   ratio:
     path: https://www.bitmetv.org/browse.php
-    selector: span.smallfont > font[color="#000000"]
+    selector: span.smallfont > font[color="1900D1"] + font
 
   search:
     path: https://www.bitmetv.org/browse.php
@@ -63,3 +63,15 @@
         selector: td:nth-child(9)
       leechers:
         selector: td:nth-child(10)
+      files:
+        selector: td:nth-child(4)
+      grabs:
+        selector: td:nth-child(8)
+        filters:
+          - name: regexp
+            args: "(\\d+)"
+      downloadvolumefactor:
+        case:
+          "*": "1"
+      uploadvolumefactor:
+        text: "1"
