@@ -21,7 +21,7 @@ cardigann server
 
 Once the server is running, visit http://localhost:5060 and configure via the web interface.
 
-You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting `global.password` in the [Configuration](#Configuration).
+You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting `global.passphrase` in the [Configuration](#Configuration).
 
 ## Installation
 
@@ -147,11 +147,13 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Speed.CD
 * Sceneaccess
 * SceneTime
+* Shareisland
 * ThePirateBay (TPB)
 * Torrent-Syndikat
 * Torrentbytes
 * TorrentDay
 * Torrentleech
+* Transmithe.Net
 * WorldOfP2P
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
