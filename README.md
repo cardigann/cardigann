@@ -148,6 +148,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Sceneaccess
 * SceneTime
 * Shareisland
+* The New Retro
 * ThePirateBay (TPB)
 * Torrent-Syndikat
 * Torrentbytes
