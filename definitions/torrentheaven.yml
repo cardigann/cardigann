@@ -1,0 +1,132 @@
+﻿---
+  site: torrentheaven 
+  name: TorrentHeaven
+  description: "A German general tracker"
+  language: de-de
+  links:
+    - https://torrentheaven.myfqdn.info/
+
+  caps:
+    categories:
+      1:   PC/Games # GAMES/PC
+      3:   Console # GAMES/Sonstige
+      59:  Console/PS4 # GAMES/PlayStation
+      60:  Console/PSP # GAMES/PSP
+      63:  Console/Wii # GAMES/Wii
+      67:  Console/Xbox360 # GAMES/XBOX 360
+      68:  PC/Phone-Other # GAMES/PDA / Handy
+      72:  Console/NDS # GAMES/NDS
+      7 :  Movies/DVD # MOVIES/DVD
+      8:   Movies/SD # MOVIES/SD
+      37:  Movies/DVD # MOVIES/DVD Spezial
+      41:  Movies/Foreign # MOVIES/International
+      101: Movies/HD # MOVIES/720p
+      102: Movies/HD # MOVIES/1080p
+      103: Movies/HD # MOVIES/AVCHD
+      104: Movies/BluRay # MOVIES/Bluray
+      106: Movies/3D # MOVIES/3D
+      14:  Audio # AUDIO/Musik
+      15:  Audio/Audiobook # AUDIO/Höchbücher
+      16:  Audio/Audiobook # AUDIO/Hörspiele
+      36:  Audio/Lossless # AUDIO/Flac
+      42:  Audio/Other # AUDIO/Soundtracks
+      58:  Audio/Video # AUDIO/Musikvideos
+      18:  TV/SD # TV/Serien SD
+      19:  TV/HD # TV/Serien HD 720p
+      20:  TV/HD # TV/Serien HD 1080p
+      49:  TV/SD # TV/Serien DVD
+      51:  TV/Documentary # TV/Doku SD
+      52:  TV/Documentary # TV/Doku HD
+      53:  TV # TV/Serien Complete Packs
+      54:  TV/Sport # TV/Sport
+      66:  TV/Foreign # TV/International
+      22:  Books # MISC/EBooks
+      24:  Other # MISC/Sonstiges
+      25:  Other # MISC/Tonspuren
+      108: TV/Anime # MISC/Anime
+      28:  PC # APPLICATIONS/PC
+      29:  PC/Phone-Other # APPLICATIONS/Mobile
+      30:  PC # APPLICATIONS/Sonstige
+      70:  PC # APPLICATIONS/Linux
+      71:  PC/Mac # APPLICATIONS/Mac
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  settings:
+    - name: cookie
+      type: text
+      label: Cookie
+
+  login:
+    method: cookie
+    inputs:
+      cookie: "{{ .Config.cookie }}"
+    test:
+      path: /index.php?strWebValue=account&strWebAction=center
+
+  ratio:
+    path: /index.php?strWebValue=account&strWebAction=center
+    selector: span#ElementRatio
+
+  search:
+    path: /index.php
+    inputs:
+      strWebValue: torrent
+      strWebAction: search
+      $raw: "{{range .Categories}}dirs{{.}}=1&{{end}}"
+      searchstring: "{{ .Query.Keywords }}"
+      sort: torrent_added
+      by: d
+      type: 0
+      do_search: suchen
+      time: 0
+      details: title
+
+    rows:
+      selector: table.torrenttable > tbody > tr:not(:has(td.torrenttableheader))
+    fields:
+      title:
+        selector: a[href^="index.php?strWebValue=torrent&strWebAction=details"]
+        attribute: onmouseover
+        filters:
+          - name: regexp
+            args: "^return buildTable\\('(.*?)',\\s+"
+      category:
+        selector: a[href^="index.php?strWebValue=torrent&strWebAction=search&dir="]
+        attribute: href
+        filters:
+          - name: querystring
+            args: dir
+      comments:
+        selector: a[href^="index.php?strWebValue=torrent&strWebAction=details"]
+        attribute: href
+      download:
+        selector: a[href^="index.php?strWebValue=torrent&strWebAction=downloadssl&id="]
+        attribute: href
+      size:
+        selector: td.column2:nth-child(4)
+      seeders:
+        selector: td.column1:nth-child(7)
+      leechers:
+        selector: td.column2:nth-child(8)
+      date:
+        selector: font:has(a)
+        remove: a
+        filters:
+          - name: split
+            args: [ "\n", 0 ]
+          - name: replace
+            args: ["Heute", "Today"]
+          - name: replace
+            args: ["Gestern", "Yesterday"]
+      grabs:
+        selector: td:nth-child(7)
+      downloadvolumefactor:
+        case:
+          "img[src=\"themes/images/DL50.png\"]": "0.5"
+          "img[src=\"themes/images/freeleech.png\"]": "0"
+          "*": "1"
+      uploadvolumefactor:
+        text: "1"
