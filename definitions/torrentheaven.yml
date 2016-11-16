@@ -89,6 +89,10 @@
     fields:
       title:
         selector: a[href^="index.php?strWebValue=torrent&strWebAction=details"]
+        attribute: onmouseover
+        filters:
+          - name: regexp
+            args: "^return buildTable\\('(.*?)',\\s+"
       category:
         selector: a[href^="index.php?strWebValue=torrent&strWebAction=search&dir="]
         attribute: href
