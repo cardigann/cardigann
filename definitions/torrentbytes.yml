@@ -72,7 +72,7 @@
        $raw: "search={{ .Query.Keywords }}"
        # $raw: "{{range .Categories}}filter_cat[]={{.}}&{{end}}searchstr={{ .Query.Keywords }}"
     rows:
-      selector: html body div#innerwrapper div#mainframe div#content div table:nth-of-type(2) tbody tr:not(:first-child)
+      selector: "html body div#innerwrapper div#mainframe div#content div center table tbody tr:not(:first-child)"
     fields:
       category:
         selector: td:nth-child(1) a,td:nth-child(2) a
@@ -80,6 +80,85 @@
         filters:
           - name: regexp
             args: "browse\\.php\\?cat=(\\d+)|(.*)"
+      title:
+        selector: td:nth-child(2) a:nth-child(2)
+      details:
+        selector: td:nth-child(2) a:nth-child(2)
+        attribute: href
+      download:
+        selector: td:nth-child(2) a
+        attribute: href
+      size:
+        selector: td:nth-child(7)
+      date:
+        selector: td:nth-child(5)
+      seeders:
+        selector: td:nth-child(9)
+      leechers:
+        selector: td:nth-child(10)
+
+      26: PC/Mac       #Games/other
+      26: Console      #Games/other
+      21: XXX/Packs    #Games/Pack
+      9:  XXX          #XXX/SD
+      39: XXX          #XXX/HD
+      29: XXX #XXX/Web
+      24: XXX/Imageset  #XXX/IMGSE
+      1:  PC
+      22: PC
+      23: TV/Anime
+      28: TV/Foreign
+      28: Movies/Foreign
+      31: Other/Misc
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    method: form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      path: /takelogin.php
+      message:
+        selector: td.text
+    test:
+      path: /inbox.php
+
+  search:
+    path: /browse.php
+    inputs:
+       $raw: "search={{ .Query.Keywords }}"
+       # $raw: "{{range .Categories}}filter_cat[]={{.}}&{{end}}searchstr={{ .Query.Keywords }}"
+    rows:
+      selector: html body div#innerwrapper div#mainframe div#content div center table tbody tr:not(:first-child)
+    fields:
+      category:
+        selector: td:nth-child(1) a,td:nth-child(2) a
+        attribute: href
+        filters:
+          - name: regexp
+            args: "browse\\.php\\?cat=(\\d+)|(.*)"
+      title:
+        selector: td:nth-child(2) a:nth-child(2)
+      details:
+        selector: td:nth-child(2) a:nth-child(2)
+        attribute: href
+      download:
+        selector: td:nth-child(2) a
+        attribute: href
+      size:
+        selector: td:nth-child(7)
+      date:
+        selector: td:nth-child(5)
+      seeders:
+        selector: td:nth-child(9)
+      leechers:
+        selector: td:nth-child(10)
+
       title:
         selector: td:nth-child(2) a:nth-child(2)
       details:
