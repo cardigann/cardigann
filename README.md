@@ -150,6 +150,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Shareisland
 * The New Retro
 * ThePirateBay (TPB)
+* Torrent Sector Crew
 * Torrent-Syndikat
 * Torrentbytes
 * TorrentDay
