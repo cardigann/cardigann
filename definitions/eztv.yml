@@ -25,7 +25,7 @@
         selector: td:nth-child(2) a
         attribute: href
       download:
-        selector: td:nth-child(3) a.magnet, td:nth-child(2) a
+        selector: td:nth-child(3) a.magnet, td:nth-child(3) a
         attribute: href
       size:
         selector: td:nth-child(4)
