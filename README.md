@@ -122,6 +122,7 @@ If you are running as a service, you will need to manually edit the service file
 
 Cardigann simply provides a format for describing how to log into and scrape the search results of various forums and sites. It is not endorsed by the various sites, nor is it intended for piracy. You are using Cardigann at your own risk.
 
+* Abnormal
 * AlphaRatio
 * AvistaZ
 * BIT-HDTV
