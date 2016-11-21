@@ -131,6 +131,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * CinemaZ
 * DanishBits
 * Demonoid
+* EoT-Forum
 * EZTV
 * FileList
 * Freshon
