@@ -151,7 +151,10 @@ func (r *Runner) checkHasConfig() error {
 }
 
 func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error) {
-	tmpl, err := template.New(name).Parse(tpl)
+	funcMap := template.FuncMap {
+		"replace": strings.Replace,
+	}
+	tmpl, err := template.New(name).Funcs(funcMap).Parse(tpl)
 	if err != nil {
 		return "", err
 	}
