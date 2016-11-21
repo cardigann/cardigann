@@ -158,6 +158,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * TorrentHeaven
 * Torrentleech
 * Transmithe.Net
+* Tspate
 * UHDBits
 * WorldOfP2P
 
