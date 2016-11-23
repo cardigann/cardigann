@@ -132,6 +132,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * DanishBits
 * Demonoid
 * EoT-Forum
+* Ethor.net (Thor's Land)
 * EZTV
 * FileList
 * Freshon
