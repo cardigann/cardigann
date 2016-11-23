@@ -1,0 +1,54 @@
+---
+    site: alphareign
+    name: AlphaReign
+    language: en-us
+
+    links:
+        - https://alphareign.se/
+
+    modes:
+        search: [q]
+
+    login:
+        path: /login
+        form: form[action^="/login"]
+        inputs:
+            username: "{{ .Config.username }}"
+            password: "{{ .Config.password }}"
+        error:
+            path: /login
+            message:
+                selector: .auth-form .alert-danger
+        test:
+            path: /settings
+
+    search:
+        path: /
+        form: form[action="/"]
+        method: get
+        inputs:
+            query: "{{ .Keywords }}"
+        rows:
+            selector: .result
+        fields:
+            title:
+                selector: a[href^="/torrent"]
+            details:
+                selector: a[href^="/torrent"]
+                attribute: href
+            download:
+                selector: a[href^="magnet:"]
+                attribute: href
+            files:
+                selector: .row.collapse
+            date:
+                selector: .row:not(.collapse) span.btn-noclick.btn-primary
+                filters:
+                  - name: dateparse
+                    args: "1478961831"
+            size:
+                selector: .row:not(.collapse) span.btn-noclick.btn-info
+            seeders:
+                selector: .row:not(.collapse) span.btn-noclick.btn-success
+            leechers:
+                selector: .row:not(.collapse) span.btn-noclick.btn-danger
