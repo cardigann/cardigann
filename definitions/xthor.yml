@@ -5,11 +5,6 @@
   links:
     - https://xthor.bz/
 
-  settings:
-    - name: cookie
-      type: text
-      label: Cookie
-
   caps:
     categories:
             # Films
@@ -59,14 +54,19 @@
             22: PC/Mac            # Logiciels / Applis Mac
             23: PC/Phone-Other    # Logiciels / Smartphone
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
+  modes:
+    search: [q]
+    tv-search: [q, season, ep]
 
   login:
-    method: cookie
+    path: /takelogin.php
+    method: post
+    form: form
     inputs:
-      cookie: "{{ .Config.cookie }}"
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+      submitme: "X"
+      returnto: "/"
     test:
       path: /usercp.php
 
