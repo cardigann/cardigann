@@ -1,54 +1,81 @@
----
-    site: alphareign
-    name: AlphaReign
-    language: en-us
+﻿---
+  site: alphareign
+  name: AlphaReign
+  description: "A DHT only tracker"
+  language: en-us
 
-    links:
-        - https://alphareign.se/
+  links:
+    - https://alphareign.se
+
+  caps:
+    categories:
+      Movies: Movies
+      Movies/HD: Movies/HD
+      Movies/SD: Movies/SD
+      TV: TV
+      TV/HD: TV/HD
+      TV/SD: TV/SD
+      Other: Other
 
     modes:
-        search: [q]
+      search: [q]
+      tv-search: [q, season, ep]
 
-    login:
-        path: /login
-        form: form[action^="/login"]
-        inputs:
-            username: "{{ .Config.username }}"
-            password: "{{ .Config.password }}"
-        error:
-            path: /login
-            message:
-                selector: .auth-form .alert-danger
-        test:
-            path: /settings
+  login:
+    path: /login
+    method: form
+    form: form[action^="/login"]
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      - path: /login
+        selector: div.auth-form > div > div.alert-danger
 
-    search:
-        path: /
-        form: form[action="/"]
-        method: get
-        inputs:
-            query: "{{ .Keywords }}"
-        rows:
-            selector: .result
-        fields:
-            title:
-                selector: a[href^="/torrent"]
-            details:
-                selector: a[href^="/torrent"]
-                attribute: href
-            download:
-                selector: a[href^="magnet:"]
-                attribute: href
-            files:
-                selector: .row.collapse
-            date:
-                selector: .row:not(.collapse) span.btn-noclick.btn-primary
-                filters:
-                  - name: dateparse
-                    args: "1478961831"
-            size:
-                selector: .row:not(.collapse) span.btn-noclick.btn-info
-            seeders:
-                selector: .row:not(.collapse) span.btn-noclick.btn-success
-            leechers:
-                selector: .row:not(.collapse) span.btn-noclick.btn-danger
+    test:
+      path: settings
+
+  ratio:
+    text: "∞"
+
+  search:
+    path: /
+    method: get
+    inputs:
+      query: "{{ .Keywords }}"
+    rows:
+      selector: .result
+    fields:
+      title:
+        attribute: data-name
+      details:
+        selector: a[href^="/torrent"]
+        attribute: href
+      download:
+        selector: a[href^="magnet:"]
+        attribute: href
+      date:
+        attribute: data-added
+      size:
+        attribute: data-size
+      seeders:
+        attribute: data-seeders
+      leechers:
+        attribute: data-leechers
+      downloadvolumefactor:
+        case:
+          "*": "1"
+      uploadvolumefactor:
+        case:
+          "*": "1"
+      category:
+        case:
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"movie\") + span[class=\"label label-info\"]:contains(\"HD\")": "Movies/HD"
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"movie\") + span[class=\"label label-info\"]:contains(\"720p\")": "Movies/HD"
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"movie\") + span[class=\"label label-info\"]:contains(\"1080p\")": "Movies/HD"
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"movie\") + span[class=\"label label-info\"]:contains(\"SD\")": "Movies/SD"
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"movie\")": "Movies"
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"show\") + span[class=\"label label-info\"]:contains(\"HD\")": "TV/HD"
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"show\") + span[class=\"label label-info\"]:contains(\"SD\")": "TV/SD"
+          "span[class=\"label label-primary\"]:contains(\"video\") + span[class=\"label label-success\"]:contains(\"show\")": "TV"
+          "*": "Other"
