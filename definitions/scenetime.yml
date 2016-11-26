@@ -65,7 +65,8 @@
     selector: div#Statusdiv > div.FLl > font:nth-child(3)
 
   search:
-    path: /browse.php?do=search
+    path: /browse_API.php
+    method: post
     inputs:
       $raw: "{{range .Categories}}c{{.}}=1&{{end}}"
       search: "{{ .Query.Keywords }}"
