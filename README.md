@@ -125,6 +125,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Abnormal
 * AlphaRatio
 * AlphaReign
+* Apollo (XANAX)
 * AvistaZ
 * BIT-HDTV
 * BeyondHD
