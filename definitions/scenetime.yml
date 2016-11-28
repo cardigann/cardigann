@@ -62,7 +62,11 @@
 
   ratio:
     path: /my.php
-    selector: div#Statusdiv > div.FLl > font:nth-child(3)
+    selector: div#Statusdiv > div.FLl
+    filters:
+      - name: regexp
+        args: "\\((.*?)\\)"
+
 
   search:
     path: /browse_API.php
