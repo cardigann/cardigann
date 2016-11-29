@@ -155,6 +155,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * SceneTime
 * Shareisland
 * The New Retro
+* The Shinning
 * ThePirateBay (TPB)
 * Torrent411 (T411)
 * Torrent Sector Crew
