@@ -3,6 +3,7 @@
   name: Torrent-Syndikat
   description: "A German general tracker"
   language: de-de
+  encoding: UTF-8
   links:
     - https://torrent-syndikat.org/
 
@@ -70,7 +71,7 @@
   search:
     path: /browse.php?do=search
     inputs:
-      $raw: "{{range .Categories}}cat[]={{.}}&{{end}}"
+      $raw: "{{range .Categories}}c{{.}}=1&{{end}}"
       search: "{{ .Query.Keywords }}"
       searchin: title
       incldead: 1
