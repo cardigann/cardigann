@@ -146,6 +146,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Immortalseed
 * IPTorrents
 * MoreThanTV
+* MySpleen
 * NCore
 * NetHD
 * Norbits
