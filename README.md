@@ -166,6 +166,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * TorrentDay
 * TorrentHeaven
 * Torrentleech
+* ToTheGlory
 * Transmithe.Net
 * Tspate
 * UHDBits
