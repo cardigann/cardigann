@@ -3,6 +3,7 @@
   name: SceneTime
   description: "A general tracker"
   language: en-us
+  encoding: windows-1252
   links:
     - https://www.scenetime.com/
 
@@ -81,7 +82,7 @@
       selector: tr.browse
     fields:
       title:
-        selector: a[href^="details.php"] > font > b
+        selector: a[href^="details.php"] > font
       category:
         selector: a[href^="browse.php?cat="]
         attribute: href
