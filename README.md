@@ -21,7 +21,7 @@ cardigann server
 
 Once the server is running, visit http://localhost:5060 and configure via the web interface.
 
-You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting `global.password` in the [Configuration](#Configuration).
+You can set a password requirement by either passing the `--passphrase` flag to the server command, or by setting `global.passphrase` in the [Configuration](#Configuration).
 
 ## Installation
 
@@ -122,35 +122,56 @@ If you are running as a service, you will need to manually edit the service file
 
 Cardigann simply provides a format for describing how to log into and scrape the search results of various forums and sites. It is not endorsed by the various sites, nor is it intended for piracy. You are using Cardigann at your own risk.
 
+* Abnormal
 * AlphaRatio
+* AlphaReign
+* Apollo (XANAX)
 * AvistaZ
 * BIT-HDTV
 * BeyondHD
 * BitMeTV
+* Blu-bits
 * CinemaZ
 * DanishBits
 * Demonoid
+* EoT-Forum
+* Ethor.net (Thor's Land)
 * EZTV
 * FileList
 * Freshon
+* FunFile
 * HD-Torrents
 * HDArea
 * HDME
 * Immortalseed
 * IPTorrents
 * MoreThanTV
+* MySpleen
 * NCore
+* NetHD
 * Norbits
 * PreToMe
 * PrivateHD
 * Speed.CD
 * Sceneaccess
 * SceneTime
+* Shareisland
+* The New Retro
+* The Shinning
 * ThePirateBay (TPB)
+* Torrent411 (T411)
+* Torrent Sector Crew
 * Torrent-Syndikat
 * Torrentbytes
 * TorrentDay
+* TorrentHeaven
 * Torrentleech
+* ToTheGlory
+* Transmithe.Net
+* Tspate
+* UHDBits
+* WorldOfP2P
+* Xthor
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 

@@ -112,3 +112,11 @@
         selector: td:nth-child(8)
       leechers:
         selector: td:nth-child(9)
+      grabs:
+        selector: td:nth-child(7)
+      downloadvolumefactor:
+        case:
+          span.t_tag_free_leech: "0"
+          "*": "1"
+      uploadvolumefactor:
+        text: "1"

@@ -72,7 +72,7 @@
        $raw: "search={{ .Query.Keywords }}"
        # $raw: "{{range .Categories}}filter_cat[]={{.}}&{{end}}searchstr={{ .Query.Keywords }}"
     rows:
-      selector: html body div#innerwrapper div#mainframe div#content div table:nth-of-type(2) tbody tr:not(:first-child)
+      selector: "html body div#innerwrapper div#mainframe div#content div center table tbody tr:not(:first-child)"
     fields:
       category:
         selector: td:nth-child(1) a,td:nth-child(2) a

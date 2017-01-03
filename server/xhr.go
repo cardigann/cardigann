@@ -17,7 +17,7 @@ import (
 
 type indexerFeedsView struct {
 	Torznab       string `json:"torznab,omitempty"`
-	PotatoTorrent string `json:"potatotorrent,omitempty"`
+	TorrentPotato string `json:"torrentpotato,omitempty"`
 }
 
 type indexerSettingsView struct {
@@ -96,7 +96,7 @@ func (h *handler) loadIndexerViews(baseURL string) ([]indexerView, error) {
 
 		if caps.HasMovies() {
 			feeds.Torznab = fmt.Sprintf("%storznab/%s", baseURL, info.ID)
-			feeds.PotatoTorrent = fmt.Sprintf("%spotatotorrent/%s", baseURL, info.ID)
+			feeds.TorrentPotato = fmt.Sprintf("%storrentpotato/%s", baseURL, info.ID)
 		}
 
 		reply = append(reply, indexerView{

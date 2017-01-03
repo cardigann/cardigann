@@ -151,7 +151,10 @@ func (r *Runner) checkHasConfig() error {
 }
 
 func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error) {
-	tmpl, err := template.New(name).Parse(tpl)
+	funcMap := template.FuncMap {
+		"replace": strings.Replace,
+	}
+	tmpl, err := template.New(name).Funcs(funcMap).Parse(tpl)
 	if err != nil {
 		return "", err
 	}
@@ -602,7 +605,7 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 
 	// convert show identifiers to season parameter
 	switch {
-	case query.TVDBID != "":
+	case query.TVDBID != "" && query.TVDBID != "0":
 		show, err = tvmaze.DefaultClient.GetShowWithTVDBID(query.TVDBID)
 		query.TVDBID = "0"
 	case query.TVMazeID != "":
@@ -935,6 +938,34 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 				continue
 			}
 			item.PublishDate = t
+		case "files":
+			files, err := strconv.Atoi(normalizeNumber(val))
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable files value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.Files = files
+		case "grabs":
+			grabs, err := strconv.Atoi(normalizeNumber(val))
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable grabs value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.Grabs = grabs
+		case "downloadvolumefactor":
+			downloadvolumefactor, err := strconv.ParseFloat(normalizeNumber(val), 64)
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable downloadvolumefactor value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.DownloadVolumeFactor = downloadvolumefactor
+		case "uploadvolumefactor":
+			uploadvolumefactor, err := strconv.ParseFloat(normalizeNumber(val), 64)
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable uploadvolumefactor value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.UploadVolumeFactor = uploadvolumefactor
 		default:
 			r.logger.Warnf("Row #%d has unknown field %s", rowIdx, key)
 			continue

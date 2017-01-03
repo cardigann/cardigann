@@ -1,0 +1,105 @@
+---
+  site: abnormal
+  name: Abnormal
+  language: fr-fr
+  links:
+    - https://abnormal.ws
+
+  caps:
+    categories:
+            "MOVIE|DVDR": Movies/DVD
+            "MOVIE|DVDRIP": Movies/SD
+            "MOVIE|BDRIP": Movies/SD
+            "MOVIE|VOSTFR": Movies
+            "MOVIE|HD|720p": Movies/HD
+            "MOVIE|HD|1080p": Movies/HD
+            "MOVIE|REMUXBR": Movies/BluRay
+            "MOVIE|FULLBR": Movies/BluRay
+            "TV|SD|VOSTFR": TV/SD
+            "TV|HD|VOSTFR": TV/HD
+            "TV|SD|VF": TV/SD
+            "TV|HD|VF": TV/HD
+            "TV|PACK|FR": TV
+            "TV|PACK|VOSTFR": TV
+            "TV|EMISSIONS": TV/Other
+            "ANIME": TV/Anime
+            "DOCS": TV/Documentary
+            "MUSIC|FLAC": Audio/Lossless
+            "MUSIC|MP3": Audio/MP3
+            "MUSIC|CONCERT": Audio/Video
+            "PC|APP": PC
+            "PC|GAMES": PC/Games
+            "EBOOKS": Books/Ebook
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      username: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+    error:
+      path: /login.php
+      message:
+        selector: .warning
+    test:
+      path: /top10.php
+
+  search:
+    path: "/torrents.php" #?search={{if .Query.Keywords}}{{ .Query.Keywords }}{{else}}%{{end}}"
+    inputs:
+      $raw: "{{range .Categories}}cat[]={{.}}&{{end}}"
+      search: "{{if .Query.Keywords}}{{ .Query.Keywords }}{{else}}%{{end}}"
+    rows:
+      selector: .torrent_table > tbody > tr:not([class="colhead"])
+    fields:
+      category:
+       selector: td:nth-child(1) > a
+       attribute: href
+       filters:
+          - name: querystring
+            args: cat[]
+      title:
+        selector: td:nth-child(2) > a
+      download:
+        selector: td:nth-child(4) > a
+        attribute: href
+      size:
+        selector: td:nth-child(5)
+        filters:
+          - name: replace
+            args: ["Go", "gb"]
+          - name: replace
+            args: ["Mo", "mb"]
+          - name: replace
+            args: ["Ko", "kb"]
+      date:
+        selector: td:nth-child(3) > span
+        filters:
+          - name: replace
+            args: ["Il y a ", ""]
+          - name: replace
+            args: ["heures", "hours"]
+          - name: replace
+            args: ["heure", "hour"]
+          - name: replace
+            args: ["jours", "days"]
+          - name: replace
+            args: ["semaines", "weeks"]
+          - name: replace
+            args: ["semaine", "week"]
+          - name: replace
+            args: ["mois", "months"]
+          - name: replace
+            args: ["ans", "years"]
+          - name: replace
+            args: ["an", "year"]
+          - name: append
+            args: " ago"
+      seeders:
+        selector: td:nth-child(7)
+      leechers:
+        selector: td:nth-child(8)

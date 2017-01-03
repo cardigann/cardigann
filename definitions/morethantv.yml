@@ -60,3 +60,11 @@
         selector: td:nth-child(8)
       leechers:
         selector: td:nth-child(9)
+      files:
+        selector: td:nth-child(4)
+      grabs:
+        selector: td:nth-child(7)
+      downloadvolumefactor:
+        text: "0"
+      uploadvolumefactor:
+        text: "1"

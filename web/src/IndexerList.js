@@ -173,8 +173,8 @@ class IndexerListRow extends Component {
             {this.props.indexer.feeds.torznab ? <FeedLink
               feedHref={xhrUrl(this.props.indexer.feeds.torznab)}
               label="torznab" /> : ''}
-            {this.props.indexer.feeds.potatotorrent ? <FeedLink
-              feedHref={xhrUrl(this.props.indexer.feeds.potatotorrent)}
+            {this.props.indexer.feeds.torrentpotato ? <FeedLink
+              feedHref={xhrUrl(this.props.indexer.feeds.torrentpotato)}
               label="potato" /> : ''}
         </td>
         <td className="col-md-1">{this.state.status}</td>
