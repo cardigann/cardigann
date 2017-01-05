@@ -31,10 +31,10 @@
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /login.php
-      selector: .contentbox b:contains('Feil')
-      message:
-        selector: b:contains('Feil')
+      - path: /login.php
+        selector: .contentbox b:contains('Feil')
+        message:
+          selector: b:contains('Feil')
     test:
       path: /userdetails.php
 

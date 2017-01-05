@@ -30,10 +30,10 @@
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /takelogin.php
-      message:
-        selector: table.detail .text
-        remove: style, b
+      - path: /takelogin.php
+        message:
+          selector: table.detail .text
+          remove: style, b
     test:
       path: /my.php
 

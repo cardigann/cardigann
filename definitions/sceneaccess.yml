@@ -58,8 +58,8 @@
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      message:
-        selector: "#login_box_desc"
+      - message:
+          selector: "#login_box_desc"
     test:
       path: /inbox
 

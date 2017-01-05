@@ -41,7 +41,7 @@
       uid: "{{ .Config.username }}"
       pwd: "{{ .Config.password }}"
     error:
-      selector: table.cblocks font[color='#FF0000']
+      - selector: table.cblocks font[color='#FF0000']
     test:
       path: /wishlist.php
 

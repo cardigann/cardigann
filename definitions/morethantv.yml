@@ -22,9 +22,9 @@
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /login.php
-      message:
-        selector: ".auth_form .warning center"
+      - path: /login.php
+        message:
+          selector: ".auth_form .warning center"
     test:
       path: /top10.php
 

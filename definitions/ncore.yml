@@ -38,9 +38,9 @@
       nev: "{{ .Config.username }}"
       pass: "{{ .Config.password }}"
     error:
-      path: /login.php
-      message:
-        selector: "#hibauzenet td[valign='middle']"
+      - path: /login.php
+        message:
+          selector: "#hibauzenet td[valign='middle']"
     test:
       path: /profile.php
 

@@ -47,9 +47,9 @@
       login: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /login.php
-      message:
-        selector: .messages > p
+      - path: /login.php
+        message:
+          selector: .messages > p
     test:
       path: /top10.php
 

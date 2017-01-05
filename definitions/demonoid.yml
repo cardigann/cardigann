@@ -35,10 +35,10 @@
       Submit: Submit
       withq: 1
     error:
-      selector: form[id='bb_code_form'] + tbody font[class='red']:nth-child(1)
-      message:
-        selector: form[id='bb_code_form'] + tbody font[class='red']:nth-child(1)
-        remove: style, b
+      - selector: form[id='bb_code_form'] + tbody font[class='red']:nth-child(1)
+        message:
+          selector: form[id='bb_code_form'] + tbody font[class='red']:nth-child(1)
+          remove: style, b
 
   ratio:
     path: /user_control_panel.php

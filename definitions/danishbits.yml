@@ -53,9 +53,9 @@
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /login.php
-      message:
-        selector: .warning:not(.hidden)
+      - path: /login.php
+        message:
+          selector: .warning:not(.hidden)
     test:
       path: /inbox.php
 

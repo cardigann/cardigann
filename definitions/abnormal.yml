@@ -42,9 +42,9 @@
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /login.php
-      message:
-        selector: .warning
+      - path: /login.php
+        message:
+          selector: .warning
     test:
       path: /top10.php
 

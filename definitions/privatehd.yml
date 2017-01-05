@@ -22,9 +22,9 @@
       email_username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /auth/login
-      message:
-        selector: .alert > p:nth-child(2)
+      - path: /auth/login
+        message:
+          selector: .alert > p:nth-child(2)
     test:
       path: /account
 

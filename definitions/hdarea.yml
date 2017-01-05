@@ -43,9 +43,9 @@
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      path: /takelogin.php
-      message:
-        selector: td.text
+      - path: /takelogin.php
+        message:
+          selector: td.text
     test:
       path: /messages.php
 
