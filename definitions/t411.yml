@@ -2,6 +2,7 @@
   site: t411
   name: Torrent411
   language: fr-fr
+  encoding: UTF-8
   links:
     - https://t411.li
 
@@ -20,6 +21,7 @@
             393: Other
             235: PC/Mac
             236: PC
+            625: PC/Phone-Other
             638: PC
             629: PC
             455: TV/Anime
@@ -42,16 +44,15 @@
 
   login:
     path: /users/login/
-    form: form
+    method: post
     inputs:
       login: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
     error:
-      - path: /login.php
-        message:
-          selector: .messages > p
+      - selector: div#messages > p
     test:
-      path: /top10.php
+      path: /torrents/search/
+      selector: a.logout
 
   ratio:
     path: /
@@ -77,12 +78,15 @@
       title:
         selector: td:nth-child(2) > a:nth-child(1)
         attribute: title
+      details:
+        selector: td:nth-child(2) > a:nth-child(1)
+        attribute: href
       download:
         selector: td:nth-child(3) > a
         attribute: href
         filters:
           - name: replace
-            args: ["/torrents/nfo/?id=", "https://www.t411.li/torrents/download/?id="]
+            args: ["/torrents/nfo/?id=", "/torrents/download/?id="]
       size:
         selector: td:nth-child(6)
       seeders:
