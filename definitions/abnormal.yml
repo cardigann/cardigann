@@ -100,6 +100,6 @@
           - name: append
             args: " ago"
       seeders:
-        selector: td:nth-child(7)
+        selector: td:nth-child(6)
       leechers:
-        selector: td:nth-child(8)
+        selector: td:nth-child(7)
