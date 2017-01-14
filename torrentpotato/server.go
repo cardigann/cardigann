@@ -51,7 +51,7 @@ func Output(w http.ResponseWriter, items []torznab.ResultItem) {
 			Size:        int(item.Size / 1024 / 1024),
 			Leechers:    item.Peers - item.Seeders,
 			Seeders:     item.Seeders,
-			PublishDate: item.PublishDate
+			PublishDate: item.PublishDate,
 		})
 	}
 
