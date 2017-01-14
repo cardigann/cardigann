@@ -18,7 +18,7 @@ type Result struct {
 	Type        string 	`json:"type"`
 	Size        int    	`json:"size"`
 	Leechers    int    	`json:"leechers"`
-	Seeders     int    	`json:"seeders"`,
+	Seeders     int    	`json:"seeders"`
 	PublishDate time.Time   `json:"publish_date"`
 }
 
