@@ -145,6 +145,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * HDME
 * Immortalseed
 * IPTorrents
+* KickAssTorrent
 * MoreThanTV
 * MySpleen
 * NCore

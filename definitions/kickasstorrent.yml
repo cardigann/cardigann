@@ -1,0 +1,48 @@
+---
+  site: kickasstorrent
+  name: KickAssTorrent
+  language: en-us
+  links:
+    - https://kat.how
+
+  caps:
+    categories:
+      201: Movies
+      202: Movies/DVD
+      203: Audio/Video  # Music videos
+      204: Movies/Other # Movie clips
+      205: TV
+      206: TV/Other     # Handheld
+      207: Movies/HD
+      208: TV/HD
+      209: Movies/3D
+      209: Movies/3D
+      299: Movies/Other
+
+    modes:
+      tv-search: [q, season, ep]
+
+  search:
+    path: "{{if .Query.Keywords}}usearch/{{ .Query.Keywords}}{{else}}/movies{{end}}/"
+    rows:
+      selector: table[class="data"] tr[id]
+    fields:
+      category:
+        text: 1
+      title:
+        selector: td:nth-child(1) div div a[class="cellMainLink"]
+      details:
+        selector: td:nth-child(1) div div a[class="cellMainLink"]
+        attribute: href
+      download:
+        selector: td:nth-child(1) div a[data-download=""]
+        attribute: href
+      size:
+        selector: td:nth-child(2)
+      date:
+        selector: td:nth-child(3)
+      seeders:
+        selector: td:nth-child(4)
+      leechers:
+        selector: td:nth-child(5)
+
