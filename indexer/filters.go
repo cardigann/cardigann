@@ -84,6 +84,13 @@ func invokeFilter(name string, args interface{}, value string) (string, error) {
 			return "", fmt.Errorf("Filter %q requires a string argument at idx 0", name)
 		}
 		return value + str, nil
+	
+	case "prepend":
+		str, ok := args.(string)
+		if !ok {
+			return "", fmt.Errorf("Filter %q requires a string argument at idx 0", name)
+		}
+		return str + value, nil
 
 	case "timeago", "fuzzytime", "reltime":
 		return filterFuzzyTime(value, time.Now())
