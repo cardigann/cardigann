@@ -176,6 +176,93 @@ Cardigann simply provides a format for describing how to log into and scrape the
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 
+## How to compile (linux)
+
+#### Install all requirements for the *Go* language, i.e. 
+
+```  
+sudo apt-get install golang
+```
+  
+#### Verify that GO is installed
+
+``` 
+go version 
+```
+    
+#### Install *npm*. There are several ways to do this, i have installed the package from the repository and then update npm to latest version:
+
+``` 
+sudo npm install -g npm@latest
+``` 
+
+(If Needed) Installing npm from repository forced me to create a symbolic link between /usr/bin/nodejs /usr/bin/node because node is expected.
+  
+```
+sudo ln -s  /usr/bin/nodejs /usr/bin/node 
+```
+
+#### Create PATH directory
+
+```
+mkdir ~/cardigann
+```
+
+#### Export this location for your GO to use
+
+```
+setenv GOPATH ~/cardigann
+```
+
+#### Export BIN location for your GO where all of the compiled binaries will be stored
+
+```
+setenv GOBIN ~/cardigann/bin
+ ```
+ 
+#### Download all dependencies required from cardigann
+
+```
+go get github.com/Sirupsen/logrus
+go get github.com/cardigann/cardigann
+go get gopkg.in/alecthomas/kingpin.v2
+go get github.com/equinox-io/equinox
+go get github.com/kardianos/service
+go get -u github.com/mjibson/esc
+go get -u github.com/c4milo/github-release
+```
+
+#### Install the web part:
+
+```
+cd ~/cardigann/src/github.com/cardigann/cardigann/web
+npm install
+```
+
+#### Finally you should be ready to compile: 
+ 
+```
+cd ~/cardigann/src/github.com/cardigann/cardigann
+make
+make build
+make install
+```
+
+If you get *esc: command not found* after `make build` than try to add *GOBIN* to your *PATH*, i.e.  
+
+```
+PATH=$PATH:$GOBIN
+```
+
+Otherwise you can change the Makefile in "~/cardigann/src/github.com/cardigann/cardigann" at line starting with **esc -o** and replace **esc** with its absolute path: **~/cardigann/bin/esc**
+
+#### Start the server!
+
+```
+cd  ~/cardigann/bin
+./cardigann server 
+```
+
 ## Reporting bugs
 
 Cardigann is new software, and relies on scraping indexers, so is inherently prone to breaking. We try and reply as quickly as possible, but please make sure before you report a bug that you've update to the latest version.
