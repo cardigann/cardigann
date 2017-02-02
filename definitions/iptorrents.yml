@@ -69,7 +69,7 @@
     inputs:
       cookie: "{{ .Config.cookie }}"
     test:
-      path: /my.php
+      path: /settings.php
 
   ratio:
     path: /indexipt.php
