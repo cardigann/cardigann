@@ -394,7 +394,8 @@ func (h *handler) rewriteLinks(r *http.Request, items []torznab.ResultItem) ([]t
 			return nil, err
 		}
 
-		items[idx].Link = fmt.Sprintf("%s/%s/%s.torrent", baseURL.String(), te, url.QueryEscape(item.Title))
+		filename := strings.Replace(item.Title, "/", "-", -1)
+		items[idx].Link = fmt.Sprintf("%s/%s/%s.torrent", baseURL.String(), te, url.QueryEscape(filename))
 	}
 
 	return items, nil
