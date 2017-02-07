@@ -1,0 +1,53 @@
+---
+  site: torrentz2
+  name: Torrentz2
+  language: en-us
+  links:
+    - https://torrentz2.eu/
+
+  caps:
+    categories:
+      "Video Tv": TV
+      "Video": Movies
+      "Video Movie HD": Movies/HD
+
+    modes:
+      search: [f]
+      tv-search: [f, season, ep]
+
+  search:
+    path: feed 
+    inputs:
+       f: "{{ .Query.Keywords }}"
+    rows:
+      selector: "rss channel item"
+    fields:
+      title:
+        selector: title
+      download:
+        selector: description
+        filters:
+          - name: regexp
+            args: "Hash: (\\w+)"
+      category:
+        selector: category
+      date:
+        selector: pubDate
+        filters:
+          - name: dateparse
+            args: "Mon, 02 Jan 2006 15:04:05 -0700"
+      size:
+        selector: description
+        filters:
+          - name: regexp
+            args: "Size: (\\d+ ..)"
+      seeders:
+        selector: description
+        filters:
+          - name: regexp
+            args: "Seeds: (\\d+)"
+      leechers:
+        selector: description
+        filters:
+          - name: regexp
+            args: "Peers: (\\d+)"
