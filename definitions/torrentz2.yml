@@ -34,6 +34,26 @@
       date:
         selector: pubDate
         filters:
+          - name: replace
+            args: [" 0:", " 00:"]
+          - name: replace
+            args: [" 1:", " 01:"]
+          - name: replace
+            args: [" 2:", " 02:"]
+          - name: replace
+            args: [" 3:", " 03:"]
+          - name: replace
+            args: [" 4:", " 04:"]
+          - name: replace
+            args: [" 5:", " 05:"]
+          - name: replace
+            args: [" 6:", " 06:"]
+          - name: replace
+            args: [" 7:", " 07:"]
+          - name: replace
+            args: [" 8:", " 08:"]
+          - name: replace
+            args: [" 9:", " 09:"]
           - name: dateparse
             args: "Mon, 02 Jan 2006 15:04:05 -0700"
       size:
