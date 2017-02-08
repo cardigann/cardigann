@@ -7,67 +7,48 @@
 
   caps:
     categories:
-      "Video Tv": TV
-      "Video": Movies
-      "Video Movie HD": Movies/HD
+      "video tv": TV
+      "video": Movies
+      "video movie hd": Movies/HD
 
     modes:
       search: [q]
       tv-search: [q, season, ep]
 
   search:
-    path: feed 
+    path: search
     inputs:
        f: "{{ .Query.Keywords }}"
     rows:
-      selector: "rss channel item"
+      selector: "html body #wrap .results dl"
     fields:
       title:
-        selector: title
+        selector: dt a
+      details:
+        selector: dt a
+        attribute: href
       download:
-        selector: description
+        selector: dt a
+        attribute: href
         filters:
           - name: regexp
-            args: "Hash: (\\w+)"
+            args: "/(\\w+)"
+          - name: prepend
+            args: "magnet:?xt=urn:btih:"
       category:
-        selector: category
+        selector: dt
+        filters:
+          - name: regexp
+            args: "» (.*)"
       date:
-        selector: pubDate
+        selector: dd span:nth-child(2)
         filters:
-          - name: replace
-            args: [" 0:", " 00:"]
-          - name: replace
-            args: [" 1:", " 01:"]
-          - name: replace
-            args: [" 2:", " 02:"]
-          - name: replace
-            args: [" 3:", " 03:"]
-          - name: replace
-            args: [" 4:", " 04:"]
-          - name: replace
-            args: [" 5:", " 05:"]
-          - name: replace
-            args: [" 6:", " 06:"]
-          - name: replace
-            args: [" 7:", " 07:"]
-          - name: replace
-            args: [" 8:", " 08:"]
-          - name: replace
-            args: [" 9:", " 09:"]
-          - name: dateparse
-            args: "Mon, 2 Jan 2006 15:04:05 -0700"
+          - name: append
+            args: ' ago'
+          - name: timeago
       size:
-        selector: description
-        filters:
-          - name: regexp
-            args: "Size: (\\d+ ..)"
+        selector: dd span:nth-child(3)
       seeders:
-        selector: description
-        filters:
-          - name: regexp
-            args: "Seeds: (\\d+)"
+        selector: dd span:nth-child(4)
       leechers:
-        selector: description
-        filters:
-          - name: regexp
-            args: "Peers: (\\d+)"
+        selector: dd span:nth-child(5)
