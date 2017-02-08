@@ -12,8 +12,8 @@
       "Video Movie HD": Movies/HD
 
     modes:
-      search: [f]
-      tv-search: [f, season, ep]
+      search: [q]
+      tv-search: [q, season, ep]
 
   search:
     path: feed 
