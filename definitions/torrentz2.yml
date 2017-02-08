@@ -1,0 +1,54 @@
+---
+  site: torrentz2
+  name: Torrentz2
+  language: en-us
+  links:
+    - https://torrentz2.eu/
+
+  caps:
+    categories:
+      "video tv": TV
+      "video": Movies
+      "video movie hd": Movies/HD
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+
+  search:
+    path: search
+    inputs:
+       f: "{{ .Query.Keywords }}"
+    rows:
+      selector: "html body #wrap .results dl"
+    fields:
+      title:
+        selector: dt a
+      details:
+        selector: dt a
+        attribute: href
+      download:
+        selector: dt a
+        attribute: href
+        filters:
+          - name: regexp
+            args: "/(\\w+)"
+          - name: prepend
+            args: "magnet:?xt=urn:btih:"
+      category:
+        selector: dt
+        filters:
+          - name: regexp
+            args: "» (.*)"
+      date:
+        selector: dd span:nth-child(2)
+        filters:
+          - name: append
+            args: ' ago'
+          - name: timeago
+      size:
+        selector: dd span:nth-child(3)
+      seeders:
+        selector: dd span:nth-child(4)
+      leechers:
+        selector: dd span:nth-child(5)
