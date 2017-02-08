@@ -2,6 +2,8 @@
   site: torrentz2
   name: Torrentz2
   language: en-us
+  type: public
+  encoding: UTF-8
   links:
     - https://torrentz2.eu/
 
@@ -14,13 +16,18 @@
     modes:
       search: [q]
       tv-search: [q, season, ep]
+      movie-search: [q]
+
+  settings: []
 
   search:
-    path: search
+    path: searchA
     inputs:
        f: "{{ .Query.Keywords }}"
     rows:
-      selector: "html body #wrap .results dl"
+      selector: "html body #wrap .results dl:has(a)"
+      filters:
+        - name: andmatch
     fields:
       title:
         selector: dt a
@@ -37,9 +44,12 @@
             args: "magnet:?xt=urn:btih:"
       category:
         selector: dt
+        remove: a
         filters:
-          - name: regexp
-            args: "» (.*)"
+          - name: trim
+            args: "»"
+          - name: trim
+            args: " "
       date:
         selector: dd span:nth-child(2)
         filters:
@@ -52,3 +62,7 @@
         selector: dd span:nth-child(4)
       leechers:
         selector: dd span:nth-child(5)
+      downloadvolumefactor:
+        text: "0"
+      uploadvolumefactor:
+        text: "1"
