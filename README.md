@@ -29,7 +29,7 @@ Cardigann is distributed on equinox.io in a variety of formats for macOS, Linux 
 
 https://dl.equinox.io/cardigann/cardigann/stable
 
-Follow the instructions on the above to install the cardigan binary, and then you can run the following to run the server in the foreground:
+Follow the instructions on the above to install the cardigann binary, and then you can run the following to run the server in the foreground:
 
 ```bash
 cardigann server
@@ -91,7 +91,7 @@ Definitions are yaml files (see [definitions](definitions/) for their source) th
 
 #### Linux/BSD:
   * `$HOME/.config/cardigann/definitions/`
-  * `/etc/xdg/cardigan/definitions/`
+  * `/etc/xdg/cardigann/definitions/`
   
 #### OSX:
   * `$HOME/Library/Preferences/cardigann/definitions/`
