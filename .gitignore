@@ -12,3 +12,5 @@ equinox.yml
 equinox.key
 web/build
 web/node_modules
+indexer/definitions.go
+server/static.go

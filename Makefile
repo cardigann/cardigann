@@ -6,15 +6,15 @@ VERSION=$(shell git describe --tags --candidates=1 --dirty)
 FLAGS=-X main.Version=$(VERSION) -w
 SRC=$(shell find ./indexer ./server ./config ./torznab)
 
-test:
+test: statics
 	go test -v $(shell go list ./... | grep -v /vendor/)
 
 statics: server/static.go indexer/definitions.go
 
-build: $(SRC) statics
+build: statics $(SRC)
 	go build -o cardigann -ldflags="$(FLAGS)" *.go
 
-$(BIN)-linux-amd64: $(SRC) statics
+$(BIN)-linux-amd64: statics $(SRC)
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ -ldflags="$(FLAGS) -s" *.go
 
 test-defs:
