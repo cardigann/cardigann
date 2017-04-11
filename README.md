@@ -153,6 +153,7 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Norbits
 * PreToMe
 * PrivateHD
+* Redacted
 * Speed.CD
 * Sceneaccess
 * SceneTime
