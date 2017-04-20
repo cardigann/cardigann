@@ -1,11 +1,10 @@
 ---
-  site: apollo
-  name: Apollo
-  description: "A music tracker"
+  site: redacted
+  name: Redacted
+  description: "The music tracker"
   language: en-us
-  encoding: UTF-8
   links:
-    - https://apollo.rip
+    - https://redacted.ch
 
   caps:
     categories:
@@ -86,8 +85,6 @@
         selector: td:nth-child(8)
       downloadvolumefactor:
         case:
-          ":root div.alertbar:contains(\"freeleech\")": "0"
-          ":root div.alertbar:contains(\"FREELEECH\")": "0"
           "*": "1"
       uploadvolumefactor:
         case:
