@@ -1,7 +1,7 @@
 Cardigann [![Build Status](https://travis-ci.org/cardigann/cardigann.svg?branch=master)](https://travis-ci.org/cardigann/cardigann) [![Go Report Card](https://goreportcard.com/badge/github.com/cardigann/cardigann)](https://goreportcard.com/report/github.com/cardigann/cardigann) [![Gitter](https://badges.gitter.im/cardigann/cardigann.svg)](https://gitter.im/cardigann/cardigann?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
 =========
 
-# This project is unmaintained! Please see https://github.com/cardigann/cardigann/issues/372
+# This project is no longer maintained! Please see [#372](https://github.com/cardigann/cardigann/issues/372) for details.
 
 A server for adding extra indexers to Sonarr, SickRage and CouchPotato via [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) proxies. Behind the scenes Cardigann logs in and runs searches and then transforms the results into a compatible format. 
 
