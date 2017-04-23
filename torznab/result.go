@@ -73,11 +73,11 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 			{Name: "site", Value: ri.Site},
 			{Name: "seeders", Value: strconv.Itoa(ri.Seeders)},
 			{Name: "peers", Value: strconv.Itoa(ri.Peers)},
-			{Name: "minimumratio", Value: fmt.Sprintf("%.1f", ri.MinimumRatio)},
-			{Name: "minimumseedtime", Value: fmt.Sprintf("%.1f", ri.MinimumSeedTime.Seconds())},
+			{Name: "minimumratio", Value: fmt.Sprintf("%.2f", ri.MinimumRatio)},
+			{Name: "minimumseedtime", Value: fmt.Sprintf("%.2f", ri.MinimumSeedTime.Seconds())},
 			{Name: "size", Value: fmt.Sprintf("%d", ri.Size)},
-			{Name: "downloadvolumefactor", Value: fmt.Sprintf("%.1f", ri.DownloadVolumeFactor)},
-			{Name: "uploadvolumefactor", Value: fmt.Sprintf("%.1f", ri.UploadVolumeFactor)},
+			{Name: "downloadvolumefactor", Value: fmt.Sprintf("%.2f", ri.DownloadVolumeFactor)},
+			{Name: "uploadvolumefactor", Value: fmt.Sprintf("%.2f", ri.UploadVolumeFactor)},
 		},
 	}
 
