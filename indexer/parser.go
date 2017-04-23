@@ -17,17 +17,19 @@ import (
 )
 
 type IndexerDefinition struct {
-	Site         string                 `yaml:"site"`
-	Settings     []settingsField        `yaml:"settings"`
-	Name         string                 `yaml:"name"`
-	Description  string                 `yaml:"description"`
-	Language     string                 `yaml:"language"`
-	Links        stringorslice          `yaml:"links"`
-	Capabilities capabilitiesBlock      `yaml:"caps"`
-	Login        loginBlock             `yaml:"login"`
-	Ratio        ratioBlock             `yaml:"ratio"`
-	Search       searchBlock            `yaml:"search"`
-	stats        IndexerDefinitionStats `yaml:"-"`
+	Site            string                 `yaml:"site"`
+	Settings        []settingsField        `yaml:"settings"`
+	Name            string                 `yaml:"name"`
+	Description     string                 `yaml:"description"`
+	Language        string                 `yaml:"language"`
+	MinimumRatio    float64                `yaml:"minimumratio"`
+	MinimumSeedTime int32                  `yaml:"minimumseedtime"`
+	Links           stringorslice          `yaml:"links"`
+	Capabilities    capabilitiesBlock      `yaml:"caps"`
+	Login           loginBlock             `yaml:"login"`
+	Ratio           ratioBlock             `yaml:"ratio"`
+	Search          searchBlock            `yaml:"search"`
+	stats           IndexerDefinitionStats `yaml:"-"`
 }
 
 type IndexerDefinitionStats struct {
@@ -69,8 +71,10 @@ func ParseDefinitionFile(f *os.File) (*IndexerDefinition, error) {
 
 func ParseDefinition(src []byte) (*IndexerDefinition, error) {
 	def := IndexerDefinition{
-		Language:     "en-us",
-		Capabilities: capabilitiesBlock{},
+		Language:        "en-us",
+		MinimumRatio:    1,
+		MinimumSeedTime: 172800,
+		Capabilities:    capabilitiesBlock{},
 		Login: loginBlock{
 			FormSelector: "form",
 			Inputs:       inputsBlock{},
