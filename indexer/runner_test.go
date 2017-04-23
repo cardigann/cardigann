@@ -46,6 +46,10 @@ const exampleDefinition2 = `
     rows:
       selector: table.results tbody tr
     fields:
+      minimumratio:
+          text: 0.5
+      minimumseedtime:
+          text: 172800
       category:
         selector: td:nth-child(1) a
         attribute: href
@@ -355,6 +359,14 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 
 	if len(results) != 1 {
 		t.Fatalf("Expected 1 result, got %d", len(results))
+	}
+
+	if results[0].MinimumRatio != 0.5 {
+		t.Fatal("Incorrect minimum ratio")
+	}
+
+	if results[0].MinimumSeedTime.Seconds() != 172800 {
+		t.Fatal("Incorrect minimum seed time")
 	}
 
 	if results[0].Link != "https://example.org/download/mma_llama_309960/mma_llama_309960_archive.torrent" {
