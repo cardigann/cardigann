@@ -151,7 +151,7 @@ func (r *Runner) checkHasConfig() error {
 }
 
 func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error) {
-	funcMap := template.FuncMap {
+	funcMap := template.FuncMap{
 		"replace": strings.Replace,
 	}
 	tmpl, err := template.New(name).Funcs(funcMap).Parse(tpl)
@@ -865,8 +865,8 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 	item := extractedItem{
 		ResultItem: torznab.ResultItem{
 			Site:            r.definition.Site,
-			MinimumRatio:    1,
-			MinimumSeedTime: time.Hour * 48,
+			MinimumRatio:    r.definition.MinimumRatio,
+			MinimumSeedTime: time.Duration(r.definition.MinimumSeedTime) * time.Second,
 		},
 	}
 
