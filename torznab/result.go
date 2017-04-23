@@ -22,12 +22,12 @@ type ResultItem struct {
 	Grabs       int
 	PublishDate time.Time
 
-	Seeders         int
-	Peers           int
-	MinimumRatio    float64
-	MinimumSeedTime time.Duration
-	DownloadVolumeFactor    float64
-	UploadVolumeFactor      float64
+	Seeders              int
+	Peers                int
+	MinimumRatio         float64
+	MinimumSeedTime      time.Duration
+	DownloadVolumeFactor float64
+	UploadVolumeFactor   float64
 }
 
 func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
@@ -73,11 +73,11 @@ func (ri ResultItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 			{Name: "site", Value: ri.Site},
 			{Name: "seeders", Value: strconv.Itoa(ri.Seeders)},
 			{Name: "peers", Value: strconv.Itoa(ri.Peers)},
-			{Name: "minimumratio", Value: fmt.Sprintf("%.f", ri.MinimumRatio)},
-			{Name: "minimumseedtime", Value: fmt.Sprintf("%.f", ri.MinimumSeedTime.Seconds())},
+			{Name: "minimumratio", Value: fmt.Sprintf("%.2f", ri.MinimumRatio)},
+			{Name: "minimumseedtime", Value: fmt.Sprintf("%.2f", ri.MinimumSeedTime.Seconds())},
 			{Name: "size", Value: fmt.Sprintf("%d", ri.Size)},
-			{Name: "downloadvolumefactor", Value: fmt.Sprintf("%.f", ri.DownloadVolumeFactor)},
-			{Name: "uploadvolumefactor", Value: fmt.Sprintf("%.f", ri.UploadVolumeFactor)},
+			{Name: "downloadvolumefactor", Value: fmt.Sprintf("%.2f", ri.DownloadVolumeFactor)},
+			{Name: "uploadvolumefactor", Value: fmt.Sprintf("%.2f", ri.UploadVolumeFactor)},
 		},
 	}
 
