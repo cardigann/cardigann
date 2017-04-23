@@ -55,6 +55,13 @@ func TestIndexerParser(t *testing.T) {
 	}
 
 	// check defaults
+	if def.MinimumSeedTime != 172800 {
+		t.Fatalf("Expected minimum seed time to get the default, got %d", def.MinimumSeedTime)
+	}
+	if def.MinimumRatio != 1 {
+		t.Fatalf("Expected minimum seed ratio to get the default, got %f", def.MinimumRatio)
+	}
+
 	if def.Language != "en-us" {
 		t.Fatalf("Expected language to get the default, got %q", def.Language)
 	}
