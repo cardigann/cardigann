@@ -1,8 +1,8 @@
 package indexer
 
 import (
-	"reflect"
-	"testing"
+  "reflect"
+  "testing"
 )
 
 const exampleDefinition1 = `
@@ -49,32 +49,31 @@ const exampleDefinition1 = `
 `
 
 func TestIndexerParser(t *testing.T) {
-	def, err := ParseDefinition([]byte(exampleDefinition1))
-	if err != nil {
-		t.Fatal(err)
-	}
+  def, err := ParseDefinition([]byte(exampleDefinition1))
+  if err != nil {
+    t.Fatal(err)
+  }
 
-	// check defaults
-	if def.Language != "en-us" {
-		t.Fatalf("Expected language to get the default, got %q", def.Language)
-	}
+  if def.Language != "en-us" {
+    t.Fatalf("Expected language to get the default, got %q", def.Language)
+  }
 
-	ok, supported := def.Capabilities.ToTorznab().HasSearchMode("tv-search")
-	if !ok {
-		t.Fatal("Capabilities should support tv-search")
-	}
+  ok, supported := def.Capabilities.ToTorznab().HasSearchMode("tv-search")
+  if !ok {
+    t.Fatal("Capabilities should support tv-search")
+  }
 
-	if !reflect.DeepEqual(supported, []string{"q", "season", "ep"}) {
-		t.Fatalf("Supported parameters for tv-search were parsed incorrectly as %v", supported)
-	}
+  if !reflect.DeepEqual(supported, []string{"q", "season", "ep"}) {
+    t.Fatalf("Supported parameters for tv-search were parsed incorrectly as %v", supported)
+  }
 
-	if l := len(def.Capabilities.ToTorznab().Categories); l != 5 {
-		t.Fatalf("Expected 6 categories, got %d", l)
-	}
+  if l := len(def.Capabilities.ToTorznab().Categories); l != 5 {
+    t.Fatalf("Expected 6 categories, got %d", l)
+  }
 
-	if def.Ratio.Path != "/my.php" {
-		t.Fatalf("Expected ratio path to be /my.php, got %q", def.Ratio.Path)
-	}
+  if def.Ratio.Path != "/my.php" {
+    t.Fatalf("Expected ratio path to be /my.php, got %q", def.Ratio.Path)
+  }
 }
 
 const exampleDefinitionWithStringCats = `
@@ -95,8 +94,8 @@ const exampleDefinitionWithStringCats = `
 `
 
 func TestIndexerParserWithStringLocalCats(t *testing.T) {
-	_, err := ParseDefinition([]byte(exampleDefinitionWithStringCats))
-	if err != nil {
-		t.Fatal(err)
-	}
+  _, err := ParseDefinition([]byte(exampleDefinitionWithStringCats))
+  if err != nil {
+    t.Fatal(err)
+  }
 }

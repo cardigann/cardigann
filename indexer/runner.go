@@ -151,7 +151,7 @@ func (r *Runner) checkHasConfig() error {
 }
 
 func (r *Runner) applyTemplate(name, tpl string, ctx interface{}) (string, error) {
-	funcMap := template.FuncMap {
+	funcMap := template.FuncMap{
 		"replace": strings.Replace,
 	}
 	tmpl, err := template.New(name).Funcs(funcMap).Parse(tpl)
@@ -864,9 +864,7 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 
 	item := extractedItem{
 		ResultItem: torznab.ResultItem{
-			Site:            r.definition.Site,
-			MinimumRatio:    1,
-			MinimumSeedTime: time.Hour * 48,
+			Site: r.definition.Site,
 		},
 	}
 
@@ -966,6 +964,20 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 				continue
 			}
 			item.UploadVolumeFactor = uploadvolumefactor
+		case "minimumratio":
+			minimumratio, err := strconv.ParseFloat(normalizeNumber(val), 64)
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable minimumratio value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.MinimumRatio = minimumratio
+		case "minimumseedtime":
+			minimumseedtime, err := strconv.ParseFloat(normalizeNumber(val), 64)
+			if err != nil {
+				r.logger.Warnf("Row #%d has unparseable minimumseedtime value %q in %s", rowIdx, val, key)
+				continue
+			}
+			item.MinimumSeedTime = time.Duration(minimumseedtime) * time.Second
 		default:
 			r.logger.Warnf("Row #%d has unknown field %s", rowIdx, key)
 			continue
