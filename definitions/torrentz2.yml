@@ -2,8 +2,6 @@
   site: torrentz2
   name: Torrentz2
   language: en-us
-  type: public
-  encoding: UTF-8
   links:
     - https://torrentz2.eu/
 
@@ -33,12 +31,9 @@
     modes:
       search: [q]
       tv-search: [q, season, ep]
-      movie-search: [q]
-
-  settings: []
 
   search:
-    path: searchA
+    path: search
     inputs:
        f: "{{ .Query.Keywords }}"
     rows:
@@ -61,10 +56,9 @@
             args: "magnet:?xt=urn:btih:"
       category:
         selector: dt
-        remove: a
         filters:
-          - name: trim
-            args: "»"
+          - name: regexp
+            args: "» (.*)"
           - name: trim
             args: " "
       date:
