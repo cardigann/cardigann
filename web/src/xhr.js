@@ -9,5 +9,7 @@ export default function(path) {
     url.set('port', '5060');
   }
 
+  console.log(url);
+
   return url.toString();
 };
