@@ -1,9 +1,9 @@
 Cardigann [![Build Status](https://travis-ci.org/cardigann/cardigann.svg?branch=master)](https://travis-ci.org/cardigann/cardigann) [![Go Report Card](https://goreportcard.com/badge/github.com/cardigann/cardigann)](https://goreportcard.com/report/github.com/cardigann/cardigann) [![Gitter](https://badges.gitter.im/cardigann/cardigann.svg)](https://gitter.im/cardigann/cardigann?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
 =========
 
-# This project is no longer maintained! Please see [#372](https://github.com/cardigann/cardigann/issues/372) for details.
+**This project is looking for maintainers to help! Please see [#372](https://github.com/cardigann/cardigann/issues/372) for details.**
 
-A server for adding extra indexers to Sonarr, SickRage and CouchPotato via [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) proxies. Behind the scenes Cardigann logs in and runs searches and then transforms the results into a compatible format. 
+A server for adding extra indexers to Sonarr, SickRage and CouchPotato via [Torznab](https://github.com/Sonarr/Sonarr/wiki/Implementing-a-Torznab-indexer) and [TorrentPotato](https://github.com/CouchPotato/CouchPotatoServer/wiki/Couchpotato-torrent-provider) proxies. Behind the scenes Cardigann logs in and runs searches and then transforms the results into a compatible format.
 
 Cardigann is implemented in golang, which means it's simply a single binary to execute/install, no runtime. Windows, Linux and OSX will be supported, although it should run on any platform that golang supports.
 
@@ -27,7 +27,7 @@ You can set a password requirement by either passing the `--passphrase` flag to 
 
 ## Installation
 
-Cardigann is distributed on equinox.io in a variety of formats for macOS, Linux and Windows. 
+Cardigann is distributed on equinox.io in a variety of formats for macOS, Linux and Windows.
 
 https://dl.equinox.io/cardigann/cardigann/stable
 
@@ -71,7 +71,7 @@ Configuration is stored in a `config.json` file. It's searched for in a few diff
 #### Linux/BSD:
   * `$HOME/.config/cardigann/config.json`
   * `/etc/xdg/cardigan/config.json`
-  
+
 #### OSX:
   * `$HOME/Library/Preferences/cardigann/config.json`
   * `/Library/Preferences/cardigann/config.json`
@@ -81,7 +81,7 @@ Configuration is stored in a `config.json` file. It's searched for in a few diff
   * `%APPDATA%\cardigann\config.json`
   * `%LOCALAPPDATA%\cardigann\config.json`
 
-This configuration file will contain your tracker credentials in plain-text, so it's important to keep it secure. 
+This configuration file will contain your tracker credentials in plain-text, so it's important to keep it secure.
 
 ## Definitions
 
@@ -94,7 +94,7 @@ Definitions are yaml files (see [definitions](definitions/) for their source) th
 #### Linux/BSD:
   * `$HOME/.config/cardigann/definitions/`
   * `/etc/xdg/cardigann/definitions/`
-  
+
 #### OSX:
   * `$HOME/Library/Preferences/cardigann/definitions/`
   * `/Library/Preferences/cardigann/definitions/`
@@ -182,28 +182,28 @@ I'm happy to add new trackers, please either open a new issue, or a pull request
 
 ## How to compile (linux)
 
-#### Install all requirements for the *Go* language, i.e. 
+#### Install all requirements for the *Go* language, i.e.
 
-```  
+```
 sudo apt-get install golang
 ```
-  
+
 #### Verify that GO is installed
 
-``` 
-go version 
 ```
-    
+go version
+```
+
 #### Install *npm*. There are several ways to do this, i have installed the package from the repository and then update npm to latest version:
 
-``` 
+```
 sudo npm install -g npm@latest
-``` 
+```
 
 (If Needed) Installing npm from repository forced me to create a symbolic link between /usr/bin/nodejs /usr/bin/node because node is expected.
-  
+
 ```
-sudo ln -s  /usr/bin/nodejs /usr/bin/node 
+sudo ln -s  /usr/bin/nodejs /usr/bin/node
 ```
 
 #### Create PATH directory
@@ -223,7 +223,7 @@ setenv GOPATH ~/cardigann
 ```
 setenv GOBIN ~/cardigann/bin
  ```
- 
+
 #### Download all dependencies required from cardigann
 
 ```
@@ -243,8 +243,8 @@ cd ~/cardigann/src/github.com/cardigann/cardigann/web
 npm install
 ```
 
-#### Finally you should be ready to compile: 
- 
+#### Finally you should be ready to compile:
+
 ```
 cd ~/cardigann/src/github.com/cardigann/cardigann
 make
@@ -252,7 +252,7 @@ make build
 make install
 ```
 
-If you get *esc: command not found* after `make build` than try to add *GOBIN* to your *PATH*, i.e.  
+If you get *esc: command not found* after `make build` than try to add *GOBIN* to your *PATH*, i.e.
 
 ```
 PATH=$PATH:$GOBIN
@@ -264,7 +264,7 @@ Otherwise you can change the Makefile in "~/cardigann/src/github.com/cardigann/c
 
 ```
 cd  ~/cardigann/bin
-./cardigann server 
+./cardigann server
 ```
 
 ## Reporting bugs
