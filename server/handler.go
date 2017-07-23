@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
@@ -25,18 +26,12 @@ const (
 )
 
 var (
-	log              = logger.Logger
-	apiRoutePrefixes = []string{
-		"/torznab/",
-		"/torrentpotato/",
-		"/download/",
-		"/xhr/",
-		"/debug/",
-	}
+	log = logger.Logger
 )
 
 type Params struct {
 	BaseURL    string
+	PathPrefix string
 	APIKey     []byte
 	Passphrase string
 	Config     config.Config
@@ -52,12 +47,21 @@ type handler struct {
 
 func NewHandler(p Params) (http.Handler, error) {
 	h := &handler{
-		Params:      p,
-		FileHandler: http.FileServer(FS(false)),
-		indexers:    map[string]torznab.Indexer{},
+		Params: p,
+		FileHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Printf("Loading %s from fs", r.URL.RequestURI())
+			http.FileServer(FS(false)).ServeHTTP(w, r)
+		}),
+		indexers: map[string]torznab.Indexer{},
 	}
 
 	router := mux.NewRouter()
+
+	// apply the path prefix
+	if h.Params.PathPrefix != "/" && h.Params.PathPrefix != "" {
+		router = router.PathPrefix(h.Params.PathPrefix).Subrouter()
+		h.FileHandler = http.StripPrefix(h.Params.PathPrefix, h.FileHandler)
+	}
 
 	// torznab routes
 	router.HandleFunc("/torznab/{indexer}", h.torznabHandler).Methods("GET")
@@ -81,6 +85,10 @@ func NewHandler(p Params) (http.Handler, error) {
 	router.HandleFunc("/xhr/auth", h.getAuthHandler).Methods("GET")
 	router.HandleFunc("/xhr/auth", h.postAuthHandler).Methods("POST")
 	router.HandleFunc("/xhr/version", h.getVersionHandler).Methods("GET")
+
+	// anything else
+	router.PathPrefix("/").Handler(h.FileHandler)
+	router.PathPrefix("/static").Handler(h.FileHandler)
 
 	h.Handler = router
 	return h, h.initialize()
@@ -108,15 +116,30 @@ func (h *handler) initialize() error {
 		}
 		h.Params.APIKey = k
 	}
+
+	// Walk routes for debugging
+	err := h.Handler.(*mux.Router).Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		path, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		log.Debugf("Responds to %s", path)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (h *handler) baseURL(r *http.Request, path string) (*url.URL, error) {
+func (h *handler) baseURL(r *http.Request, appendPath string) (*url.URL, error) {
 	proto := "http"
 	if r.TLS != nil {
 		proto = "https"
 	}
-	return url.Parse(fmt.Sprintf("%s://%s%s", proto, r.Host, path))
+	return url.Parse(fmt.Sprintf("%s://%s%s", proto, r.Host,
+		path.Join(h.Params.PathPrefix, appendPath)))
 }
 
 func (h *handler) createIndexer(key string) (torznab.Indexer, error) {
@@ -190,14 +213,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"remote": r.RemoteAddr,
 	}).Debugf("%s %s", r.Method, r.URL.RequestURI())
 
-	for _, prefix := range apiRoutePrefixes {
-		if strings.HasPrefix(r.URL.Path, prefix) {
-			h.Handler.ServeHTTP(w, r)
-			return
-		}
-	}
-
-	h.FileHandler.ServeHTTP(w, r)
+	h.Handler.ServeHTTP(w, r)
 }
 
 func (h *handler) torznabHandler(w http.ResponseWriter, r *http.Request) {
