@@ -47,6 +47,18 @@
 			"revisionTime": "2014-08-28T02:59:07Z"
 		},
 		{
+			"checksumSHA1": "scuGMDjk65DpLPqf6byaqOFNC88=",
+			"path": "github.com/mjibson/esc",
+			"revision": "8e9316f44809c83673f7da1b0aabf9c709afd5f5",
+			"revisionTime": "2017-05-28T21:48:52Z"
+		},
+		{
+			"checksumSHA1": "uBe/sn7cLhLUZ0mnVnvR6PZoTF8=",
+			"path": "github.com/mjibson/esc/embed",
+			"revision": "8e9316f44809c83673f7da1b0aabf9c709afd5f5",
+			"revisionTime": "2017-05-28T21:48:52Z"
+		},
+		{
 			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
 			"path": "github.com/pmezard/go-difflib/difflib",
