@@ -1,0 +1,35 @@
+name: Cardigann
+theme: jekyll-docs-theme
+
+project:
+    version: 1.9.10
+    download_url: https://github.com/cardigann/cardigann/releases
+
+license:
+    software: MIT License
+    software_url: http://opensource.org/licenses/MIT
+
+    docs: CC BY 3.0
+    docs_url: http://creativecommons.org/licenses/by/3.0/
+
+links:
+    header:
+      - title: GitHub
+        url: https://github.com/cardigann/cardigann
+    footer:
+      - title: GitHub
+        url: https://github.com/cardigann/cardigann
+      - title: Issues
+        url: https://github.com/allejo/jekyll-docs-theme/issues?state=open
+
+ui:
+    header:
+        color1: "#FFFFFF"
+        color2: "#000000"
+        trianglify: true
+
+# Build settings
+markdown: kramdown
+exclude:
+    - Gemfile
+    - Gemfile.lock
