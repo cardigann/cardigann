@@ -124,30 +124,32 @@ If you are running as a service, you will need to manually edit the service file
 
 Cardigann simply provides a format for describing how to log into and scrape the search results of various forums and sites. It is not endorsed by the various sites, nor is it intended for piracy. You are using Cardigann at your own risk.
 
+### Public
+* KickAssTorrent
+* ThePirateBay (TPB)
+* Torrentz2
+* AvistaZ
+* EZTV
+* HDME
+
+### Private
 * Abnormal
 * AlphaRatio
-* AlphaReign
 * Apollo (XANAX)
-* AvistaZ
 * BIT-HDTV
-* BeyondHD
 * BitMeTV
 * Blu-bits
+* BeyondHD
 * CinemaZ
 * DanishBits
 * Demonoid
 * EoT-Forum
 * Ethor.net (Thor's Land)
-* EZTV
 * FileList
-* Freshon
 * FunFile
 * HD-Torrents
-* HDArea
-* HDME
 * Immortalseed
 * IPTorrents
-* KickAssTorrent
 * MoreThanTV
 * MySpleen
 * NCore
@@ -162,21 +164,24 @@ Cardigann simply provides a format for describing how to log into and scrape the
 * Shareisland
 * The New Retro
 * The Shinning
-* ThePirateBay (TPB)
-* Torrent411 (T411)
 * Torrent Sector Crew
 * Torrent-Syndikat
 * Torrentbytes
 * TorrentDay
 * TorrentHeaven
 * Torrentleech
-* Torrentz2
 * ToTheGlory
-* Transmithe.Net
-* Tspate
 * UHDBits
 * WorldOfP2P
 * Xthor
+* Transmithe.Net
+* Tspate
+
+### Dead
+* AlphaReign
+* Freshon
+* HDArea
+* Torrent411 (T411)
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 
