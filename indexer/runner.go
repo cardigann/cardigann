@@ -24,9 +24,9 @@ import (
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
+	imdbscraper "github.com/cardigann/go-imdb-scraper"
 	"github.com/cardigann/releaseinfo"
 	"github.com/dustin/go-humanize"
-	"github.com/eefret/gomdb"
 	"github.com/f2prateek/train"
 	trainlog "github.com/f2prateek/train/log"
 	"github.com/headzoo/surf"
@@ -600,7 +600,7 @@ func (r *Runner) localCategories(query torznab.Query) []string {
 
 func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 	var show *tvmaze.Show
-	var movie *gomdb.MovieResult
+	var movie *imdbscraper.Movie
 	var err error
 
 	// convert show identifiers to season parameter
@@ -615,7 +615,7 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 		show, err = tvmaze.DefaultClient.GetShowWithTVRageID(query.TVRageID)
 		query.TVRageID = ""
 	case query.IMDBID != "":
-		movie, err = gomdb.MovieByImdbID(query.IMDBID)
+		movie, err = imdbscraper.FindByID(query.IMDBID)
 		query.IMDBID = ""
 	}
 
