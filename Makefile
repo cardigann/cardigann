@@ -5,14 +5,16 @@ GOBIN=$(shell go env GOBIN)
 VERSION=$(shell git describe --tags --candidates=1 --dirty)
 FLAGS=-X main.Version=$(VERSION) -w
 SRC=$(shell find ./indexer ./server ./config ./torznab)
+WEBSRC=$(shell find web/src)
+DEFINITIONS=$(shell find definitions)
 
 test: statics
 	go test -v $(shell go list ./... | grep -v /vendor/)
 
-statics: server/static.go indexer/definitions.go
-
-build: statics $(SRC)
+build: $(SRC) server/static.go indexer/definitions.go
 	go build -o cardigann -ldflags="$(FLAGS)" *.go
+
+statics: server/static.go indexer/definitions.go
 
 $(BIN)-linux-amd64: statics $(SRC)
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ -ldflags="$(FLAGS) -s" *.go
@@ -20,10 +22,10 @@ $(BIN)-linux-amd64: statics $(SRC)
 test-defs:
 	find definitions -name '*.yml' -print -exec go run *.go test {} \;
 
-indexer/definitions.go: $(shell find definitions)
+indexer/definitions.go: $(DEFINITIONS)
 	esc -o indexer/definitions.go -prefix templates -pkg indexer definitions/
 
-server/static.go: $(shell find web/src)
+server/static.go: $(WEBSRC)
 	cd web; npm run build
 	go generate -v ./server
 

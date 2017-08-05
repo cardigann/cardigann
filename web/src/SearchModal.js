@@ -36,10 +36,6 @@ class SearchModal extends Component {
   static defaultProps = {
     results: [],
   }
-  static propTypes = {
-   indexer: React.PropTypes.object.isRequired,
-   apiKey: React.PropTypes.string.isRequired,
-  }
   state = {
     apiKey: this.props.apiKey,
     show: this.props.show,

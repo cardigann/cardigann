@@ -13,6 +13,7 @@ import (
 // Server is an http server which wraps the Handler
 type Server struct {
 	Bind, Port, Passphrase string
+	PathPrefix             string
 	Hostname               string
 	version                string
 	config                 config.Config
@@ -25,6 +26,11 @@ func New(conf config.Config, version string) (*Server, error) {
 	}
 
 	port, err := config.GetGlobalConfig("port", "5060", conf)
+	if err != nil {
+		return nil, err
+	}
+
+	prefix, err := config.GetGlobalConfig("pathprefix", "", conf)
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +53,7 @@ func New(conf config.Config, version string) (*Server, error) {
 		Bind:       bind,
 		Port:       port,
 		Passphrase: passphrase,
+		PathPrefix: prefix,
 		config:     conf,
 		version:    version,
 	}, nil
@@ -94,8 +101,9 @@ func (s *Server) Listen() error {
 	logger.Logger.Infof("Listening on %s", listenOn)
 
 	h, err := NewHandler(Params{
-		BaseURL:    fmt.Sprintf("http://%s:%s/", s.Hostname, s.Port),
+		BaseURL:    fmt.Sprintf("http://%s:%s%s", s.Hostname, s.Port, s.PathPrefix),
 		Passphrase: s.Passphrase,
+		PathPrefix: s.PathPrefix,
 		Config:     s.config,
 		Version:    s.version,
 	})

@@ -12,10 +12,6 @@ class AddIndexer extends Component {
   static defaultProps = {
     indexers: [],
   }
-  static propTypes = {
-    indexers: React.PropTypes.array,
-    onAdd: React.PropTypes.func,
-  }
   state = {
     selected: false,
     options: buildOptions(this.props.indexers)

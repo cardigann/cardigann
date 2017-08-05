@@ -281,6 +281,10 @@ func configureServerCommand(app *kingpin.Application) error {
 		Default(s.Bind).
 		StringVar(&s.Bind)
 
+	cmd.Flag("prefix", "A path prefix for the server").
+		Default("/").
+		StringVar(&s.PathPrefix)
+
 	cmd.Flag("passphrase", "Require a passphrase to view web interface").
 		Short('p').
 		StringVar(&s.Passphrase)

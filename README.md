@@ -185,91 +185,59 @@ Cardigann simply provides a format for describing how to log into and scrape the
 
 I'm happy to add new trackers, please either open a new issue, or a pull request with whatever details you have for the tracker.
 
-## How to compile (linux)
+## Development
 
-#### Install all requirements for the *Go* language, i.e.
+You will need Golang 1.7+ for the server component and NodeJS and NPM if you want to modify the user interface.
 
-```
-sudo apt-get install golang
-```
+### Setup for Linux (Ubuntu/Debian)
 
-#### Verify that GO is installed
+If you don't have Go already set up, follow these steps (or [read this guide](https://medium.com/@patdhlk/how-to-install-go-1-8-on-ubuntu-16-04-710967aa53c9)):
 
-```
-go version
-```
+```bash
+sudo add-apt-repository ppa:longsleep/golang-backports
+sudo apt-get update
+sudo apt-get install golang-go build-essential
 
-#### Install *npm*. There are several ways to do this, i have installed the package from the repository and then update npm to latest version:
-
-```
-sudo npm install -g npm@latest
+export GOPATH=$HOME/go
+export GOBIN=$HOME/go/bin
+export PATH=$PATH:$GOBIN
 ```
 
-(If Needed) Installing npm from repository forced me to create a symbolic link between /usr/bin/nodejs /usr/bin/node because node is expected.
+If you want to edit the web interface, you will need Node setup:
 
-```
-sudo ln -s  /usr/bin/nodejs /usr/bin/node
-```
-
-#### Create PATH directory
-
-```
-mkdir ~/cardigann
+```bash
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+sudo apt-get install -y nodejs
 ```
 
-#### Export this location for your GO to use
+### Setup for macOS
 
-```
-setenv GOPATH ~/cardigann
-```
+```bash
+brew install golang node
 
-#### Export BIN location for your GO where all of the compiled binaries will be stored
-
-```
-setenv GOBIN ~/cardigann/bin
- ```
-
-#### Download all dependencies required from cardigann
-
-```
-go get github.com/Sirupsen/logrus
-go get github.com/cardigann/cardigann
-go get gopkg.in/alecthomas/kingpin.v2
-go get github.com/equinox-io/equinox
-go get github.com/kardianos/service
-go get -u github.com/mjibson/esc
-go get -u github.com/c4milo/github-release
+export GOPATH=$HOME/go
+export GOBIN=$HOME/go/bin
+export PATH=$PATH:$GOBIN
 ```
 
-#### Install the web part:
+### Installing cardigann
 
-```
-cd ~/cardigann/src/github.com/cardigann/cardigann/web
-npm install
-```
+Golang needs things under a [`$GOPATH`](https://github.com/golang/go/wiki/SettingGOPATH) to work. Check you have one with `go env`. Mine is '$HOME/go'.
 
-#### Finally you should be ready to compile:
-
-```
-cd ~/cardigann/src/github.com/cardigann/cardigann
-make
+```bash
+mkdir -p $HOME/go/src/github.com/cardigann
+git clone https://github.com/cardigann/cardigann.git $HOME/go/src/github.com/cardigann
+cd $HOME/go/src/github.com/cardigann
 make build
 make install
 ```
 
-If you get *esc: command not found* after `make build` than try to add *GOBIN* to your *PATH*, i.e.
+This will have installed `cardigann` into your `$GOBIN` directory.
 
-```
-PATH=$PATH:$GOBIN
-```
+Finally, start your server!
 
-Otherwise you can change the Makefile in "~/cardigann/src/github.com/cardigann/cardigann" at line starting with **esc -o** and replace **esc** with its absolute path: **~/cardigann/bin/esc**
-
-#### Start the server!
-
-```
-cd  ~/cardigann/bin
-./cardigann server
+```bash
+cardigann server
 ```
 
 ## Reporting bugs
