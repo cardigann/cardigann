@@ -6,9 +6,6 @@ class ConfigForm extends Component {
   state = {
     values: {},
   }
-  static propTypes = {
-   fields: React.PropTypes.array.isRequired,
-  }
   getValues = () => {
     let values = {};
     Object.keys(this.refs).forEach((ref) => {
@@ -49,10 +46,6 @@ class ConfigModal extends Component {
   static defaultProps = {
     onClose: () => {},
     onSave: () => {},
-  }
-  static propTypes = {
-   indexer: React.PropTypes.object.isRequired,
-   config: React.PropTypes.object.isRequired,
   }
   state = {
     config: this.props.config,

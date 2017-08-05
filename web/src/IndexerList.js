@@ -64,9 +64,6 @@ class IndexerListRow extends Component {
     allowTest: true,
     allowSearch: true,
   }
-  static propTypes = {
-   indexer: React.PropTypes.object.isRequired,
-  }
   state = {
     config: {},
     status: "OK",
