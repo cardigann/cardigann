@@ -1,18 +1,34 @@
 package imdbscraper
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
-func TestScrapingMovie(t *testing.T) {
-	m, err := FindByID("tt0087182")
-	if err != nil {
-		t.Fatal(err)
+func TestScrapingMovies(t *testing.T) {
+
+	testCases := []struct {
+		id    string
+		title string
+		year  string
+	}{
+		{"tt0087182", "Dune", "1984"},
+		{"tt1800302", "Gold", "2016"},
 	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s => %s (%s)", tc.id, tc.title, tc.year), func(t *testing.T) {
+			m, err := FindByID(tc.id)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	if m.Title != "Dune" {
-		t.Fatalf("Expected Dune, got %q", m.Title)
-	}
+			if m.Title != tc.title {
+				t.Fatalf("Expected %q, got %q", tc.title, m.Title)
+			}
 
-	if m.Year != "1984" {
-		t.Fatalf("Expected 1984, got %q", m.Year)
+			if m.Year != tc.year {
+				t.Fatalf("Expected %q, got %q", tc.year, m.Year)
+			}
+		})
 	}
 }

@@ -14,14 +14,16 @@ type Movie struct {
 
 func FindByID(id string) (*Movie, error) {
 	bow := surf.NewBrowser()
-	err := bow.Open(fmt.Sprintf("http://www.imdb.com/title/%s/fullcredits", id))
+	err := bow.Open(fmt.Sprintf("http://www.imdb.com/title/%s", id))
 	if err != nil {
 		return nil, err
 	}
 
 	m := Movie{}
-	m.Title = strings.TrimSpace(bow.Dom().Find("#main h3 > a").Text())
-	m.Year = strings.Trim(strings.TrimSpace(bow.Dom().Find("#main h3 > span").Text()), "()")
+	m.Year = strings.Trim(strings.TrimSpace(bow.Dom().Find(".title_wrapper #titleYear a").Text()), "()")
+
+	bow.Dom().Find(".title_wrapper h1 *").Remove()
+	m.Title = strings.TrimSpace(bow.Dom().Find(".title_wrapper h1").Text())
 
 	return &m, nil
 }

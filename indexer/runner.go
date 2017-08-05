@@ -625,13 +625,18 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 
 	if show != nil {
 		query.Series = show.Name
-		r.logger.Debugf("Found show via tvmaze lookup: %s (%d)", show.Name, show.GetFirstAired().Year())
+		r.logger.
+			WithFields(logrus.Fields{"name": show.Name, "year": show.GetFirstAired().Year()}).
+			Debugf("Found show via tvmaze lookup")
 	}
 
 	if movie != nil {
 		query.Movie = movie.Title
 		query.Year = movie.Year
-		r.logger.Debugf("Found movie via gomdb lookup: %s (%s)", movie.Title, movie.Year)
+		r.logger.
+			WithFields(logrus.Fields{"title": movie.Title, "year": movie.Year}).
+			Debugf("Found movie via imdb lookup")
+
 	}
 
 	return query, nil

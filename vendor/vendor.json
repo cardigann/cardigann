@@ -3,10 +3,10 @@
 	"ignore": "",
 	"package": [
 		{
-			"checksumSHA1": "8Nr3dPDX3RSKWAOr9aOmH+dZDmE=",
+			"checksumSHA1": "sgX0fj3+bwTFVzJG+0pmDSca1wc=",
 			"path": "github.com/cardigann/go-imdb-scraper",
-			"revision": "5e8b122ff285418ae2d5c108893b1117538feaa8",
-			"revisionTime": "2017-08-05T10:44:31Z"
+			"revision": "287b0ccd4dc6cb99158a4ac47f1ac809cd803c81",
+			"revisionTime": "2017-08-05T11:08:50Z"
 		},
 		{
 			"checksumSHA1": "x/QHsJu66FXS6j0HBos7+FFslzc=",
@@ -32,12 +32,6 @@
 			"path": "github.com/dlclark/regexp2/syntax",
 			"revision": "da86aa5ba0fe159971cbe38a1426fcd47812754d",
 			"revisionTime": "2016-08-12T03:20:51Z"
-		},
-		{
-			"checksumSHA1": "7F7WVBMSboDjXdObVc3NRGftIPI=",
-			"path": "github.com/eefret/gomdb",
-			"revision": "561e54fa87cc2baecff3abba834b3dac5b1245c1",
-			"revisionTime": "2016-06-20T18:19:23Z"
 		},
 		{
 			"checksumSHA1": "L+SH9/QPBEpTYmBnDGBXmI7VYIw=",
