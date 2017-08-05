@@ -194,9 +194,10 @@ You will need Golang 1.7+ for the server component and NodeJS and NPM if you wan
 If you don't have Go already set up, follow these steps (or [read this guide](https://medium.com/@patdhlk/how-to-install-go-1-8-on-ubuntu-16-04-710967aa53c9)):
 
 ```bash
+sudo apt-get install software-properties-common
 sudo add-apt-repository ppa:longsleep/golang-backports
 sudo apt-get update
-sudo apt-get install golang-go build-essential
+sudo apt-get install golang-go git
 
 export GOPATH=$HOME/go
 export GOBIN=$HOME/go/bin
@@ -227,7 +228,8 @@ Golang needs things under a [`$GOPATH`](https://github.com/golang/go/wiki/Settin
 ```bash
 mkdir -p $HOME/go/src/github.com/cardigann
 git clone https://github.com/cardigann/cardigann.git $HOME/go/src/github.com/cardigann
-cd $HOME/go/src/github.com/cardigann
+cd $HOME/go/src/github.com/cardigann/cardigann
+make setup
 make build
 make install
 ```
