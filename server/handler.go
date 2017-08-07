@@ -59,36 +59,42 @@ func NewHandler(p Params) (http.Handler, error) {
 
 	// apply the path prefix
 	if h.Params.PathPrefix != "/" && h.Params.PathPrefix != "" {
-		router = router.PathPrefix(h.Params.PathPrefix).Subrouter()
+		router.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, h.Params.PathPrefix, http.StatusTemporaryRedirect)
+		}))
+
+		// file handler needs the path prefix stripped off
 		h.FileHandler = http.StripPrefix(h.Params.PathPrefix, h.FileHandler)
 	}
 
+	subrouter := router.PathPrefix(h.Params.PathPrefix).Subrouter()
+
 	// torznab routes
-	router.HandleFunc("/torznab/{indexer}", h.torznabHandler).Methods("GET")
-	router.HandleFunc("/torznab/{indexer}/api", h.torznabHandler).Methods("GET")
+	subrouter.HandleFunc("/torznab/{indexer}", h.torznabHandler).Methods("GET")
+	subrouter.HandleFunc("/torznab/{indexer}/api", h.torznabHandler).Methods("GET")
 
 	// torrentpotato routes
-	router.HandleFunc("/torrentpotato/{indexer}", h.torrentPotatoHandler).Methods("GET")
+	subrouter.HandleFunc("/torrentpotato/{indexer}", h.torrentPotatoHandler).Methods("GET")
 
 	// download routes
-	router.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("HEAD")
-	router.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("GET")
-	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("HEAD")
-	router.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("GET")
+	subrouter.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("HEAD")
+	subrouter.HandleFunc("/download/{indexer}/{token}/{filename}", h.downloadHandler).Methods("GET")
+	subrouter.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("HEAD")
+	subrouter.HandleFunc("/download/{token}/{filename}", h.downloadHandler).Methods("GET")
 
 	// xhr routes for the webapp
-	router.HandleFunc("/xhr/indexers/{indexer}/test", h.getIndexerTestHandler).Methods("GET")
-	router.HandleFunc("/xhr/indexers/{indexer}/config", h.getIndexersConfigHandler).Methods("GET")
-	router.HandleFunc("/xhr/indexers/{indexer}/config", h.patchIndexersConfigHandler).Methods("PATCH")
-	router.HandleFunc("/xhr/indexers", h.getIndexersHandler).Methods("GET")
-	router.HandleFunc("/xhr/indexers", h.patchIndexersHandler).Methods("PATCH")
-	router.HandleFunc("/xhr/auth", h.getAuthHandler).Methods("GET")
-	router.HandleFunc("/xhr/auth", h.postAuthHandler).Methods("POST")
-	router.HandleFunc("/xhr/version", h.getVersionHandler).Methods("GET")
+	subrouter.HandleFunc("/xhr/indexers/{indexer}/test", h.getIndexerTestHandler).Methods("GET")
+	subrouter.HandleFunc("/xhr/indexers/{indexer}/config", h.getIndexersConfigHandler).Methods("GET")
+	subrouter.HandleFunc("/xhr/indexers/{indexer}/config", h.patchIndexersConfigHandler).Methods("PATCH")
+	subrouter.HandleFunc("/xhr/indexers", h.getIndexersHandler).Methods("GET")
+	subrouter.HandleFunc("/xhr/indexers", h.patchIndexersHandler).Methods("PATCH")
+	subrouter.HandleFunc("/xhr/auth", h.getAuthHandler).Methods("GET")
+	subrouter.HandleFunc("/xhr/auth", h.postAuthHandler).Methods("POST")
+	subrouter.HandleFunc("/xhr/version", h.getVersionHandler).Methods("GET")
 
 	// anything else
-	router.PathPrefix("/").Handler(h.FileHandler)
-	router.PathPrefix("/static").Handler(h.FileHandler)
+	subrouter.PathPrefix("/").Handler(h.FileHandler)
+	subrouter.PathPrefix("/static").Handler(h.FileHandler)
 
 	h.Handler = router
 	return h, h.initialize()
