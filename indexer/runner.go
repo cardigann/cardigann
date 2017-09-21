@@ -631,10 +631,13 @@ func (r *Runner) resolveQuery(query torznab.Query) (torznab.Query, error) {
 	}
 
 	if movie != nil {
+		if movie.Title == "" {
+			return query, fmt.Errorf("Movie title was blank")
+		}
 		query.Movie = movie.Title
 		query.Year = movie.Year
 		r.logger.
-			WithFields(logrus.Fields{"title": movie.Title, "year": movie.Year}).
+			WithFields(logrus.Fields{"title": movie.Title, "year": movie.Year, "movie": movie}).
 			Debugf("Found movie via imdb lookup")
 
 	}
