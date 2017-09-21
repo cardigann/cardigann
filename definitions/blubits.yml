@@ -52,10 +52,6 @@
       42: TV/Anime # Anime
       44: PC # Windows Apps
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: index.php?page=login
     method: post

@@ -74,11 +74,6 @@
       2: TV/Sport # SD|SMACKD
       5: TV/Sport # TNA
 
-
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /login.php
     method: form

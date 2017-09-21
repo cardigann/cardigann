@@ -14,10 +14,6 @@
     categories:
       1: TV
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     method: cookie
     inputs:

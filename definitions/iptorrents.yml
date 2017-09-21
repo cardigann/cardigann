@@ -60,10 +60,6 @@
       91: XXX
       84: XXX
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     method: cookie
     inputs:

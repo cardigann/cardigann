@@ -36,10 +36,6 @@
       25: PC/Phone-Other
       33: PC/0day
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /user/account/login/
     form: form

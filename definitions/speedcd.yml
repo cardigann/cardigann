@@ -37,9 +37,6 @@
       44: Audio
       29: Audio/Video
 
-    modes:
-      tv-search: [q, season, ep]
-
   ratio:
     path: /browse.php
     selector: body > div.cHead > table.sts > tbody > tr > td:nth-child(1) > div:nth-child(2)

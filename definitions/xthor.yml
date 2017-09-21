@@ -7,56 +7,52 @@
 
   caps:
     categories:
-            # Films
-            1: Movies/BluRay      # Films / BluRay FR
-            2: Movies/BluRay      # Films / Remux
-            3: Movies/3D          # Films / Encode 3D
-            4: Movies/HD          # Films / 1080p x264
-            100: Movies/HD        # Films / 1080p x265
-            5: Movies/HD          # Films / 720p x264
-            7: Movies/SD          # Films / SD x264
-            6: Movies/SD          # Films / Xvid
-            8: Movies/DVD         # Films / DVD
-            94: Movies            # Films / WEBDL
-            95: Movies            # Films / WEBRiP
-            12: TV/Documentary    # Films / Documentaire
-            31: Movies            # Films / Dessins Animés
-            33: TV/Other          # Films / Spectacle
-            9: Movies/Other       # Films / VOSTFR
+      # Films
+      1: Movies/BluRay      # Films / BluRay FR
+      2: Movies/BluRay      # Films / Remux
+      3: Movies/3D          # Films / Encode 3D
+      4: Movies/HD          # Films / 1080p x264
+      100: Movies/HD        # Films / 1080p x265
+      5: Movies/HD          # Films / 720p x264
+      7: Movies/SD          # Films / SD x264
+      6: Movies/SD          # Films / Xvid
+      8: Movies/DVD         # Films / DVD
+      94: Movies            # Films / WEBDL
+      95: Movies            # Films / WEBRiP
+      12: TV/Documentary    # Films / Documentaire
+      31: Movies            # Films / Dessins Animés
+      33: TV/Other          # Films / Spectacle
+      9: Movies/Other       # Films / VOSTFR
 
-            # Séries
-            104: TV               # Séries / BluRay
-            13: TV                # Séries / Pack VF
-            15: TV/HD             # Séries / HD FR
-            14: TV/SD             # Séries / TV FR
-            32: TV/Anime          # Séries / Dessins Animés
-            101: TV/Anime         # Séries / Packs Anime
-            34: TV/Sport          # Séries / Sport
-            30: TV                # Séries / Emission TV
-            98: TV/Other          # Séries / Pack VOSTFR
-            17: TV/Other          # Séries / HD VOSTFR
-            16: TV/Other          # Séries / TV VOSTFR
+      # Séries
+      104: TV               # Séries / BluRay
+      13: TV                # Séries / Pack VF
+      15: TV/HD             # Séries / HD FR
+      14: TV/SD             # Séries / TV FR
+      32: TV/Anime          # Séries / Dessins Animés
+      101: TV/Anime         # Séries / Packs Anime
+      34: TV/Sport          # Séries / Sport
+      30: TV                # Séries / Emission TV
+      98: TV/Other          # Séries / Pack VOSTFR
+      17: TV/Other          # Séries / HD VOSTFR
+      16: TV/Other          # Séries / TV VOSTFR
 
-            # Livres
-            24: Books             # Livres / Romans
-            96: Books/Magazines   # Livres / Magazines
-            99: Books             # Livres / Bandes dessinées
-            102: Books/Comics     # Livres / Comics
-            103: Books            # Livres / Mangas
+      # Livres
+      24: Books             # Livres / Romans
+      96: Books/Magazines   # Livres / Magazines
+      99: Books             # Livres / Bandes dessinées
+      102: Books/Comics     # Livres / Comics
+      103: Books            # Livres / Mangas
 
-            # Logiciels
-            25: PC/Games          # Logiciels / Jeux PC
-            27: Console           # Logiciels / Playstation
-            26: Console           # Logiciels / XboX
-            28: Console/Wii       # Logiciels / Wii
-            29: Console/NDS       # Logiciels / NDS
-            21: PC                # Logiciels / Applis PC
-            22: PC/Mac            # Logiciels / Applis Mac
-            23: PC/Phone-Other    # Logiciels / Smartphone
-
-  modes:
-    search: [q]
-    tv-search: [q, season, ep]
+      # Logiciels
+      25: PC/Games          # Logiciels / Jeux PC
+      27: Console           # Logiciels / Playstation
+      26: Console           # Logiciels / XboX
+      28: Console/Wii       # Logiciels / Wii
+      29: Console/NDS       # Logiciels / NDS
+      21: PC                # Logiciels / Applis PC
+      22: PC/Mac            # Logiciels / Applis Mac
+      23: PC/Phone-Other    # Logiciels / Smartphone
 
   login:
     path: /takelogin.php

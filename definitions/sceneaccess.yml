@@ -47,10 +47,6 @@
         34:  TV/Foreign #Foreign TV/x264
         33:  TV/Foreign #Foreign TV/XviD
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /login
     method: form

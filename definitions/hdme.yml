@@ -35,10 +35,6 @@
       57: Movies         # UHD 2160p
       40: XXX            # XXX
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /takelogin.php
     method: post

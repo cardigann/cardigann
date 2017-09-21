@@ -27,10 +27,6 @@
       14:   TV
       7:    XXX
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /login.php
     form: form[action='takelogin.php']

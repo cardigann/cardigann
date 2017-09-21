@@ -33,10 +33,6 @@
       25: Other # Misc
       9: XXX # XXX
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   settings:
     - name: cookie
       type: text

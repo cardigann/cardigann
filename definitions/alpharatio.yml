@@ -31,10 +31,6 @@
       23: Audio
       24: Other/Misc
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   ratio:
     path: /index.php
     selector: "#stats_ratio .stat"

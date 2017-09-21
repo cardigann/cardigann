@@ -72,10 +72,6 @@
       # EOT-Specials
       66: Other # Special
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: index.php?page=login
     method: post

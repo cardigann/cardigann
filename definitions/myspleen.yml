@@ -19,10 +19,6 @@
       20: Other # Other
       32: TV # Star Wars
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /takelogin.php
     method: post
@@ -62,7 +58,7 @@
             args: cat
       details:
         selector: td.tor-name > a
-        attribute: href      
+        attribute: href
       download:
         selector: td.tor-down > a
         attribute: href

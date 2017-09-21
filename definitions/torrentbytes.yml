@@ -9,7 +9,7 @@
     categories:
       41:  TV  #TV Pack
       33:  TV/SD  #TV SD
-      38:  TV/HD  #TV HD 
+      38:  TV/HD  #TV HD
       32:  TV/SD  #TV/DVDRip
       40:  Movies #Movies Pack
       44:  Movies #NonScene/Xvid
@@ -48,10 +48,6 @@
       28: TV/Foreign
       28: Movies/Foreign
       31: Other/Misc
-
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
 
   login:
     path: /login.php

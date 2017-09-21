@@ -1,5 +1,5 @@
 ﻿---
-  site: torrentheaven 
+  site: torrentheaven
   name: TorrentHeaven
   description: "A German general tracker"
   language: de-de
@@ -49,10 +49,6 @@
       30:  PC # APPLICATIONS/Sonstige
       70:  PC # APPLICATIONS/Linux
       71:  PC/Mac # APPLICATIONS/Mac
-
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
 
   settings:
     - name: cookie

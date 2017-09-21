@@ -39,10 +39,6 @@
       111: PC/Games # Spiele - Mac / Linux
       110: PC/Games # Spiele - PC
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /takelogin.php
     method: post

@@ -38,10 +38,6 @@
       23: Console/Xbox    # Xbox Spil
       25: XXX             # XXX
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   ratio:
     path: /index.php
     selector: "#stats_ratio .stat"

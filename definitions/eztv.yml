@@ -10,9 +10,6 @@
     categories:
       1: TV
 
-    modes:
-      tv-search: [q, season, ep]
-
   search:
     path: "{{if .Query.Keywords}}search/{{ .Query.Keywords}}{{else}}/{{end}}"
     rows:

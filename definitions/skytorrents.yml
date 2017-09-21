@@ -11,10 +11,6 @@
       TV: TV
       Movies: Movies
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   search:
     path: "search/all/{{if .Query.Keywords}}ed{{else}}ad{{end}}/1/{{ .Query.Keywords}}"
     rows:

@@ -10,9 +10,6 @@
     categories:
       1: TV
 
-    modes:
-      tv-search: [q, season, ep]
-
   login:
     path: /login.php
     form: form

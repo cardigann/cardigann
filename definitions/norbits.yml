@@ -16,10 +16,6 @@
       7: Audio/Audiobook
       8: Audio/Video
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   ratio:
     path: /index.php
     selector: "#ratio"

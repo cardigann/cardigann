@@ -44,11 +44,7 @@
        55: TV/HD # Serie Tv HD
        36: Other # Rip By ShareIsland
        47: Other # Disclaimer
-       48: Other # P2P network 
-
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
+       48: Other # P2P network
 
   login:
     path: /ajax/login.php

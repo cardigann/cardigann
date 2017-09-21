@@ -17,10 +17,6 @@
       TV/SD: TV/SD
       Other: Other
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /login
     method: form

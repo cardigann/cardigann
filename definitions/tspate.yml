@@ -70,10 +70,6 @@
       22: TV/Documentary # Television: Documentaires
       51: XXX # XXX: Tous
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: account-login.php
     method: post

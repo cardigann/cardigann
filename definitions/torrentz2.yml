@@ -30,11 +30,6 @@
       "game pc": PC/Games
       "audio": Audio
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-      movie-search: [q]
-
   settings: []
 
   search:

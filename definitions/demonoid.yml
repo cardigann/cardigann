@@ -21,10 +21,6 @@
       13: Audio/Video
       17: Audio/Audiobook
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /account_handler.php
     method: post

@@ -38,10 +38,6 @@
       56: Audio/Video     # Music / 720p
       42: Audio/Video     # Music / Blu-ray
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     method: cookie
     inputs:

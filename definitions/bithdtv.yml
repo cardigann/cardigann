@@ -24,10 +24,6 @@
       11: XXX
       12: TV # season packs
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     method: cookie
     inputs:

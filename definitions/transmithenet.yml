@@ -12,10 +12,6 @@
       2: TV/HD
       3: TV/SD
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /login.php
     method: post

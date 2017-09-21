@@ -17,10 +17,6 @@
       7: TV               # TV
       51: XXX             # XXX
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   settings:
     - name: pin
       type: text
@@ -56,7 +52,7 @@
     inputs:
       $raw: "{{range .Categories}}cat[]={{.}}&{{end}}"
       search: "{{ .Query.Keywords }}"
-      tags: 
+      tags:
       st: 1
       tf: all
     rows:

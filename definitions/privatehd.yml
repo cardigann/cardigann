@@ -7,13 +7,9 @@
 
   caps:
     categories:
-        "TV-Show Torrent": TV
-        "Movie Torrent": Movies
-        "Music Torrent": Audio
-
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
+      "TV-Show Torrent": TV
+      "Movie Torrent": Movies
+      "Music Torrent": Audio
 
   login:
     path: /auth/login
@@ -52,4 +48,4 @@
       seeders:
         selector: td:nth-child(7)
       leechers:
-        selector: td:nth-child(8) 
+        selector: td:nth-child(8)

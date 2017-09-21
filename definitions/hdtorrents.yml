@@ -30,10 +30,6 @@
       47: XXX
       67: XXX
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /login.php
     form: form

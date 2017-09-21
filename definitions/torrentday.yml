@@ -53,10 +53,6 @@
       30: TV/Documentary   # Documentary
       43: PC/Mac           # Mac
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     method: cookie
     inputs:

@@ -16,10 +16,6 @@
       405: Other # Image
       406: Books # Book
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   login:
     path: /takelogin.php
     method: post

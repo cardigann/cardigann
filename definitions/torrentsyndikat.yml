@@ -48,10 +48,6 @@
       5:  PC/Phone-Other # Misc / Mobile
       39: Other # Misc / Bildung
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   settings:
     - name: cookie
       type: text

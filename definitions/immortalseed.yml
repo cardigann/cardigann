@@ -28,10 +28,6 @@
       4: TV/HD            # TV Season Packs - HD
       6: TV/SD            # TV Season Packs - SD
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   ratio:
     path: /browse.php
     selector: div#top > div.padding > span:nth-child(2)

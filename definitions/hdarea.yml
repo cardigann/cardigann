@@ -9,8 +9,8 @@
     categories:
       402:  TV  #TV Series
       403:  TV  #TV Shows
-      410:  Movies/HD  #FullHD 
-      410:  TV/HD  #FullHD 
+      410:  Movies/HD  #FullHD
+      410:  TV/HD  #FullHD
       411:  Movies/HD  #HD
       411:  TV/HD  #HD
       413:  Movies/HD  #HDTV
@@ -31,10 +31,6 @@
       407:  TV/Sport
       409:  Other/Misc
       408:  Audio/Lossless
-
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
 
   login:
     path: /takelogin.php
@@ -76,4 +72,4 @@
       seeders:
         selector: td:nth-child(6)
       leechers:
-        selector: td:nth-child(7) 
+        selector: td:nth-child(7)

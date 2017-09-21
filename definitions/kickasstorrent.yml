@@ -17,10 +17,6 @@
       xxx: XXX
       other: Other
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   search:
     path: "search.php"
     inputs:

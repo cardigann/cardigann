@@ -45,10 +45,6 @@
       4: Audio
       11: Audio/Video
 
-    modes:
-      search: [q]
-      tv-search: [q, season, ep]
-
   settings:
     - name: cookie
       type: text
