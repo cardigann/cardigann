@@ -307,15 +307,37 @@ func (c *capabilitiesBlock) UnmarshalYAML(unmarshal func(interface{}) error) err
 }
 
 func (c *capabilitiesBlock) ToTorznab() torznab.Capabilities {
-	var searchModes = make([]torznab.SearchMode, len(c.SearchModes))
-	for idx, mode := range c.SearchModes {
-		searchModes[idx] = mode
+	caps := torznab.Capabilities{
+		Categories:  c.CategoryMap.Categories(),
+		SearchModes: []torznab.SearchMode{},
 	}
 
-	return torznab.Capabilities{
-		Categories:  c.CategoryMap.Categories(),
-		SearchModes: searchModes,
+	// All indexers support search
+	caps.SearchModes = append(caps.SearchModes, torznab.SearchMode{
+		Key:             "search",
+		Available:       true,
+		SupportedParams: []string{"q"},
+	})
+
+	// Some support TV
+	if caps.HasTVShows() {
+		caps.SearchModes = append(caps.SearchModes, torznab.SearchMode{
+			Key:             "tv-search",
+			Available:       true,
+			SupportedParams: []string{"q", "season", "ep"},
+		})
 	}
+
+	// Some support Movies
+	if caps.HasMovies() {
+		caps.SearchModes = append(caps.SearchModes, torznab.SearchMode{
+			Key:             "movie-search",
+			Available:       true,
+			SupportedParams: []string{"q"},
+		})
+	}
+
+	return caps
 }
 
 type stringorslice []string

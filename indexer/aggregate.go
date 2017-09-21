@@ -69,6 +69,7 @@ func (ag Aggregate) Info() torznab.Info {
 func (ag Aggregate) Capabilities() torznab.Capabilities {
 	return torznab.Capabilities{
 		SearchModes: []torznab.SearchMode{
+			{Key: "movie-search", Available: true, SupportedParams: []string{"q", "imdbid"}},
 			{Key: "tv-search", Available: true, SupportedParams: []string{"q", "season", "ep"}},
 			{Key: "search", Available: true, SupportedParams: []string{"q"}},
 		},

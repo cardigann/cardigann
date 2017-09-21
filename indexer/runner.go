@@ -563,6 +563,16 @@ func (r *Runner) Capabilities() torznab.Capabilities {
 
 	for idx, mode := range caps.SearchModes {
 		switch mode.Key {
+		case "search":
+			caps.SearchModes[idx].SupportedParams = append(
+				caps.SearchModes[idx].SupportedParams,
+				"imdbid", "tvdbid", "tvmazeid")
+
+		case "movie-search":
+			caps.SearchModes[idx].SupportedParams = append(
+				caps.SearchModes[idx].SupportedParams,
+				"imdbid")
+
 		case "tv-search":
 			caps.SearchModes[idx].SupportedParams = append(
 				caps.SearchModes[idx].SupportedParams,
