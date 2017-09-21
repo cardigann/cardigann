@@ -87,13 +87,13 @@
         selector: td:nth-child(2) > a
         attribute: href
       comments:
-        selector: td:nth-child(4) > a
+        selector: td:nth-child(5) > a
         attribute: href
       download:
         selector: td:nth-child(3) > a
         attribute: href
       size:
-        selector: td:nth-child(5)
+        selector: td:nth-child(6)
       date:
         selector: td:nth-child(2) .t_ctime
         filters:
@@ -102,6 +102,6 @@
           - name: split
             args: [ " by ", 0 ]
       seeders:
-        selector: td:nth-child(6)
-      leechers:
         selector: td:nth-child(7)
+      leechers:
+        selector: td:nth-child(8)
