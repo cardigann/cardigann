@@ -1,8 +1,9 @@
-FROM alpine:3.4
+FROM golang:1.9-alpine
 RUN apk add --update ca-certificates
-COPY cardigann-linux-amd64 /cardigann
+WORKDIR /go/src/github.com/cardigann/cardigann
+COPY . /go/src/github.com/cardigann/cardigann
+RUN go build -o /bin/cardigann
 EXPOSE 5060
 ENV CONFIG_DIR=/.config/cardigann
-VOLUME [ "/.config/cardigann" ]
-ENTRYPOINT [ "/cardigann" ]
+ENTRYPOINT [ "/bin/cardigann" ]
 CMD [ "server" ]

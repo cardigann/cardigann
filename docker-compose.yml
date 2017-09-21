@@ -4,7 +4,7 @@ services:
   cardigann:
     build: .
     volumes:
-    - .:/.config/cardigann
+      - ./config.json:/.config/cardigann/config.json
     environment:
       - CARDIGANN_PASSPHRASE
       - CARDIGANN_HOSTNAME=cardigann
@@ -18,6 +18,8 @@ services:
       - ADVANCED_DISABLEUPDATES=1
       - PUID=0
       - PGID=0
+    depends_on:
+      - cardigann
     ports:
       - 5050:5050
 
@@ -27,7 +29,19 @@ services:
       - ADVANCED_DISABLEUPDATES=1
       - PUID=0
       - PGID=0
-    links:
+    depends_on:
       - cardigann
     ports:
       - 8989:8989
+
+  radarr:
+    image: linuxserver/radarr
+    environment:
+      - ADVANCED_DISABLEUPDATES=1
+      - PUID=0
+      - PGID=0
+    depends_on:
+      - cardigann
+    ports:
+      - 7878:7878
+
