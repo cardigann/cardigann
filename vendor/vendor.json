@@ -3,10 +3,10 @@
 	"ignore": "",
 	"package": [
 		{
-			"checksumSHA1": "z7n+ztuNlETJFmVrcivs5+VR3XQ=",
+			"checksumSHA1": "0KDvJgF56DtXoIAUadphm2dtlnQ=",
 			"path": "github.com/cardigann/go-imdb-scraper",
-			"revision": "287b0ccd4dc6cb99158a4ac47f1ac809cd803c81",
-			"revisionTime": "2017-08-05T11:08:50Z"
+			"revision": "f67df398e3203a630c56b4888a866992754b794c",
+			"revisionTime": "2017-09-21T03:42:15Z"
 		},
 		{
 			"checksumSHA1": "x/QHsJu66FXS6j0HBos7+FFslzc=",

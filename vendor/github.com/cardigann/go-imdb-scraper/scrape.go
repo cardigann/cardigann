@@ -1,6 +1,7 @@
 package imdbscraper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -19,11 +20,21 @@ func FindByID(id string) (*Movie, error) {
 		return nil, err
 	}
 
-	m := Movie{}
-	m.Year = strings.Trim(strings.TrimSpace(bow.Dom().Find(".title_wrapper #titleYear a").Text()), "()")
+	title := bow.Dom().Find(".title_wrapper h1")
+	if title.Length() == 0 {
+		return nil, errors.New("Expected to find `.title_wrapper h1`")
+	}
 
-	bow.Dom().Find(".title_wrapper h1 *").Remove()
-	m.Title = strings.TrimSpace(bow.Dom().Find(".title_wrapper h1").Text())
+	year := title.Find("span#titleYear")
+	if year.Length() == 0 {
+		return nil, errors.New("Expected to find `span#titleYear` in title")
+	}
+	year.Remove()
+
+	m := Movie{
+		Year:  strings.Trim(strings.TrimSpace(year.Text()), "()"),
+		Title: strings.TrimSpace(title.Text()),
+	}
 
 	return &m, nil
 }
