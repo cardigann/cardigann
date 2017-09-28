@@ -3,6 +3,7 @@
   name: TorrentDay
   language: en-us
   links:
+    - https://www.torrentday.com/
     - http://td-update.com/
 
   settings:
@@ -72,24 +73,24 @@
       selector: table#torrentTable > tbody > tr:nth-child(n+2):has(td.t_label)
     fields:
       category:
-        selector: td:nth-child(1) > a
+        selector: td.t_label > a
         attribute: href
         filters:
           - name: regexp
             args: "^\\?(\\d+)$"
       title:
-        selector: td:nth-child(2) > a
+        selector: td.torrentNameInfo > a
       details:
-        selector: td:nth-child(2) > a
+        selector: td.torrentNameInfo > a
         attribute: href
       comments:
-        selector: td:nth-child(4) > a
+        selector: td:nth-child(5) > a
         attribute: href
       download:
         selector: td:nth-child(3) > a
         attribute: href
       size:
-        selector: td:nth-child(5)
+        selector: td:nth-child(6)
       date:
         selector: td:nth-child(2) .t_ctime
         filters:
@@ -98,6 +99,6 @@
           - name: split
             args: [ " by ", 0 ]
       seeders:
-        selector: td:nth-child(6)
+        selector: td.seedersInfo0
       leechers:
-        selector: td:nth-child(7)
+        selector: td.leechersInfo0
