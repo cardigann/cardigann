@@ -60,7 +60,7 @@
         attribute: href
         filters:
           - name: regexp
-            args: "filter_cat\\[\\d+\\]=(\\d+)"
+            args: "filter_cat\\[(\\d+)\\]=1"
       title:
         selector: td.big_info .group_info > a:nth-child(2)
       details:
