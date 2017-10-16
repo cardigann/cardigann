@@ -11,6 +11,8 @@
       11:   Audio
       25:   Movies/3D
       20:   Movies/BluRay
+      26:   Movies/BluRay # 4K
+      6:   Movies/HD # 4K
       2:    Movies/Foreign
       3:    Movies/DVD
       4:    Movies/HD
@@ -21,6 +23,7 @@
       17:   PC
       22:   PC
       8:    PC
+      27:   TV/HD # 4K
       21:   TV/HD # season packs
       23:   TV/SD # season packs
       13:   TV/Sport
@@ -54,8 +57,7 @@
           - name: querystring
             args: cat
       title:
-        selector: .torrenttable:nth-child(2) span a
-        attribute: title
+        selector: .torrenttable:nth-child(2) span a b
       details:
         selector: .torrenttable:nth-child(2) span a
         attribute: href
