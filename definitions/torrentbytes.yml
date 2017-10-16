@@ -60,7 +60,7 @@
         message:
           selector: td.text
     test:
-      path: /inbox.php
+      path: https://torrentbytes.net/inbox.php
 
   search:
     path: /browse.php
