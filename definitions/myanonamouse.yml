@@ -1,0 +1,155 @@
+---
+  site: myanonamouse
+  name: MyAnonamouse
+  description: "Friendliness, Warmth and Sharing"
+  language: en-us
+  links:
+    - https://www.myanonamouse.net/
+
+  caps:
+    categories:
+      61: Books/Comics
+      91: Books/Technical
+      80: Books/Technical
+      79: Books/Magazines
+      39: Audio/Audiobook
+      49: Audio/Audiobook
+      50: Audio/Audiobook
+      83: Audio/Audiobook
+      51: Audio/Audiobook
+      97: Audio/Audiobook
+      40: Audio/Audiobook
+      41: Audio/Audiobook
+      106: Audio/Audiobook
+      42: Audio/Audiobook
+      52: Audio/Audiobook
+      98: Audio/Audiobook
+      54: Audio/Audiobook
+      55: Audio/Audiobook
+      43: Audio/Audiobook
+      99: Audio/Audiobook
+      84: Audio/Audiobook
+      44: Audio/Audiobook
+      56: Audio/Audiobook
+      137: Audio/Audiobook
+      45: Audio/Audiobook
+      57: Audio/Audiobook
+      85: Audio/Audiobook
+      87: Audio/Audiobook
+      119: Audio/Audiobook
+      88: Audio/Audiobook
+      58: Audio/Audiobook
+      59: Audio/Audiobook
+      46: Audio/Audiobook
+      47: Audio/Audiobook
+      53: Audio/Audiobook
+      89: Audio/Audiobook
+      100: Audio/Audiobook
+      108: Audio/Audiobook
+      48: Audio/Audiobook
+      111: Audio/Audiobook
+      27: Audio
+      60: Books/Ebook
+      71: Books/Ebook
+      72: Books/Ebook
+      90: Books/Ebook
+      73: Books/Ebook
+      101: Books/Ebook
+      62: Books/Ebook
+      63: Books/Ebook
+      107: Books/Ebook
+      64: Books/Ebook
+      74: Books/Ebook
+      102: Books/Ebook
+      76: Books/Ebook
+      77: Books/Ebook
+      65: Books/Ebook
+      103: Books/Ebook
+      115: Books/Ebook
+      66: Books/Ebook
+      78: Books/Ebook
+      138: Books/Ebook
+      67: Books/Ebook
+      92: Books/Ebook
+      118: Books/Ebook
+      94: Books/Ebook
+      120: Books/Ebook
+      95: Books/Ebook
+      81: Books/Ebook
+      82: Books/Ebook
+      68: Books/Ebook
+      69: Books/Ebook
+      75: Books/Ebook
+      96: Books/Ebook
+      104: Books/Ebook
+      109: Books/Ebook
+      70: Books/Ebook
+      112: Books/Ebook
+      129: Books/Ebook
+      26: Books/Ebook
+      128: Books/Ebook
+
+  login:
+    path: /takelogin.php
+    method: post
+    inputs:
+      email: "{{ .Config.username }}"
+      password: "{{ .Config.password }}"
+      returnto: /userdetails.php
+    error:
+      - selector: h2:contains("Login Failed")
+    test:
+      path: /userdetails.php
+      selector: a.myInfo:contains("My Info")
+
+  ratio:
+    path: /userdetails.php
+    selector: span.RatioTD
+
+  search:
+    path: /tor/js/loadSearch2.php
+    method: post
+    inputs:
+      $raw: "tor[text]={{ .Query.Keywords }}&tor[srchIn][title]=true&tor[srchIn][author]=true&tor[searchType]=all&tor[searchIn]=torrents&tor[cat][]=0&tor[browseFlagsHideVsShow]=0&tor[startDate]=&tor[endDate]=&tor[hash]=&tor[sortType]=default&tor[startNumber]=0"
+    rows:
+      selector: "table.newTorTable > tbody > tr:nth-child(n+2):has(a.directDownload)"
+    fields:
+      category:
+        selector: td:nth-child(1) > a > div
+        attribute: class
+        filters:
+          - name: regexp
+            args: "cat(\\d*)$"
+      title:
+        selector: td:nth-child(3) > a.title
+      description:
+        selector: td:nth-child(3) span.torRowDesc, a.author
+      details:
+        selector: td:nth-child(3) > span.torFileTypes a, span.torRowDesc, a.author
+      comments:
+        selector: td:nth-child(3) > a
+        attribute: href
+      download:
+        selector: td:nth-child(4) > a
+        attribute: href
+      size:
+        selector: td:nth-child(5)
+        filters:
+          - name: regexp
+            args: "\\[(.*)\\]"
+      date:
+        selector: td:nth-child(6)
+      seeders:
+        selector: td:nth-child(7) > p:nth-child(1)
+      leechers:
+        selector: td:nth-child(7) > p:nth-child(2)
+      grabs:
+        selector: td:nth-child(7) > p:nth-child(3)
+      files:
+        selector: td:nth-child(5) > a
+      downloadvolumefactor:
+        case:
+          img[alt="freeleech"]: "0"
+          "*": "1"
+      uploadvolumefactor:
+        text: "1"
