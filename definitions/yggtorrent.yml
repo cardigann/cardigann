@@ -133,7 +133,7 @@
       - selector: body > div.page-content > div > div.col-md-10 > div > div > div > div > div.content-box-large.box-with-header > form > center > table > tbody > tr:nth-child(3) > td:nth-child(2) > button.text:contains('Se connecter')
     test:
       path: "/"
-      selector: "a[href=\"https://yggtorrent.com/user/logout\"]"
+      selector: "a[href$=\"/user/logout\"]"
   search:
     path: "{{if .Query.Keywords}}/engine/search?q={{ .Keywords}}{{else}}/torrents/popular{{end}}"
     rows:
@@ -173,8 +173,8 @@
         selector: td:nth-child(1) > a:nth-child(1)
         attribute: href
         filters:
-          - name: replace
-            args: ["https://yggtorrent.com/torrent/", ""]
+          - name: regexp
+            args: "https://[^/]+/torrent/(.+)"
           - name: regexp
             args: "^([^/]+/[^/]+)"
       comments:
@@ -182,8 +182,15 @@
         selector: td:nth-child(1) > a
         attribute: href
       download:
-        selector: td:nth-child(1) > a[href^="https://yggtorrent.com/engine/download_torrent?id="]
+        selector: td:nth-child(1) > a:nth-child(1)
         attribute: href
+        filters:
+          - name: regexp
+            args: ".+/([^/]+)"
+          - name: regexp
+            args: "^([0-9]+)-.*"
+          - name: prepend
+            args: "/engine/download_torrent?id="
       size:
         selector: td:nth-child(4)
         filters:
