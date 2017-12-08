@@ -1,0 +1,212 @@
+﻿---
+  site: yggtorrent
+  name: YGGtorrent
+  language: fr-fr
+  encoding: UTF-8
+  links:
+    - https://ww1.yggtorrent.com
+
+  caps:
+    categories:
+      # For search results
+      2145: Other # Film/Vidéo: Tous les torrents
+      2178: Movies # Film/Vidéo: Animation
+      2179: TV/Anime # Film/Vidéo: Animation Série
+      2180: Audio/Video # Film/Vidéo: Concert
+      2181: TV/Documentary # Film/Vidéo: Documentaire
+      2182: TV # Film/Vidéo: Emission TV
+      2183: Movies # Film/Vidéo: Film
+      2184: TV # Film/Vidéo: Série TV
+      2185: Movies/Other # Film/Vidéo: Spectacle
+      2186: TV/Sport # Film/Vidéo: Sport
+      2187: Audio/Video # Film/Vidéo: Vidéo-clips
+      2139: Other # Musique: Tous les torrents
+      2147: Audio # Musique: Karaoke
+      2148: Audio # Musique: Musique
+      2150: Audio # Musique: Podcast Radio
+      2149: Audio # Musique: Samples
+      2144: PC # Application: Tous les torrents
+      2177: PC # Application: Autres
+      2176: PC # Application: Formation
+      2171: PC # Application: Linux
+      2172: PC/Mac # Application: MacOS
+      2174: PC/Phone-Other # Application: Smartphone
+      2175: PC/Phone-Other # Application: Tablette
+      2173: PC # Application: Windows
+      2142: Other # Jeu vidéo : Tous les torrents
+      2167: Other # Jeu vidéo : Autre
+      2159: PC/Games # Jeu vidéo : Linux
+      2160: PC/Games # Jeu vidéo : MacOS
+      2162: Console # Jeu vidéo : Microsoft
+      2163: Console # Jeu vidéo : Nintendo
+      2165: PC/Phone-Other # Jeu vidéo : Smartphone
+      2164: Console # Jeu vidéo : Sony
+      2166: PC/Games # Jeu vidéo : Tablette
+      2161: PC/Games # Jeu vidéo : Windows
+      2140: Other # eBook: Tous les torrents
+      2151: Audio/Audiobook # eBook: Audio
+      2152: Books/Comics # eBook: Bds
+      2153: Books/Comics # eBook: Comics
+      2154: Books/Ebook # eBook: Livres
+      2155: Books # eBook: Mangas
+      2156: Books/Magazines # eBook: Presse
+      2141: Other # Emulation: Tous les torrents
+      2157: Other/Misc # Emulation: Emulateurs
+      2158: Other/Misc # Emulation: Roms
+      2143: Other # GPS: Tous les torrents
+      2168: Other/Misc # GPS: Applications
+      2169: Other/Misc # GPS: Cartes
+      2170: Other/Misc # GPS: Divers
+      2188: XXX # XXX: Tous les torrents
+      2189: XXX # XXX: Films
+      2190: XXX/Other # XXX: Hentai
+      2191: XXX/Imageset # XXX: Images
+      # For blank search
+      "filmvidéo/animation": Movies # Anim Movies
+      "filmvidéo/animation-série": TV/Anime # Anim TV
+      "filmvidéo/concert": Audio/Video # Concerts
+      "filmvidéo/documentaire": TV/Documentary # Documentary
+      "filmvidéo/emission-tv": TV # TV Shows
+      "filmvidéo/film": Movies # Movies
+      "filmvidéo/série-tv": TV # TV Series
+      "filmvidéo/spectacle": Movies/Other # Shows
+      "filmvidéo/sport": TV/Sport # Sport
+      "filmvidéo/vidéo-clips": Audio/Video # Clips
+      "audio/karaoké": Audio # Karaoke
+      "audio/musique": Audio # Musique
+      "audio/podcast-radio": Audio # Podcast Radio
+      "audio/samples": Audio # Samples
+      "application/autre": PC # Application: Autre
+      "application/formation": PC # Application: Formation
+      "application/linux": PC # Application: Linux
+      "application/macos": PC/Mac # Application: MacOS
+      "application/smartphone": PC/Phone-Other # Application: Smartphone
+      "application/tablette": PC/Phone-Other # Application: Tablette
+      "application/windows": PC # Application: Windows
+      "jeu-vidéo/autre": Other # Jeu vidéo : Autre
+      "jeu-vidéo/linux": PC/Games # Jeu vidéo : Linux
+      "jeu-vidéo/macos": PC/Games # Jeu vidéo : MacOS
+      "jeu-vidéo/microsoft": Console # Jeu vidéo : Microsoft
+      "jeu-vidéo/nintendo": Console # Jeu vidéo : Nintendo
+      "jeu-vidéo/smartphone": PC/Phone-Other # Jeu vidéo : Smartphone
+      "jeu-vidéo/sony": Console # Jeu vidéo : Sony
+      "jeu-vidéo/tablette": PC/Games # Jeu vidéo : Tablette
+      "jeu-vidéo/windows": PC/Games # Jeu vidéo : Windows
+      "ebook/audio": Audio/Audiobook # eBook: Audio
+      "ebook/bds": Books/Comics # eBook: Bds
+      "ebook/comics": Books/Comics # eBook: Comics
+      "ebook/livres": Books/Ebook # eBook: Livres
+      "ebook/mangas": Books # eBook: Mangas
+      "ebook/presse": Books/Magazines # eBook: Presse
+      "emulation/emulateurs": Other/Misc # Emulation: Emulateurs
+      "emulation/roms": Other/Misc # Emulation: Roms
+      "gps/applications": Other/Misc # GPS: Applications
+      "gps/cartes": Other/Misc # GPS: Cartes
+      "gps/divers": Other/Misc # GPS: Divers
+      "xxx/films": XXX # XXX: Films
+      "xxx/hentai": XXX/Other # XXX: Hentai
+      "xxx/images": XXX/Imageset # XXX: Images
+
+    modes:
+      search: [q]
+      tv-search: [q, season, ep]
+  settings:
+    - name: username
+      type: text
+      label: Username (email or username)
+    - name: password
+      type: password
+      label: Password
+  login:
+    path: "/user/login"
+    method: post
+    inputs:
+      id: "{{ .Config.username }}"
+      pass: "{{ .Config.password }}"
+      submit: ""
+    headers:
+      "[:authority]": "yggtorrent.com"
+      "[:method]": "post"
+      "[:path]": "/"
+      "[:scheme]": "https"
+    error:
+      - selector: body > div.page-content > div > div.col-md-10 > div > div > div > div > div.content-box-large.box-with-header > form > center > table > tbody > tr:nth-child(3) > td:nth-child(2) > button.text:contains('Se connecter')
+    test:
+      path: "/"
+      selector: "a[href$=\"/user/logout\"]"
+  search:
+    path: "{{if .Query.Keywords}}/engine/search?q={{ .Keywords}}{{else}}/torrents/popular{{end}}"
+    rows:
+      selector: table.table.table-striped > tbody > tr
+    fields:
+      date:
+        selector: td:nth-child(3)
+        filters:
+          - name: replace
+            args: ["il y a ", ""]
+          - name: replace
+            args: [ " jours", " days"]
+          - name: replace
+            args: [ " jour", " day"]
+          - name: replace
+            args: [ " heures", " hours"]
+          - name: replace
+            args: [ " heure", " hour"]
+          - name: replace
+            args: [ " semaines", " weeks"]
+          - name: replace
+            args: [ " semaine", " week"]
+          - name: replace
+            args: [ " mois", " month"]
+          - name: replace
+            args: [ " ans", " years"]
+          - name: replace
+            args: [ " an", " year"]
+          - name: append
+            args: " ago"
+      title:
+        selector: "td:nth-child(1) > a"
+      details:
+        selector: td:nth-child(1) > a
+        attribute: href
+      category:
+        selector: td:nth-child(1) > a:nth-child(1)
+        attribute: href
+        filters:
+          - name: regexp
+            args: "https://[^/]+/torrent/(.+)"
+          - name: regexp
+            args: "^([^/]+/[^/]+)"
+      comments:
+        optional: true
+        selector: td:nth-child(1) > a
+        attribute: href
+      download:
+        selector: td:nth-child(1) > a:nth-child(1)
+        attribute: href
+        filters:
+          - name: regexp
+            args: ".+/([^/]+)"
+          - name: regexp
+            args: "^([0-9]+)-.*"
+          - name: prepend
+            args: "/engine/download_torrent?id="
+      size:
+        selector: td:nth-child(4)
+        filters:
+          - name: replace
+            args: [ "KB", "kib"]
+          - name: replace
+            args: [ "MB", "mib"]
+          - name: replace
+            args: [ "GB", "gib"]
+          - name: replace
+            args: [ "TB", "tib"]
+      seeders:
+        selector: td:nth-child(5)
+      leechers:
+        selector: td:nth-child(6)
+      downloadvolumefactor:
+        text: "1"
+      uploadvolumefactor:
+        text: "1"
