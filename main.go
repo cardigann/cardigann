@@ -27,8 +27,9 @@ import (
 )
 
 var (
-	Version string
-	log     = logger.Logger
+	Version   string
+	log       = logger.Logger
+	envPrefix = "CARDIGANN_"
 )
 
 func version() string {
@@ -116,7 +117,9 @@ var globals struct {
 }
 
 func configureGlobalFlags(cmd *kingpin.CmdClause) {
-	cmd.Flag("debug", "Print out debug logging").BoolVar(&globals.Debug)
+	cmd.Flag("debug", "Print out debug logging").
+		OverrideDefaultFromEnvar(envPrefix + "DEBUG").
+		BoolVar(&globals.Debug)
 }
 
 func applyGlobalFlags() {
@@ -275,21 +278,26 @@ func configureServerCommand(app *kingpin.Application) error {
 	cmd := app.Command("server", "Run the proxy (and web) server")
 	cmd.Flag("port", "The port to listen on").
 		Default(s.Port).
+		OverrideDefaultFromEnvar(envPrefix + "PORT").
 		StringVar(&s.Port)
 
 	cmd.Flag("bind", "The address to bind to").
 		Default(s.Bind).
+		OverrideDefaultFromEnvar(envPrefix + "BIND").
 		StringVar(&s.Bind)
 
 	cmd.Flag("prefix", "A path prefix for the server").
 		Default("/").
+		OverrideDefaultFromEnvar(envPrefix + "PREFIX").
 		StringVar(&s.PathPrefix)
 
 	cmd.Flag("passphrase", "Require a passphrase to view web interface").
 		Short('p').
+		OverrideDefaultFromEnvar(envPrefix + "PASSPHRASE").
 		StringVar(&s.Passphrase)
 
 	cmd.Flag("hostname", "The hostname to use for the links back to the server").
+		OverrideDefaultFromEnvar(envPrefix + "HOSTNAME").
 		StringVar(&s.Hostname)
 
 	configureGlobalFlags(cmd)
