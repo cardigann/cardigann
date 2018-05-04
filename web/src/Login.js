@@ -4,7 +4,7 @@ import xhrUrl from './xhr';
 
 class Login extends Component {
   static defaultProps = {
-    authUrl: "/xhr/auth",
+    authUrl: "./xhr/auth",
     onAuthenticate: () => {},
   }
   state = {
