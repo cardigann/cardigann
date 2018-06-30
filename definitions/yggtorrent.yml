@@ -4,7 +4,7 @@
   language: fr-fr
   encoding: UTF-8
   links:
-    - https://ww1.yggtorrent.com
+    - https://yggtorrent.is
 
   caps:
     categories:
@@ -130,20 +130,20 @@
       "[:path]": "/"
       "[:scheme]": "https"
     error:
-      - selector: body > div.page-content > div > div.col-md-10 > div > div > div > div > div.content-box-large.box-with-header > form > center > table > tbody > tr:nth-child(3) > td:nth-child(2) > button.text:contains('Se connecter')
+      - selector: div#top_panel > div > ul > li:nth-child(1) > a.text:contains("S'identifier")
     test:
       path: "/"
       selector: "a[href$=\"/user/logout\"]"
   search:
-    path: "{{if .Query.Keywords}}/engine/search?q={{ .Keywords}}{{else}}/torrents/popular{{end}}"
+    path: "/engine/search?name={{ .Keywords}}&do=search"
     rows:
-      selector: table.table.table-striped > tbody > tr
+      selector: section#\#torrents > div > table > tbody > tr
     fields:
       date:
-        selector: td:nth-child(3)
+        selector: td:nth-child(5)
         filters:
-          - name: replace
-            args: ["il y a ", ""]
+          - name: regexp
+            args: "^[0-9]+ (.+)$"
           - name: replace
             args: [ " jours", " days"]
           - name: replace
@@ -165,24 +165,18 @@
           - name: append
             args: " ago"
       title:
-        selector: "td:nth-child(1) > a"
+        selector: "td:nth-child(2) > a"
       details:
-        selector: td:nth-child(1) > a
+        selector: td:nth-child(2) > a
         attribute: href
       category:
-        selector: td:nth-child(1) > a:nth-child(1)
-        attribute: href
-        filters:
-          - name: regexp
-            args: "https://[^/]+/torrent/(.+)"
-          - name: regexp
-            args: "^([^/]+/[^/]+)"
+        selector: td:nth-child(1) > div.hidden:nth-child(1)
       comments:
         optional: true
-        selector: td:nth-child(1) > a
+        selector: td:nth-child(2) > a
         attribute: href
       download:
-        selector: td:nth-child(1) > a:nth-child(1)
+        selector: td:nth-child(2) > a
         attribute: href
         filters:
           - name: regexp
@@ -192,7 +186,7 @@
           - name: prepend
             args: "/engine/download_torrent?id="
       size:
-        selector: td:nth-child(4)
+        selector: td:nth-child(6)
         filters:
           - name: replace
             args: [ "KB", "kib"]
@@ -203,9 +197,9 @@
           - name: replace
             args: [ "TB", "tib"]
       seeders:
-        selector: td:nth-child(5)
+        selector: td:nth-child(8)
       leechers:
-        selector: td:nth-child(6)
+        selector: td:nth-child(9)
       downloadvolumefactor:
         text: "1"
       uploadvolumefactor:
