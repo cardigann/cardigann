@@ -3,7 +3,7 @@
   name: TorrentBytes
   language: en-us
   links:
-    - http://www.torrentbytes.net/
+    - https://torrentbytes.net/
 
   caps:
     categories:
@@ -68,7 +68,7 @@
        $raw: "search={{ .Query.Keywords }}"
        # $raw: "{{range .Categories}}filter_cat[]={{.}}&{{end}}searchstr={{ .Query.Keywords }}"
     rows:
-      selector: "html body div#innerwrapper div#mainframe div#content div center table tbody tr:not(:first-child)"
+      selector: "html body div#innerwrapper div#mainframe div#content table:not(.main):not(.bottom) tbody tr:not(:first-child)"
     fields:
       category:
         selector: td:nth-child(1) a,td:nth-child(2) a
