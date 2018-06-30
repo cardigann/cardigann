@@ -99,6 +99,6 @@
           - name: split
             args: [ " by ", 0 ]
       seeders:
-        selector: td.seedersInfo0
+        selector: td.seedersInfo
       leechers:
-        selector: td.leechersInfo0
+        selector: td.leechersInfo
