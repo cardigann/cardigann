@@ -189,13 +189,13 @@
         selector: td:nth-child(6)
         filters:
           - name: replace
-            args: [ "KB", "kib"]
+            args: [ "Ko", "kib"]
           - name: replace
-            args: [ "MB", "mib"]
+            args: [ "Mo", "mib"]
           - name: replace
-            args: [ "GB", "gib"]
+            args: [ "Go", "gib"]
           - name: replace
-            args: [ "TB", "tib"]
+            args: [ "To", "tib"]
       seeders:
         selector: td:nth-child(8)
       leechers:
