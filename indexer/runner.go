@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -89,7 +90,12 @@ func (r *Runner) createTransport() (http.RoundTripper, error) {
 	}
 
 	if !custom {
-		return http.DefaultTransport, nil
+		return &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout: 5 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout: 5 * time.Second,
+		}, nil
 	}
 
 	return &t, nil
@@ -107,6 +113,7 @@ func (r *Runner) createBrowser() {
 	bow.SetAttribute(browser.SendReferer, true)
 	bow.SetAttribute(browser.MetaRefreshHandling, true)
 	bow.SetCookieJar(r.cookies)
+	bow.SetTimeout(time.Second * 10)
 
 	transport, err := r.createTransport()
 	if err != nil {
