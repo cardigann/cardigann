@@ -24,18 +24,27 @@ type Attribute int
 // AttributeMap represents a map of Attribute values.
 type AttributeMap map[Attribute]bool
 
+// File represents a input type file, that includes the fileName and a io.reader
+type File struct {
+	fileName string
+	data     io.Reader
+}
+
+// FileSet represents a map of files used to port multipart
+type FileSet map[string]*File
+
 const (
-	// SendRefererAttribute instructs a Browser to send the Referer header.
+	// SendReferer instructs a Browser to send the Referer header.
 	SendReferer Attribute = iota
 
-	// MetaRefreshHandlingAttribute instructs a Browser to handle the refresh meta tag.
+	// MetaRefreshHandling instructs a Browser to handle the refresh meta tag.
 	MetaRefreshHandling
 
-	// FollowRedirectsAttribute instructs a Browser to follow Location headers.
+	// FollowRedirects instructs a Browser to follow Location headers.
 	FollowRedirects
 )
 
-// InitialAssetsArraySize is the initial size when allocating a slice of page
+// InitialAssetsSliceSize is the initial size when allocating a slice of page
 // assets. Increasing this size may lead to a very small performance increase
 // when downloading assets from a page with a lot of assets.
 var InitialAssetsSliceSize = 20
@@ -54,17 +63,32 @@ type Browsable interface {
 	// SetState sets the init browser state.
 	SetState(sj *jar.State)
 
+	// State returns the browser state.
+	State() *jar.State
+
 	// SetBookmarksJar sets the bookmarks jar the browser uses.
 	SetBookmarksJar(bj jar.BookmarksJar)
+
+	// BookmarksJar returns the bookmarks jar the browser uses.
+	BookmarksJar() jar.BookmarksJar
 
 	// SetCookieJar is used to set the cookie jar the browser uses.
 	SetCookieJar(cj http.CookieJar)
 
+	// CookieJar returns the cookie jar the browser uses.
+	CookieJar() http.CookieJar
+
 	// SetHistoryJar is used to set the history jar the browser uses.
 	SetHistoryJar(hj jar.History)
 
+	// HistoryJar returns the history jar the browser uses.
+	HistoryJar() jar.History
+
 	// SetHeadersJar sets the headers the browser sends with each request.
 	SetHeadersJar(h http.Header)
+
+	// SetTimeout sets the timeout for requests.
+	SetTimeout(t time.Duration)
 
 	// SetTransport sets the http library transport mechanism for each request.
 	SetTransport(rt http.RoundTripper)
@@ -91,7 +115,7 @@ type Browsable interface {
 	PostForm(url string, data url.Values) error
 
 	// PostMultipart requests the given URL using the POST method with the given data using multipart/form-data format.
-	PostMultipart(u string, data url.Values) error
+	PostMultipart(u string, fields url.Values, files FileSet) error
 
 	// Back loads the previously requested page.
 	Back() bool
@@ -155,28 +179,28 @@ type Browsable interface {
 
 	// Find returns the dom selections matching the given expression.
 	Find(expr string) *goquery.Selection
+
+	// Create a new Browser instance and inherit the configuration
+	// Read more: https://github.com/headzoo/surf/issues/23
+	NewTab() (b *Browser)
 }
 
-// Default is the default Browser implementation.
+// Browser is the default Browser implementation.
 type Browser struct {
+	// HTTP client
+	client *http.Client
+
 	// state is the current browser state.
 	state *jar.State
 
 	// userAgent is the User-Agent header value sent with requests.
 	userAgent string
 
-	// cookies stores cookies for every site visited by the browser.
-	cookies http.CookieJar
-
 	// bookmarks stores the saved bookmarks.
 	bookmarks jar.BookmarksJar
 
 	// history stores the visited pages.
 	history jar.History
-
-	// transport specifies the mechanism by which individual HTTP
-	// requests are made.
-	transport http.RoundTripper
 
 	// headers are additional headers to send with each request.
 	headers http.Header
@@ -191,6 +215,13 @@ type Browser struct {
 	body []byte
 }
 
+// buildClient instanciates the *http.Client used by the browser
+func (bow *Browser) buildClient() *http.Client {
+	return &http.Client{
+		CheckRedirect: bow.shouldRedirect,
+	}
+}
+
 // Open requests the given URL using the GET method.
 func (bow *Browser) Open(u string) error {
 	ur, err := url.Parse(u)
@@ -200,7 +231,7 @@ func (bow *Browser) Open(u string) error {
 	return bow.httpGET(ur, nil)
 }
 
-// Open requests the given URL using the HEAD method.
+// Head requests the given URL using the HEAD method.
 func (bow *Browser) Head(u string) error {
 	ur, err := url.Parse(u)
 	if err != nil {
@@ -244,13 +275,25 @@ func (bow *Browser) PostForm(u string, data url.Values) error {
 }
 
 // PostMultipart requests the given URL using the POST method with the given data using multipart/form-data format.
-func (bow *Browser) PostMultipart(u string, data url.Values) error {
+func (bow *Browser) PostMultipart(u string, fields url.Values, files FileSet) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	for k, vs := range data {
+	for k, vs := range fields {
 		for _, v := range vs {
 			writer.WriteField(k, v)
+		}
+	}
+	for k, file := range files {
+		fw, err := writer.CreateFormFile(k, file.fileName)
+		if err != nil {
+			return err
+		}
+		if file.data != nil {
+			_, err = io.Copy(fw, file.data)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	err := writer.Close()
@@ -415,7 +458,10 @@ func (bow *Browser) Scripts() []*Script {
 
 // SiteCookies returns the cookies for the current site.
 func (bow *Browser) SiteCookies() []*http.Cookie {
-	return bow.cookies.Cookies(bow.Url())
+	if bow.client == nil {
+		bow.client = bow.buildClient()
+	}
+	return bow.client.Jar.Cookies(bow.Url())
 }
 
 // SetState sets the browser state.
@@ -423,9 +469,25 @@ func (bow *Browser) SetState(sj *jar.State) {
 	bow.state = sj
 }
 
+// State returns the browser state.
+func (bow *Browser) State() *jar.State {
+	return bow.state
+}
+
 // SetCookieJar is used to set the cookie jar the browser uses.
 func (bow *Browser) SetCookieJar(cj http.CookieJar) {
-	bow.cookies = cj
+	if bow.client == nil {
+		bow.client = bow.buildClient()
+	}
+	bow.client.Jar = cj
+}
+
+// CookieJar returns the cookie jar the browser uses.
+func (bow *Browser) CookieJar() http.CookieJar {
+	if bow.client == nil {
+		bow.client = bow.buildClient()
+	}
+	return bow.client.Jar
 }
 
 // SetUserAgent sets the user agent.
@@ -448,9 +510,19 @@ func (bow *Browser) SetBookmarksJar(bj jar.BookmarksJar) {
 	bow.bookmarks = bj
 }
 
+// BookmarksJar returns the bookmarks jar the browser uses.
+func (bow *Browser) BookmarksJar() jar.BookmarksJar {
+	return bow.bookmarks
+}
+
 // SetHistoryJar is used to set the history jar the browser uses.
 func (bow *Browser) SetHistoryJar(hj jar.History) {
 	bow.history = hj
+}
+
+// HistoryJar returns the history jar the browser uses.
+func (bow *Browser) HistoryJar() jar.History {
+	return bow.history
 }
 
 // SetHeadersJar sets the headers the browser sends with each request.
@@ -459,8 +531,20 @@ func (bow *Browser) SetHeadersJar(h http.Header) {
 }
 
 // SetTransport sets the http library transport mechanism for each request.
+// SetTimeout sets the timeout for requests.
+func (bow *Browser) SetTimeout(t time.Duration) {
+	if bow.client == nil {
+		bow.client = bow.buildClient()
+	}
+	bow.client.Timeout = t
+}
+
+// SetTransport sets the http library transport mechanism for each request.
 func (bow *Browser) SetTransport(rt http.RoundTripper) {
-	bow.transport = rt
+	if bow.client == nil {
+		bow.client = bow.buildClient()
+	}
+	bow.client.Transport = rt
 }
 
 // AddRequestHeader sets a header the browser sends with each request.
@@ -539,18 +623,11 @@ func (bow *Browser) Find(expr string) *goquery.Selection {
 	return bow.state.Dom.Find(expr)
 }
 
-// -- Unexported methods --
+func (bow *Browser) NewTab() (b *Browser) {
+	b = &Browser{}
+	*b = *bow
 
-// buildClient creates, configures, and returns a *http.Client type.
-func (bow *Browser) buildClient() *http.Client {
-	client := &http.Client{}
-	client.Jar = bow.cookies
-	client.CheckRedirect = bow.shouldRedirect
-	if bow.transport != nil {
-		client.Transport = bow.transport
-	}
-
-	return client
+	return b
 }
 
 // buildRequest creates and returns a *http.Request type.
@@ -625,11 +702,15 @@ func (bow *Browser) httpPOST(u *url.URL, ref *url.URL, contentType string, body 
 
 // send uses the given *http.Request to make an HTTP request.
 func (bow *Browser) httpRequest(req *http.Request) error {
+	if bow.client == nil {
+		bow.client = bow.buildClient()
+	}
 	bow.preSend()
-	resp, err := bow.buildClient().Do(req)
+	resp, err := bow.client.Do(req)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	bow.body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
