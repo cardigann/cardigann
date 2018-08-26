@@ -36,7 +36,6 @@
     inputs:
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
-      unlock: "1"
 
   ratio:
     path: /my.php
