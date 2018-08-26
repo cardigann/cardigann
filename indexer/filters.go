@@ -84,7 +84,7 @@ func invokeFilter(name string, args interface{}, value string) (string, error) {
 			return "", fmt.Errorf("Filter %q requires a string argument at idx 0", name)
 		}
 		return value + str, nil
-	
+
 	case "prepend":
 		str, ok := args.(string)
 		if !ok {
@@ -217,7 +217,7 @@ func parseTimeAgo(src string, now time.Time) (time.Time, error) {
 		tok = s.Scan()
 		if tok == scanner.EOF {
 			return now, fmt.Errorf(
-				"expected a time unit at %s", s.TokenText(), s.Pos())
+				"expected a time unit at %s:%v", s.TokenText(), s.Pos())
 		}
 
 		unit := s.TokenText()

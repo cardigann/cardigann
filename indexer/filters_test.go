@@ -14,10 +14,10 @@ func TestQueryStringFilter(t *testing.T) {
 	} {
 		result, err := filterQueryString(example.param, example.u)
 		if err != nil {
-			t.Fatalf("Row %#d had an unexpected error: %s", idx+1, err.Error())
+			t.Fatalf("Row #%d had an unexpected error: %s", idx+1, err.Error())
 		}
 		if result != example.expected {
-			t.Fatalf("Row %#d was expecting %s, got %s", idx+1, example.expected, result)
+			t.Fatalf("Row #%d was expecting %s, got %s", idx+1, example.expected, result)
 		}
 	}
 }
@@ -30,10 +30,10 @@ func TestDateParseFilter(t *testing.T) {
 	} {
 		result, err := filterDateParse([]string{example.format}, example.strTime)
 		if err != nil {
-			t.Fatalf("Row %#d had an unexpected error: %s", idx+1, err.Error())
+			t.Fatalf("Row #%d had an unexpected error: %s", idx+1, err.Error())
 		}
 		if result != example.expected {
-			t.Fatalf("Row %#d was expecting %s, got %s", idx+1, example.expected, result)
+			t.Fatalf("Row #%d was expecting %s, got %s", idx+1, example.expected, result)
 		}
 	}
 }
@@ -58,10 +58,10 @@ func TestFuzzyTimeFilter(t *testing.T) {
 	} {
 		result, err := filterFuzzyTime(example.pattern, now)
 		if err != nil {
-			t.Fatalf("Row %#d had an unexpected error: %s", idx+1, err.Error())
+			t.Fatalf("Row #%d had an unexpected error: %s", idx+1, err.Error())
 		}
 		if result != example.expected.Format(filterTimeFormat) {
-			t.Fatalf("Row %#d was expecting %s, got %s", idx+1, example.expected.Format(filterTimeFormat), result)
+			t.Fatalf("Row #%d was expecting %s, got %s", idx+1, example.expected.Format(filterTimeFormat), result)
 		}
 	}
 }
@@ -82,10 +82,10 @@ func TestParseTimeAgo(t *testing.T) {
 	} {
 		result, err := parseTimeAgo(example.timeAgo, now)
 		if err != nil {
-			t.Fatalf("Row %#d had an unexpected error: %s", idx+1, err.Error())
+			t.Fatalf("Row #%d had an unexpected error: %s", idx+1, err.Error())
 		}
 		if !result.Equal(example.expected) {
-			t.Fatalf("Row %#d was expecting %s, got %s",
+			t.Fatalf("Row #%d was expecting %s, got %s",
 				idx+1, example.expected.Format(filterTimeFormat), result.Format(filterTimeFormat))
 		}
 	}
