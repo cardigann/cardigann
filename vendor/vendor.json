@@ -34,11 +34,12 @@
 			"revisionTime": "2016-08-12T03:20:51Z"
 		},
 		{
-			"checksumSHA1": "L+SH9/QPBEpTYmBnDGBXmI7VYIw=",
+			"checksumSHA1": "ZafhltxAOuD4aquM9wyBWpC3KXY=",
 			"origin": "github.com/cardigann/surf",
 			"path": "github.com/headzoo/surf",
-			"revision": "40151144dcb8eb3fce7599cf59f7d2f50d1cf690",
-			"revisionTime": "2016-09-05T08:01:30Z"
+			"revision": "0ef1534bc3a7a9bcb3768e3d3759e7c391a0b619",
+			"revisionTime": "2018-08-26T09:31:02Z",
+			"tree": true
 		},
 		{
 			"checksumSHA1": "mH8b+MotDKxCJKnrw+R1tivENGI=",
