@@ -12,13 +12,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torrentpotato"
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 const (

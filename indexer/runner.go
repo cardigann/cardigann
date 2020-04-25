@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -21,7 +20,6 @@ import (
 	"golang.org/x/net/proxy"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
@@ -34,7 +32,8 @@ import (
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
 	"github.com/headzoo/surf/jar"
-	"github.com/tehjojo/go-tvmaze/tvmaze"
+	"github.com/mrobinsn/go-tvmaze/tvmaze"
+	"github.com/sirupsen/logrus"
 	"github.com/yosssi/gohtml"
 )
 
@@ -90,12 +89,7 @@ func (r *Runner) createTransport() (http.RoundTripper, error) {
 	}
 
 	if !custom {
-		return &http.Transport{
-			Dial: (&net.Dialer{
-				Timeout: 5 * time.Second,
-			}).Dial,
-			TLSHandshakeTimeout: 5 * time.Second,
-		}, nil
+		return http.DefaultTransport, nil
 	}
 
 	return &t, nil
