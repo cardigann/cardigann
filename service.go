@@ -6,9 +6,9 @@ import (
 	_ "log"
 	"os"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/server"
 	"github.com/kardianos/service"
+	"github.com/sirupsen/logrus"
 )
 
 type programOpts struct {

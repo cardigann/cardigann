@@ -15,7 +15,6 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/cardigann/cardigann/logger"
@@ -23,6 +22,7 @@ import (
 	"github.com/cardigann/cardigann/torznab"
 	"github.com/equinox-io/equinox"
 	"github.com/kardianos/service"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

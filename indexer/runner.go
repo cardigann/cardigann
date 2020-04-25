@@ -21,7 +21,6 @@ import (
 	"golang.org/x/net/proxy"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/logger"
 	"github.com/cardigann/cardigann/torznab"
@@ -34,7 +33,8 @@ import (
 	"github.com/headzoo/surf/agent"
 	"github.com/headzoo/surf/browser"
 	"github.com/headzoo/surf/jar"
-	"github.com/tehjojo/go-tvmaze/tvmaze"
+	"github.com/mrobinsn/go-tvmaze/tvmaze"
+	"github.com/sirupsen/logrus"
 	"github.com/yosssi/gohtml"
 )
 

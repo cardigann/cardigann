@@ -9,10 +9,10 @@ import (
 	"sort"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/cardigann/cardigann/config"
 	"github.com/cardigann/cardigann/indexer"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type indexerFeedsView struct {
