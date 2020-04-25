@@ -190,7 +190,7 @@ I'm happy to add new trackers, please either open a new issue, or a pull request
 
 ## Development
 
-You will need Golang 1.7+ for the server component and NodeJS and NPM if you want to modify the user interface.
+You will need Golang 1.12+ for the server component and NodeJS and NPM if you want to modify the user interface.
 
 ### Setup for Linux (Ubuntu/Debian)
 
