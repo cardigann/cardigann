@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -90,12 +89,7 @@ func (r *Runner) createTransport() (http.RoundTripper, error) {
 	}
 
 	if !custom {
-		return &http.Transport{
-			Dial: (&net.Dialer{
-				Timeout: 5 * time.Second,
-			}).Dial,
-			TLSHandshakeTimeout: 5 * time.Second,
-		}, nil
+		return http.DefaultTransport, nil
 	}
 
 	return &t, nil
