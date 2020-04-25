@@ -868,13 +868,10 @@ func (r *Runner) Search(query torznab.Query) ([]torznab.ResultItem, error) {
 	return items, nil
 }
 
-func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extractedItem, error) {
+func (r *Runner) extractFields(rowIdx int, selection *goquery.Selection, fields fieldsListBlock) (extractedItem, error) {
 	row := map[string]string{}
 
-	html, _ := goquery.OuterHtml(selection)
-	r.logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing row")
-
-	for _, item := range r.definition.Search.Fields {
+	for _, item := range fields {
 		r.logger.
 			WithFields(logrus.Fields{"row": rowIdx, "block": item.Block.String()}).
 			Debugf("Processing field %q", item.Field)
@@ -1017,6 +1014,18 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		item.GUID = item.Link
 	}
 
+	return item, nil
+}
+
+func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extractedItem, error) {
+	html, _ := goquery.OuterHtml(selection)
+	r.logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing row")
+
+	item, err := r.extractFields(rowIdx, selection, r.definition.Search.Fields)
+	if err != nil {
+		return extractedItem{}, err
+	}
+
 	if r.hasDateHeader() {
 		date, err := r.extractDateHeader(selection)
 		if err != nil {
@@ -1024,6 +1033,46 @@ func (r *Runner) extractItem(rowIdx int, selection *goquery.Selection) (extracte
 		}
 
 		item.PublishDate = date
+	}
+
+	if r.hasMultiRow() {
+		return r.mergeMultiRow(rowIdx, item, selection)
+	}
+
+	return item, nil
+}
+
+func (r *Runner) hasMultiRow() bool {
+	return r.definition.Search.MultiRow != nil
+}
+
+func (r *Runner) mergeMultiRow(rowIdx int, item extractedItem, selection *goquery.Selection) (extractedItem, error) {
+	multiRow := r.definition.Search.MultiRow
+	rowSelection := selection.PrevAllFiltered(multiRow.Selector).First()
+
+	if rowSelection.Length() == 0 {
+		return item, nil
+	}
+
+	html, _ := goquery.OuterHtml(rowSelection)
+	r.logger.WithFields(logrus.Fields{"html": gohtml.Format(html)}).Debug("Processing group")
+
+	multi, err := r.extractFields(rowIdx, rowSelection, multiRow.Fields)
+	if err != nil {
+		return extractedItem{}, err
+	}
+
+	if multi.Title != "" {
+		item.Title = multi.Title + " " + item.Title
+	}
+
+	if multi.LocalCategoryID != "" && item.LocalCategoryID == "" {
+		item.LocalCategoryID = multi.LocalCategoryID
+	}
+
+	var zeroTime time.Time
+	if multi.PublishDate != zeroTime && item.PublishDate == zeroTime {
+		item.PublishDate = multi.PublishDate
 	}
 
 	return item, nil

@@ -257,12 +257,36 @@ const (
 	searchMethodGet  = "get"
 )
 
-type searchBlock struct {
-	Path   string          `yaml:"path"`
-	Method string          `yaml:"method"`
-	Inputs inputsBlock     `yaml:"inputs,omitempty"`
-	Rows   rowsBlock       `yaml:"rows"`
+type multiRowBlock struct {
+	selectorBlock
 	Fields fieldsListBlock `yaml:"fields"`
+}
+
+func (r *multiRowBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var sb selectorBlock
+	if err := unmarshal(&sb); err != nil {
+		return errors.New("Failed to unmarshal multiRowBlock")
+	}
+
+	var rb struct {
+		Fields fieldsListBlock `yaml:"fields"`
+	}
+	if err := unmarshal(&rb); err != nil {
+		return errors.New("Failed to unmarshal multiRowBlock")
+	}
+
+	r.selectorBlock = sb
+	r.Fields = rb.Fields
+	return nil
+}
+
+type searchBlock struct {
+	Path     string          `yaml:"path"`
+	Method   string          `yaml:"method"`
+	Inputs   inputsBlock     `yaml:"inputs,omitempty"`
+	Rows     rowsBlock       `yaml:"rows"`
+	MultiRow *multiRowBlock  `yaml:"multirow,omitempty"`
+	Fields   fieldsListBlock `yaml:"fields"`
 }
 
 type capabilitiesBlock struct {

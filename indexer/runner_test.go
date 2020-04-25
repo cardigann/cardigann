@@ -159,6 +159,64 @@ const exampleDefinitionWithMultiRow = `
     rows:
       selector: table.results tbody tr:not(.dateheader)
       after: 1
+    multirow:
+      selector: .dateheader
+      fields:
+        date:
+          filters:
+            - name: regexp
+              args: "^Added on (.+?)$"
+            - name: dateparse
+              args: Monday, Jan 02, 2006
+    fields:
+      category:
+        selector: td:nth-child(1) a
+        attribute: href
+        filters:
+          - name: querystring
+            args: id
+      title:
+        selector: td:nth-child(2) a
+      details:
+        selector: td:nth-child(2) a
+        attribute: href
+      download:
+        selector: td:nth-child(3) a
+        attribute: href
+`
+
+const exampleDefinitionWithDateHeaders = `
+---
+  site: example
+  links:
+    - http://www.example.org
+
+  caps:
+    categories:
+      2: Audio
+      3: Other
+
+    modes:
+      search: q
+
+  login:
+    path: /login.php
+    form: form
+    inputs:
+      username: "{{ .Config.username }}"
+      llamas_password: "{{ .Config.password }}"
+    error:
+      selector: .loginerror a
+    test:
+      path: /profile.php
+
+  search:
+    path: torrents.php
+    inputs:
+      $raw: "search={{ .Query.Keywords }}&cat=0"
+    rows:
+      selector: table.results tbody tr:not(.dateheader)
+      after: 1
       dateheaders:
         selector: .dateheader
         filters:
@@ -379,6 +437,79 @@ func TestIndexerDefinitionRunner_Search(t *testing.T) {
 
 	if results[0].Peers != 112 {
 		t.Fatal("Incorrect peers count")
+	}
+}
+
+func TestIndexerDefinitionRunner_DateHeadersSearch(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	def, err := ParseDefinition([]byte(exampleDefinitionWithDateHeaders))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	conf := &config.ArrayConfig{
+		"example": map[string]string{
+			"username": "myusername",
+			"password": "mypassword",
+			"url":      "https://example.org/",
+		},
+	}
+
+	r := NewRunner(def, RunnerOpts{Config: conf})
+
+	var loggedIn bool
+
+	registerResponder("GET", "https://example.org/", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+	})
+
+	registerResponder("GET", "https://example.org/profile.php", func(req *http.Request) (*http.Response, error) {
+		if !loggedIn {
+			resp := httpmock.NewStringResponse(http.StatusOK, "")
+			resp.Header.Set("Refresh", "1; /login.php")
+			return resp, nil
+		}
+		return httpmock.NewStringResponse(http.StatusOK, ""), nil
+	})
+
+	registerResponder("GET", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleLoginPage), nil
+	})
+
+	registerResponder("POST", "https://example.org/login.php", func(req *http.Request) (*http.Response, error) {
+		loggedIn = true
+		return httpmock.NewStringResponse(http.StatusOK, "Success"), nil
+	})
+
+	registerResponder("GET", "https://example.org/torrents.php", func(req *http.Request) (*http.Response, error) {
+		return httpmock.NewStringResponse(http.StatusOK, exampleSearchPageWithDateHeadersAndMultiRow), nil
+	})
+
+	results, err := r.Search(torznab.Query{
+		Type:       "tv-search",
+		Q:          "llamas",
+		Categories: []int{torznab.CategoryAudio.ID},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(results) != 2 {
+		t.Fatalf("Expected 2 result, got %d", len(results))
+	}
+
+	if results[1].Title != "Llama llama S01E02" {
+		t.Fatalf("Expected row 2 to have title of %q, got %q",
+			"Llama llama S01E02",
+			results[1].Title)
+	}
+
+	expectedDate := time.Date(2016, time.August, 20, 0, 0, 0, 0, time.UTC)
+	if !results[1].PublishDate.Equal(expectedDate) {
+		t.Fatalf("Expected row 2 to have publish date of %q, got %q",
+			expectedDate.String(), results[1].PublishDate)
 	}
 }
 
