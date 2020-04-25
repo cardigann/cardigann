@@ -205,8 +205,12 @@ func (r *Runner) testURLWorks(u string) bool {
 		r.logger.WithError(err).Warn("URL check failed")
 		return false
 	} else if r.browser.StatusCode() != http.StatusOK {
-		r.logger.Warn("URL returned non-ok status")
-		return false
+		if r.browser.Title() == "Just a moment..." {
+			r.logger.Warn("Found cloudflare check, assuming OK")
+		} else {
+			r.logger.Warn("URL returned non-ok status")
+			return false
+		}
 	}
 
 	return true

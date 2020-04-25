@@ -70,10 +70,10 @@
     inputs:
       $raw: "{{range .Categories}}{{.}}&{{end}}q={{ .Query.Keywords }}"
     rows:
-      selector: table#torrentTable > tbody > tr:nth-child(n+2):has(td.t_label)
+      selector: table#torrentTable > tbody > tr:nth-child(n+2):has(td.torrentNameInfo)
     fields:
       category:
-        selector: td.t_label > a
+        selector: td:nth-child(1) > a
         attribute: href
         filters:
           - name: regexp
